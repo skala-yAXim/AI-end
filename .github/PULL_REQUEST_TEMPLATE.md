@@ -11,7 +11,6 @@ ex) chore: [#1] PR Templete 생성
 - [ ] 버그 수정
 - [ ] 의존성, 환경 변수, 빌드 관련 코드 업데이트
 
- 
 ## 📝 작업 내용
 
 - [ ] 이번 PR에서 
@@ -21,11 +20,9 @@ ex) chore: [#1] PR Templete 생성
 ## 스크린샷 (선택)
 <!-- 스크린샷 용 마크다운 예시 (표에 이름 넣기)
 
-|프로필 화면 입력시 키보드 내리기 화면|
-
-|--|
-
-|<img src="소스링크" width="393">| 
+| 설명 | 이미지 |
+|------------------|-------------|
+| PR 예시 이미지 | <img src="https://github.com/user-attachments/assets/8f727d11-bebe-4def-8e4e-9af4bda3edce" width="660"/> |
 
 -->
  
