@@ -34,27 +34,24 @@ graph TD;
     WBSAnalyze -->|병렬| EmailAnalyze
     WBSAnalyze -->|병렬| TeamsAnalyze
     WBSAnalyze -->|병렬| DocsAnalyze
-    GitAnalyze --> Join
-    EmailAnalyze --> Join
-    TeamsAnalyze --> Join
-    DocsAnalyze --> Join
-    Join --> DailyReport
+    GitAnalyze --> DailyReport
+    EmailAnalyze --> DailyReport
+    TeamsAnalyze --> DailyReport
+    DocsAnalyze --> DailyReport
 ```
 
 ### 개인 Weekly 보고서 Architecture
  ```mermaid
 graph TD;
-    WBSAnalyze --> Join
-    DailyReport --> Join
-    Join --> WeeklyReport
+    WBSAnalyze --> WeeklyReport
+    DailyReport --> WeeklyReport
 ```
 
 ### 팀 Weekly 보고서 Architecture
  ```mermaid
 graph TD;
-    WBSAnalyze --> Join
-    WeeklyReport --> Join
-    Join --> WeeklyReport
+    WBSAnalyze --> TeamWeeklyReport
+    WeeklyReport --> TeamWeeklyReport
 ```
 
 ## 3. 기술 스택
