@@ -16,12 +16,46 @@
     * 수신된 이메일의 내용을 분석하여 주요 정보, 요청 사항, 감정 등을 추출합니다.
 4.  **팀 대화 기반 맥락 추출 에이전트**:
     * Microsoft Teams 채팅 및 게시물 내용을 분석하여 대화의 주요 맥락, 결정 사항, 주요 논의 주제 등을 추출합니다.
-5.  **개인 Daily 보고서 생성 에이전트 (수퍼바이저)**:
+5.  **문서 내용 분석 에이전트**:
+    * 개인별 문서 파일들을 분석하여 문서의 퀄리티와 진척도 주요 논의 내용 등을 추출합니다.
+6.  **개인 Daily 보고서 생성 에이전트**:
     * 개인의 하루 활동(이메일, 코드 커밋, 팀즈 활동 등)을 종합하여 일일 보고서를 자동 생성합니다.
-6.  **개인 Weekly 보고서 생성 에이전트**:
+7.  **개인 Weekly 보고서 생성 에이전트**:
     * 생성된 개인별 일일 보고서들을 기반으로 주간 업무 요약 보고서를 생성합니다.
-7.  **문서 내용 분석 에이전트**:
-    * 개인별 문서 파일들을 확인해서, .
+8.  **팀 Weekly 보고서 생성 에이전트**:
+    * 생성된 개인 weekly 보고서들을 기반으로 팀 전체의 주간 업무 요약 보고서를 생성합니다.
+
+  
+
+### 개인 Daily 보고서 Architecture 
+ ```mermaid
+graph TD;
+    WBSAnalyze -->|병렬| GitAnalyze
+    WBSAnalyze -->|병렬| EmailAnalyze
+    WBSAnalyze -->|병렬| TeamsAnalyze
+    WBSAnalyze -->|병렬| DocsAnalyze
+    GitAnalyze --> Join
+    EmailAnalyze --> Join
+    TeamsAnalyze --> Join
+    DocsAnalyze --> Join
+    Join --> DailyReport
+```
+
+### 개인 Weekly 보고서 Architecture
+ ```mermaid
+graph TD;
+    WBSAnalyze --> Join
+    DailyReport --> Join
+    Join --> WeeklyReport
+```
+
+### 팀 Weekly 보고서 Architecture
+ ```mermaid
+graph TD;
+    WBSAnalyze --> Join
+    WeeklyReport --> Join
+    Join --> WeeklyReport
+```
 
 ## 3. 기술 스택
 
