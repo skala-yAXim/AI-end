@@ -41,7 +41,7 @@ graph TD;
     EmailAnalyze --> DailyReport
     TeamsAnalyze --> DailyReport
     DocsAnalyze --> DailyReport
-   ScheduleAnalyze --> DailyReport
+    ScheduleAnalyze --> DailyReport
 ```
 
 ### 개인 Weekly 보고서 Architecture
