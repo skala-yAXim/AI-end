@@ -36,10 +36,12 @@ graph TD;
     WBSAnalyze -->|병렬| EmailAnalyze
     WBSAnalyze -->|병렬| TeamsAnalyze
     WBSAnalyze -->|병렬| DocsAnalyze
+    WBSAnalyze -->|병렬| ScheduleAnalyze
     GitAnalyze --> DailyReport
     EmailAnalyze --> DailyReport
     TeamsAnalyze --> DailyReport
     DocsAnalyze --> DailyReport
+   ScheduleAnalyze --> DailyReport
 ```
 
 ### 개인 Weekly 보고서 Architecture
