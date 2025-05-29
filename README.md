@@ -32,26 +32,26 @@
 ### 개인 Daily 보고서 Architecture 
  ```mermaid
 graph TD;
-    A[WBS 원본 데이터 + RAG 문서] --> B(1. WBS Analyze Agent);
-    B --> C[캐시 DB (WBS 분석 결과)];
+    A[WBS 원본 데이터 + RAG 문서] --> B[1. WBS Analyze Agent]
+    B --> C[캐시 DB (WBS 분석 결과)]
 
-    subgraph 병렬 분석 에이전트 (LangGraph)
-        C -- WBS 분석 결과 조회 --> D(2. Git Analyze Agent);
-        C -- WBS 분석 결과 조회 --> E(3. Email Analyze Agent);
-        C -- WBS 분석 결과 조회 --> F(4. Teams Analyze Agent);
-        C -- WBS 분석 결과 조회 --> G(5. Docs Analyze Agent);
+    subgraph 병렬 분석 에이전트 LangGraph
+        C --> D[2. Git Analyze Agent]
+        C --> E[3. Email Analyze Agent]
+        C --> F[4. Teams Analyze Agent]
+        C --> G[5. Docs Analyze Agent]
     end
 
-    D -- Git 분석 결과 --> H(6. Daily Report Agent);
-    E -- Email 분석 결과 --> H;
-    F -- Teams 분석 결과 --> H;
-    G -- Docs 분석 결과 --> H;
-    H --> I[일일 프로젝트 보고서];
+    D --> H[6. Daily Report Agent]
+    E --> H
+    F --> H
+    G --> H
+    H --> I[일일 프로젝트 보고서]
 
-    X[Git 데이터 소스 (로컬 파일/Mock)] --> D;
-    Y[Email 데이터 소스 (로컬 파일/Mock)] --> E;
-    Z[Teams 데이터 소스 (로컬 파일/Mock)] --> F;
-    W[문서 데이터 소스 (VectorDB)] --> G;
+    X[Git 데이터 소스 (로컬 파일/Mock)] --> D
+    Y[Email 데이터 소스 (로컬 파일/Mock)] --> E
+    Z[Teams 데이터 소스 (로컬 파일/Mock)] --> F
+    W[문서 데이터 소스 (VectorDB)] --> G
 
 ```
 
