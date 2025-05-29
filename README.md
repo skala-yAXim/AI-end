@@ -90,27 +90,6 @@ graph TD;
 ### 개인 Daily 보고서 Architecture 
  ```mermaid
 graph TD;
-    A[WBS 원본 데이터 + RAG 문서] --> B[1. WBS Analyze Agent]
-    B --> C[캐시 DB (WBS 분석 결과)]
-
-    subgraph 병렬 분석 에이전트 LangGraph
-        C --> D[2. Git Analyze Agent]
-        C --> E[3. Email Analyze Agent]
-        C --> F[4. Teams Analyze Agent]
-        C --> G[5. Docs Analyze Agent]
-    end
-
-    D --> H[6. Daily Report Agent]
-    E --> H
-    F --> H
-    G --> H
-    H --> I[일일 프로젝트 보고서]
-
-    X[Git 데이터 소스 (로컬 파일/Mock)] --> D
-    Y[Email 데이터 소스 (로컬 파일/Mock)] --> E
-    Z[Teams 데이터 소스 (로컬 파일/Mock)] --> F
-    W[문서 데이터 소스 (VectorDB)] --> G
-
     WBSRetriever -->|병렬| GitAnalyze
     WBSRetriever -->|병렬| EmailAnalyze
     WBSRetriever -->|병렬| TeamsAnalyze
