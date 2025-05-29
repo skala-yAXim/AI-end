@@ -1,0 +1,447 @@
+{
+  "outlook_emails": [
+    {
+      "conversationId": "AAMkADk5Z001pm",
+      "subject": "[킥오프] 스마트팩토리 챗봇 프로젝트 시작 안내",
+      "thread": [
+        {
+          "id": "pm_msg001",
+          "from": "kyj@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "cc": [],
+          "date": "2025-05-28T08:00:00Z",
+          "body": "팀원 여러분, 안녕하세요. 오늘부터 스마트팩토리 챗봇 프로젝트를 시작합니다. 첨부한 일정표 확인하시고, 오늘 오후 2시 킥오프 미팅에 참석 부탁드립니다.",
+          "attachments": [
+            {
+              "filename": "프로젝트_일정표_v1.xlsx",
+              "size": 32768
+            }
+          ]
+        },
+        {
+          "id": "plan_msg001",
+          "from": "ksh@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T08:30:00Z",
+          "body": "확인했습니다. WBS 초안도 작성해두었으니 미팅에서 함께 검토하면 좋을 것 같습니다.",
+          "attachments": []
+        },
+        {
+          "id": "fe_msg001",
+          "from": "ngp@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T10:45:00Z",
+          "body": "Vue3 + Vite 조합으로 가겠습니다. UI 컴포넌트는 Element Plus 사용하면 개발 속도를 높일 수 있을 것 같습니다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z003ai",
+      "subject": "[공유] RAG 시스템 아키텍처 설계 문서",
+      "thread": [
+        {
+          "id": "ai1_msg001",
+          "from": "jms@yasim2861.onmicrosoft.com",
+          "to": ["kse@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T15:00:00Z",
+          "body": "안녕하세요, RAG 시스템 아키텍처 초안 공유드립니다. 벡터 DB는 Pinecone 사용 예정이고, 임베딩 모델은 OpenAI embedding 활용하려고 합니다. 의견 부탁드려요.",
+          "attachments": [
+            {
+              "filename": "RAG_Architecture_Design.pdf",
+              "size": 245760
+            }
+          ]
+        },
+        {
+          "id": "be_msg002",
+          "from": "kse@yasim2861.onmicrosoft.com",
+          "to": ["jms@yasim2861.onmicrosoft.com"],
+          "cc": ["ydg@yasim2861.onmicrosoft.com", "kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T15:45:00Z",
+          "body": "설계 잘 봤습니다. API 연동 부분은 제가 준비하겠습니다. 인증 토큰 관리 방식도 함께 정리해서 공유드릴게요.",
+          "attachments": []
+        },
+        {
+          "id": "ai2_msg001",
+          "from": "ydg@yasim2861.onmicrosoft.com",
+          "to": ["jms@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T16:20:00Z",
+          "body": "좋습니다. STT/TTS 부분과 연계해서 음성 입력된 내용도 RAG 검색이 가능하도록 구성하면 좋을 것 같네요.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z004req",
+      "subject": "[요구사항] MVP 기능 우선순위 정리",
+      "thread": [
+        {
+          "id": "plan_msg002",
+          "from": "ksh@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T11:00:00Z",
+          "body": "MVP 기능 우선순위를 정리했습니다. 1) 챗봇 기본 대화, 2) 이미지 업로드, 3) RAG 검색, 4) 음성 인식 순으로 개발하면 어떨까요?",
+          "attachments": [
+            {
+              "filename": "MVP_기능리스트_v1.docx",
+              "size": 45056
+            }
+          ]
+        },
+        {
+          "id": "pm_msg003",
+          "from": "kyj@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com"],
+          "cc": ["ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T11:30:00Z",
+          "body": "좋습니다. 다만 3주차까지는 기본 기능 완성에 집중하고, 고도화는 이후에 진행하는 것으로 합시다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z005fe",
+      "subject": "[협업] 프론트엔드 UI 디자인 시안 검토 요청",
+      "thread": [
+        {
+          "id": "fe_msg003",
+          "from": "ngp@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T10:00:00Z",
+          "body": "안녕하세요, 챗봇 UI 초안 디자인 완성했습니다. 기획서 기반으로 작업했는데, 사용성 관점에서 검토 부탁드립니다.",
+          "attachments": [
+            {
+              "filename": "chatbot_ui_mockup.png",
+              "size": 512000
+            }
+          ]
+        },
+        {
+          "id": "plan_msg003",
+          "from": "ksh@yasim2861.onmicrosoft.com",
+          "to": ["ngp@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T10:30:00Z",
+          "body": "디자인 깔끔하네요! 다만 파일 업로드 버튼이 좀 더 눈에 띄었으면 좋겠습니다. 사용자가 사진 첨부 기능을 쉽게 찾을 수 있도록요.",
+          "attachments": []
+        },
+        {
+          "id": "fe_msg004",
+          "from": "ngp@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T11:00:00Z",
+          "body": "피드백 감사합니다. 업로드 버튼 크기를 키우고 아이콘도 추가해서 수정하겠습니다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z006db",
+      "subject": "[DB설계] 데이터베이스 스키마 검토 요청",
+      "thread": [
+        {
+          "id": "be_msg003",
+          "from": "kse@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T17:30:00Z",
+          "body": "DB 스키마 초안입니다. 사용자, 대화, 메시지, 트러블리포트 테이블로 구성했습니다. 검토 부탁드립니다.",
+          "attachments": [
+            {
+              "filename": "DB_Schema_v1.sql",
+              "size": 16384
+            }
+          ]
+        },
+        {
+          "id": "ai1_msg002",
+          "from": "jms@yasim2861.onmicrosoft.com",
+          "to": ["kse@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com", "kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T18:00:00Z",
+          "body": "벡터 임베딩 저장을 위한 embeddings 테이블도 추가하면 좋을 것 같습니다. document_id, embedding_vector, metadata 컬럼이 필요할 것 같아요.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z007voice",
+      "subject": "[음성기능] STT/TTS 모듈 개발 계획",
+      "thread": [
+        {
+          "id": "ai2_msg002",
+          "from": "ydg@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com", "ksh@yasim2861.onmicrosoft.com"],
+          "cc": [],
+          "date": "2025-05-28T14:00:00Z",
+          "body": "STT는 Whisper API, TTS는 Google Cloud TTS를 사용하려고 합니다. 실시간 처리를 위해 스트리밍 방식으로 구현 예정입니다.",
+          "attachments": [
+            {
+              "filename": "음성처리_아키텍처.pptx",
+              "size": 102400
+            }
+          ]
+        },
+        {
+          "id": "pm_msg004",
+          "from": "kyj@yasim2861.onmicrosoft.com",
+          "to": ["ydg@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T14:30:00Z",
+          "body": "좋은 접근입니다. 다국어 지원도 고려해주세요. 특히 한국어-영어 통역 기능이 중요합니다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z008api",
+      "subject": "[API문서] Swagger 문서 공유",
+      "thread": [
+        {
+          "id": "be_msg004",
+          "from": "kse@yasim2861.onmicrosoft.com",
+          "to": ["ngp@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T09:30:00Z",
+          "body": "API 문서 초안 완성했습니다. Swagger UI로 테스트도 가능하니 확인해보세요. http://localhost:3000/api-docs",
+          "attachments": []
+        },
+        {
+          "id": "fe_msg005",
+          "from": "ngp@yasim2861.onmicrosoft.com",
+          "to": ["kse@yasim2861.onmicrosoft.com"],
+          "cc": ["jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com", "kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T10:00:00Z",
+          "body": "확인했습니다. 파일 업로드 API에 이미지 타입 검증도 추가해주시면 좋겠습니다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z009report",
+      "subject": "[보고서] 트러블 자동 보고서 템플릿",
+      "thread": [
+        {
+          "id": "ai2_msg003",
+          "from": "ydg@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com", "kyj@yasim2861.onmicrosoft.com"],
+          "cc": [],
+          "date": "2025-05-29T14:30:00Z",
+          "body": "트러블 보고서 자동 생성을 위한 템플릿 초안입니다. PDF 생성은 Puppeteer를 사용할 예정입니다.",
+          "attachments": [
+            {
+              "filename": "trouble_report_template.html",
+              "size": 20480
+            }
+          ]
+        },
+        {
+          "id": "plan_msg004",
+          "from": "ksh@yasim2861.onmicrosoft.com",
+          "to": ["ydg@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T15:00:00Z",
+          "body": "템플릿 잘 봤습니다. '해결 방안' 섹션에 유사 사례 참고 링크도 추가하면 좋겠네요.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z010test",
+      "subject": "[테스트] 통합 테스트 계획",
+      "thread": [
+        {
+          "id": "pm_msg005",
+          "from": "kyj@yasim2861.onmicrosoft.com",
+          "to": ["kse@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T16:00:00Z",
+          "body": "내일부터 통합 테스트 시작하려고 합니다. 프론트-백엔드 연동 테스트 준비 부탁드립니다.",
+          "attachments": []
+        },
+        {
+          "id": "be_msg005",
+          "from": "kse@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ngp@yasim2861.onmicrosoft.com", "ksh@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T16:30:00Z",
+          "body": "테스트 서버 준비 완료했습니다. 테스트 계정 정보 따로 공유드리겠습니다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z011daily",
+      "subject": "[일일보고] 5/28 진행 상황 공유",
+      "thread": [
+        {
+          "id": "pm_msg006",
+          "from": "kyj@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "cc": [],
+          "date": "2025-05-28T18:00:00Z",
+          "body": "오늘 킥오프 미팅 수고하셨습니다. 각자 진행 상황 간단히 공유 부탁드립니다.",
+          "attachments": []
+        },
+        {
+          "id": "fe_msg006",
+          "from": "ngp@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T18:15:00Z",
+          "body": "프론트엔드: Vue 프로젝트 설정 완료, 기본 레이아웃 구성 중입니다.",
+          "attachments": []
+        },
+        {
+          "id": "be_msg006",
+          "from": "kse@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T18:20:00Z",
+          "body": "백엔드: Express 서버 구축, JWT 인증 구현 진행 중입니다.",
+          "attachments": []
+        },
+        {
+          "id": "ai1_msg003",
+          "from": "jms@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-28T18:25:00Z",
+          "body": "AI팀1: Pinecone 계정 설정, OpenAI API 연동 테스트 완료했습니다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z012daily",
+      "subject": "[일일보고] 5/29 진행 상황 공유",
+      "thread": [
+        {
+          "id": "pm_msg007",
+          "from": "kyj@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "cc": [],
+          "date": "2025-05-29T17:00:00Z",
+          "body": "오늘 하루 수고 많으셨습니다. 각자 진행 상황 간단히 공유 부탁드립니다. 내일 오전 스탠드업 미팅에서 상세 논의하겠습니다.",
+          "attachments": []
+        },
+        {
+          "id": "be_msg007",
+          "from": "kse@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T17:15:00Z",
+          "body": "백엔드: 알림 API 기본 구조 완성, DB 스키마 설계 진행 중입니다. 내일 메일 발송 모듈 테스트 예정입니다.",
+          "attachments": []
+        },
+        {
+          "id": "ai1_msg004",
+          "from": "jms@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T17:20:00Z",
+          "body": "AI팀1: 벡터 DB 셋업 완료, 문서 임베딩 테스트 성공. 내일 검색 정확도 개선 작업 진행합니다.",
+          "attachments": []
+        },
+        {
+          "id": "ai2_msg004",
+          "from": "ydg@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T17:25:00Z",
+          "body": "AI팀2: STT 모듈 구현 완료, 한국어 인식률 95% 달성. 회의록 요약 알고리즘 개발 중입니다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z013issue",
+      "subject": "[이슈] CORS 에러 해결 방안",
+      "thread": [
+        {
+          "id": "fe_msg007",
+          "from": "ngp@yasim2861.onmicrosoft.com",
+          "to": ["kse@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T11:30:00Z",
+          "body": "API 호출 시 CORS 에러가 발생하고 있습니다. 백엔드에서 설정 확인 부탁드립니다.",
+          "attachments": []
+        },
+        {
+          "id": "be_msg008",
+          "from": "kse@yasim2861.onmicrosoft.com",
+          "to": ["ngp@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T11:45:00Z",
+          "body": "확인했습니다. cors 미들웨어 설정 추가했으니 다시 테스트해보세요.",
+          "attachments": []
+        },
+        {
+          "id": "fe_msg008",
+          "from": "ngp@yasim2861.onmicrosoft.com",
+          "to": ["kse@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T12:00:00Z",
+          "body": "해결되었습니다. 감사합니다!",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z014perf",
+      "subject": "[성능] RAG 검색 속도 개선 필요",
+      "thread": [
+        {
+          "id": "ai1_msg005",
+          "from": "jms@yasim2861.onmicrosoft.com",
+          "to": ["ydg@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com"],
+          "cc": ["kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T13:00:00Z",
+          "body": "현재 RAG 검색 응답 시간이 평균 2초 정도 걸립니다. 목표는 0.5초 이내인데, 최적화 방안 논의가 필요합니다.",
+          "attachments": []
+        },
+        {
+          "id": "be_msg009",
+          "from": "kse@yasim2861.onmicrosoft.com",
+          "to": ["jms@yasim2861.onmicrosoft.com"],
+          "cc": ["ydg@yasim2861.onmicrosoft.com", "kyj@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T13:30:00Z",
+          "body": "Redis 캐싱을 적용하면 자주 검색되는 쿼리는 빠르게 응답할 수 있을 것 같습니다.",
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "conversationId": "AAMkADk5Z015meet",
+      "subject": "[회의] 5/30 스탠드업 미팅 안내",
+      "thread": [
+        {
+          "id": "pm_msg008",
+          "from": "kyj@yasim2861.onmicrosoft.com",
+          "to": ["ksh@yasim2861.onmicrosoft.com", "ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "cc": [],
+          "date": "2025-05-29T18:00:00Z",
+          "body": "내일 오전 9시 스탠드업 미팅 있습니다. 주요 안건: 1) 통합 테스트 계획, 2) 이슈 공유, 3) 다음 주 일정 확인",
+          "attachments": []
+        },
+        {
+          "id": "plan_msg005",
+          "from": "ksh@yasim2861.onmicrosoft.com",
+          "to": ["kyj@yasim2861.onmicrosoft.com"],
+          "cc": ["ngp@yasim2861.onmicrosoft.com", "kse@yasim2861.onmicrosoft.com", "jms@yasim2861.onmicrosoft.com", "ydg@yasim2861.onmicrosoft.com"],
+          "date": "2025-05-29T18:15:00Z",
+          "body": "참석하겠습니다. 사용자 시나리오 기반 테스트 케이스도 준비해두었습니다.",
+          "attachments": []
+        }
+      ]
+    }
+  ]
+} 

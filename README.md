@@ -42,7 +42,6 @@ your-repository-name/
 │
 ├── agents/                 # 각 분석 에이전트 모듈
 │   ├── __init__.py
-│   ├── base_agent.py       # 에이전트 기본 클래스 (선택 사항)
 │   ├── wbs_analyzer.py     # WBS 분석 에이전트
 │   ├── git_analyzer.py     # Git 분석 에이전트 (로컬 데이터 처리)
 │   ├── email_analyzer.py   # Email 분석 에이전트 (로컬 데이터 처리)
@@ -57,6 +56,9 @@ your-repository-name/
 │   ├── teams_analyze_prompt.md
 │   ├── docs_analyze_prompt.md
 │   └── daily_report_prompt.md
+│
+├── tools/                # Tool 모듈
+│   └── __init__.py
 │
 ├── data/                # 분석용 입력 데이터 (샘플 또는 로컬 파일)
 │   ├── wbs/             # WBS 파일 저장 위치
