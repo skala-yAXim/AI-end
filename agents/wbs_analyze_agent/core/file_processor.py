@@ -1,0 +1,61 @@
+# wbs_ingestion_agent/core/file_processor.py
+import pandas as pd
+import hashlib
+import os
+import json
+
+def calculate_file_hash(file_path: str) -> str:
+    """주어진 파일의 SHA256 해시를 계산합니다."""
+    hasher = hashlib.sha256()
+    try:
+        with open(file_path, 'rb') as f:
+            while chunk := f.read(8192):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+    except FileNotFoundError:
+        print(f"오류: 해시 계산을 위한 파일을 찾을 수 없습니다 - {file_path}")
+        raise
+    except Exception as e:
+        print(f"파일 해시 계산 중 오류 발생 ({file_path}): {e}")
+        raise
+
+def read_wbs_to_json_text(wbs_file_path: str) -> str:
+    """
+    WBS 엑셀 파일을 읽어 JSON 문자열로 변환합니다.
+    엑셀 파일의 첫 번째 시트를 사용합니다.
+    """
+    if not os.path.exists(wbs_file_path):
+        raise FileNotFoundError(f"WBS 파일을 찾을 수 없습니다: {wbs_file_path}")
+    try:
+        print(f"WBS 파일 읽는 중: {wbs_file_path}")
+        # 엑셀 파일 확장자에 따라 engine 명시 (예: openpyxl)
+        try:
+            excel_file = pd.ExcelFile(wbs_file_path, engine='openpyxl')
+        except Exception as e:
+            print(f"'{wbs_file_path}' 파일 로드 시 openpyxl 엔진 사용 중 오류: {e}. 기본 엔진으로 재시도합니다.")
+            excel_file = pd.ExcelFile(wbs_file_path) # 기본 엔진으로 시도
+
+        if not excel_file.sheet_names:
+            raise ValueError(f"엑셀 파일에 시트가 없습니다: {wbs_file_path}")
+        
+        # 첫 번째 시트 사용
+        df = excel_file.parse(excel_file.sheet_names[0])
+        
+        print(f"WBS 파일 (시트: {excel_file.sheet_names[0]}) 상위 3개 행:\n{df.head(3)}")
+        print("WBS 파일 읽기 완료. JSON으로 변환 중...")
+        
+        # 날짜/시간 필드가 있다면, pandas가 datetime 객체로 변환할 수 있음.
+        # 이를 JSON으로 변환 시 ISO 8601 형식의 문자열로 변환하는 것이 일반적.
+        # to_json의 date_format='iso' 옵션 사용.
+        # force_ascii=False는 한글 등 유니코드 문자를 그대로 유지.
+        wbs_json = df.to_json(orient='records', indent=2, force_ascii=False, date_format='iso')
+        return wbs_json
+    except FileNotFoundError:
+        print(f"오류: WBS 파일을 읽을 수 없습니다 - {wbs_file_path}")
+        raise
+    except ValueError as ve:
+        print(f"WBS 파일 처리 중 값 오류: {ve}")
+        raise
+    except Exception as e:
+        print(f"WBS 파일 읽기 또는 JSON 변환 오류 ({wbs_file_path}): {e}")
+        raise

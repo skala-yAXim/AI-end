@@ -1,6 +1,12 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,venv
 
+# mac DS_Store
+.DS_Store
+
+# Vector store database
+db/vector_store/
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/

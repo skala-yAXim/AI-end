@@ -42,12 +42,21 @@ your-repository-name/
 │
 ├── agents/                 # 각 분석 에이전트 모듈
 │   ├── __init__.py
-│   ├── wbs_analyzer.py     # WBS 분석 에이전트
+│   ├── run_wbs_analyzer.py     # WBS 분석 에이전트
 │   ├── git_analyzer.py     # Git 분석 에이전트 (로컬 데이터 처리)
 │   ├── email_analyzer.py   # Email 분석 에이전트 (로컬 데이터 처리)
 │   ├── teams_analyzer.py   # Teams 분석 에이전트 (로컬 데이터 처리)
 │   ├── docs_analyzer.py    # 문서 분석 에이전트
 │   └── report_generator.py # 일일 보고서 생성 에이전트
+├── └── wbs_ingestion_agent/       # WBS 분석 및 적재 에이전트 패키지
+│       ├── __init__.py
+│       ├── core/                  # 핵심 로직 컴포넌트
+│       │   ├── __init__.py
+│       │   ├── config.py          # 설정 (API 키, DB 기본 경로 등)
+│       │   ├── file_processor.py  # 파일 해시, WBS 데이터 읽기
+│       │   ├── llm_interface.py   # LLM 연동 (프롬프트 로딩, API 호출, 응답 파싱)
+│       │   └── vector_db.py       # VectorDB 핸들링 (연결, 저장, 조회, 삭제)
+│       └── agent.py               # WBSAnalysisAgent 클래스 (핵심 로직 조합)
 │
 ├── prompts/             # LLM 에이전트용 프롬프트 템플릿
 │   ├── wbs_prompt.md
