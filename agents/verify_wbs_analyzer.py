@@ -1,4 +1,3 @@
-# verify_ingestion.py
 import argparse
 import os
 import sys
@@ -127,19 +126,6 @@ def main():
             include=["documents", "metadatas"]
         )
         print_results(delayed_task_results, f"'{args.project_id}' 프로젝트 지연된 작업 샘플 (output_type='delayed_task', 최대 5개)")
-        
-        # 추가적으로 전체 항목 수 확인
-        try:
-            total_count = db_handler.collection.count()
-            print(f"\n--- 컬렉션 '{db_handler.collection_name}'의 전체 항목 수: {total_count} ---")
-            
-            # project_id로 필터링된 항목 수
-            project_specific_count = db_handler.collection.count(where={"project_id": args.project_id})
-            print(f"--- 프로젝트 '{args.project_id}' 관련 항목 수: {project_specific_count} ---")
-
-        except Exception as count_e:
-            print(f"컬렉션 항목 수 조회 중 오류: {count_e}")
-
 
         print("\n--- 데이터 검증 완료 ---")
 
