@@ -1,4 +1,14 @@
-# wbs_ingestion_agent/core/vector_db.py
+"""
+작성자 : 노건표
+작성일 : 2025-06-01 
+작성내용 : 리팩토링 ( VectorDB(ChromaDB) 관련 처리를 담당하는 클래스 ) 
+
+사용법:
+1. 인스턴스 생성: handler = VectorDBHandler(db_base_path, collection_name_prefix, project_id, embedding_api_key)
+2. WBS 해시 조회: stored_hash = handler.get_stored_wbs_hash()
+3. 프로젝트 데이터 삭제: handler.clear_project_data()
+4. LLM 분석 결과 저장 : handler.store_llm_analysis_results(llm_analysis_results, wbs_hash)
+"""
 import chromadb
 from chromadb.utils import embedding_functions
 import json
@@ -152,12 +162,15 @@ class VectorDBHandler:
         elif item_type == "task_item": # task_list 내부의 각 작업 항목
             task_id = item_dict.get('task_id')
             task_name = item_dict.get('task_name')
-            # ... (이전 코드의 task_item 처리 로직과 유사하게 필드 추출 및 메타 추가) ...
+            assignee = item_dict.get('assignee')
+
             identifier_for_id = str(task_id) if task_id else str(task_name)
             # 예시:
             if task_name: doc_text_parts.append(f"작업명: {task_name}")
             if task_id: meta["task_id"] = str(task_id)
-            # ... assignee, start_date, end_date, status, progress, deliverables 등 ...
+            if assignee: # 담당자 정보가 있다면 메타데이터에 명시적으로 추가
+                meta["assignee"] = str(assignee) #
+
             if item_dict.get('deliverables'): meta["has_deliverables"] = True
 
 

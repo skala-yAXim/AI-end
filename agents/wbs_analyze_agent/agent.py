@@ -1,4 +1,16 @@
-# wbs_ingestion_agent/agent.py
+"""
+작성자 : 노건표
+작성일 : 2025-06-01
+작성내용 : 리팩토링 ( WBS 파일을 분석하고 VectorDB에 적재하는 에이전트 )
+WBSAnalysisAgent 클래스 : WBS 파일을 분석하고 VectorDB에 적재하는 에이전트.
+parameters:
+    project_id (str): 프로젝트 ID
+    wbs_file_path (str): WBS 파일 경로
+    prompt_file_path (str): 프롬프트 파일 경로
+    vector_db_base_path (Optional[str]): VectorDB 기본 경로 (기본값: None)
+
+run_ingestion_pipeline : WBS 파일을 분석하고 VectorDB에 적재하는 메인 파이프라인.
+"""
 from .core.config import Settings
 from .core import file_processor
 from .core.llm_interface import LLMInterface
@@ -7,22 +19,10 @@ from typing import Optional
 import os
 
 class WBSAnalysisAgent:
-    """
-    WBS 파일을 분석하고 VectorDB에 적재하는 에이전트.
-    핵심 로직 컴포넌트들을 조합하여 전체 파이프라인을 실행합니다.
-    """
+
     def __init__(self, project_id: str, wbs_file_path: str, prompt_file_path: str, 
                  vector_db_base_path: Optional[str] = None):
-        """
-        에이전트 초기화.
 
-        Args:
-            project_id (str): 분석 대상 프로젝트의 고유 ID.
-            wbs_file_path (str): 분석할 WBS 엑셀 파일의 전체 경로.
-            prompt_file_path (str): LLM에 사용될 프롬프트 파일의 전체 경로.
-            vector_db_base_path (Optional[str]): VectorDB가 저장될 기본 경로. 
-                                                None이면 config의 기본값을 사용.
-        """
         if not all([project_id, wbs_file_path, prompt_file_path]):
             raise ValueError("project_id, wbs_file_path, prompt_file_path는 필수 인자입니다.")
 
@@ -54,7 +54,6 @@ class WBSAnalysisAgent:
         print(f"WBSAnalysisAgent 초기화 완료: Project ID '{self.project_id}', WBS File '{self.wbs_file_path}'")
 
     def run_ingestion_pipeline(self):
-        """WBS 분석 및 VectorDB 적재 파이프라인을 실행합니다."""
         print(f"\n=== WBS 데이터 적재 파이프라인 시작: 프로젝트 '{self.project_id}' ===")
         
         # 1. WBS 파일 존재 여부 확인

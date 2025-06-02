@@ -1,9 +1,13 @@
-# wbs_ingestion_agent/core/config.py
+"""
+작성자 : 노건표
+작성일자 : 2025-06-01
+작성내용 : 리팩토링 ( 애플리케이션 설정을 관리하는 클래스 )
+"""
 import os
 from dotenv import load_dotenv
 
 class Settings:
-    """애플리케이션 설정을 관리하는 클래스"""
+
     # .env 파일 로드 시도 (실행 위치에 따라 여러 경로 시도)
     # 이 클래스가 임포트되는 시점에 .env를 로드합니다.
     _loaded_dotenv = False
@@ -35,6 +39,3 @@ class Settings:
         if not self.OPENAI_API_KEY:
             # 이 에이전트는 OPENAI_API_KEY가 필수적이므로, 없으면 에러 발생
             raise ValueError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다. .env 파일을 확인하거나 직접 설정해주세요.")
-
-# 설정 객체 인스턴스 (필요시 사용, 보통 클래스 변수 직접 접근)
-# settings = Settings() # 인스턴스화 시점에 API 키 검증
