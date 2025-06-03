@@ -1,5 +1,11 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,venv
+# my files
+data/outlook_test_data.json
+data/wbs_analysis_result.json
+data/yaxim_wbs.xlsx
+data/test_refactored_result.json
+archive
 
 # mac DS_Store
 .DS_Store
