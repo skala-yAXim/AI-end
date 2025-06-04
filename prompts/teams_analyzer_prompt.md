@@ -50,8 +50,8 @@
 
 ```json
 {{
-	"user_id": {user_id},
-	"date": {target_date},
+	"user_id": "{user_id}",
+	"date": "{target_date}",
 	"type": "Teams",
 	"matched_tasks":[
 		{{
@@ -70,7 +70,7 @@
      }},
 	],
 	"unmatched_tasks":[
-		{
+		{{
       "task_name": "게시글에서만 확인된 작업의 작업명",
       "evidence": [
 	      {{
@@ -79,7 +79,7 @@
 			       "LLM_reference" : "해당 게시물을 evidence로 제시한 이유"
 		     }},
       ]
-    },
+    }},
 	]
 }}
 ```
