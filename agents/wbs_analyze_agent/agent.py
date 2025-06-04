@@ -11,7 +11,12 @@ parameters:
 
 run_ingestion_pipeline : WBS 파일을 분석하고 VectorDB에 적재하는 메인 파이프라인.
 """
-from .core.config import Settings
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from core.utils import Settings
 from .core import file_processor
 from .core.llm_interface import LLMInterface
 from .core.vector_db import VectorDBHandler

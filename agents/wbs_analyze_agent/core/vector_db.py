@@ -302,3 +302,36 @@ class VectorDBHandler:
                 if metadatas_to_add: print(f"  오류 발생 시 메타데이터 (첫 번째): {str(metadatas_to_add[0])[:200]}...")
         else:
             print("LLM 분석 결과에서 VectorDB에 저장할 청크된 데이터가 없습니다.")
+
+    def add_texts_with_metadata(self, texts: List[str], metadatas: List[Dict], ids: List[str]):
+        """
+        제공된 텍스트, 메타데이터, ID를 사용하여 VectorDB 컬렉션에 문서를 추가합니다.
+        ChromaDB의 collection.add 메소드를 직접 사용합니다.
+        'texts'는 ChromaDB의 'documents' 매개변수에 해당합니다.
+        """
+        if not (texts and metadatas and ids):
+            print("경고 (add_texts_with_metadata): 추가할 텍스트, 메타데이터 또는 ID가 비어있습니다.")
+            return
+        
+        if not (len(texts) == len(metadatas) == len(ids)):
+            print("오류 (add_texts_with_metadata): 텍스트, 메타데이터, ID 리스트의 길이가 일치하지 않습니다.")
+            print(f"  Texts: {len(texts)}, Metadatas: {len(metadatas)}, IDs: {len(ids)}")
+            return
+
+        try:
+            print(f"VectorDB에 새로운 항목 {len(texts)}개 추가 중 (컬렉션: {self.collection_name}) via add_texts_with_metadata...")
+            self.collection.add(
+                ids=ids,
+                documents=texts, # ChromaDB는 'documents' 인자를 사용합니다.
+                metadatas=metadatas
+            )
+            print(f"데이터 {len(ids)}건 추가 완료 (via add_texts_with_metadata).")
+        except Exception as e:
+            print(f"VectorDB에 데이터 추가 중 오류 발생 (add_texts_with_metadata): {e}")
+            print(f"  오류 발생 시 ID (처음 3개): {ids[:3]}")
+            if texts: print(f"  오류 발생 시 문서 (첫 번째): {texts[0][:200]}...")
+            if metadatas: print(f"  오류 발생 시 메타데이터 (첫 번째): {str(metadatas[0])[:200]}...")
+            # 필요시 전체 스택 트레이스 출력
+            # import traceback
+            # traceback.print_exc()
+

@@ -19,7 +19,7 @@ import sys
 from typing import Optional
 
 from wbs_analyze_agent.agent import WBSAnalysisAgent
-from wbs_analyze_agent.core.config import Settings 
+from core.utils import Settings 
 from langchain.globals import set_llm_cache
 
 # LangChain 캐시 비활성화 (LLM 호출 시 항상 최신 응답을 받기 위함)
@@ -90,7 +90,8 @@ if __name__ == "__main__":
     
     # 예시: 기본값 사용
     project_id_example = "project_sample_002"
-    wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
+    wbs_file_example = "data/wbs/[야심]_300. WBS_v0.2.xlsx" # 실제 파일 경로로 수정 필요
+    # wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
     prompt_file_example = "prompts/wbs_prompt.md"       # 실제 파일 경로로 수정 필요
     db_path_example = None # 기본 DB 경로 사용
 
