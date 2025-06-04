@@ -8,6 +8,11 @@
 
 ## 입력 데이터
 
+### 분석 대상 사용자
+- 사용자 ID: {user_id}
+- 사용자 이름: {user_name}
+- 분석 날짜: {target_date}
+
 ### 분석 대상 문서 데이터
 ```json
 {documents}
@@ -21,9 +26,9 @@
 ## 분석 지침
 
 1. **사용자 정보 및 시간 정보 추출**:
-   - `user_id`: 분석을 요청한 사용자 ID를 추출합니다.
-   - `date`: 분석이 수행된 현재 날짜와 시간을 기록합니다.
-   - `type`: 분석에 사용된 문서의 유형(예: "Teams", "Email", "Doc", "Git")을 식별합니다.
+   - `user_id`: 분석을 요청한 사용자 ID는 {user_id}입니다.
+   - `date`: 분석이 수행된 날짜는 {target_date}입니다.
+   - `type`: 분석에 사용된 문서의 유형은 "Doc"입니다.
 
 2. **WBS 작업 리스트와 문서 매칭 분석**:
    - 각 WBS 작업(`task_id`, `task_name`, `wbs_status`)에 대해 관련된 문서 데이터(`documents`)를 식별하고 매칭합니다.
@@ -43,9 +48,9 @@
 
 ```json
 {{
-  "user_id": "abc123@teams.onmicrosoft.com",
-  "date": "2025-06-04T00:10:41.882106",
-  "type": ["Teams", "Email", "Doc", "Git"],
+  "user_id": "{user_id}",
+  "date": "{target_date}",
+  "type": ["Doc"],
   "matched_tasks": [
     {{
       "task_id": "T1001",
