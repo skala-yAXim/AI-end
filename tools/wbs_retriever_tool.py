@@ -14,6 +14,9 @@ get_project_task_items_tool : VectorDB에서 특정 프로젝트 ID에 해당하
 작성내용 : WBS 작업 항목 조회 Tool 구현
 get_tasks_by_assignee_tool : VectorDB에서 특정 프로젝트 ID와 담당자 이름에 해당하는 작업 항목(task_item)을 조회.
 
+작성자 : 노건표
+작성일 : 2025-06-04
+작성내용 : Qdrant기반의 검색 알고리즘 수정.
 """
 import json
 from typing import List, Dict, Optional
@@ -28,56 +31,100 @@ from agents.wbs_analyze_agent.core.vector_db import VectorDBHandler
 import json
 from typing import List, Dict, Optional # Union 제거됨
 
+import json
+from typing import List, Dict, Optional
+import sys
+import os
+
+# 현재 파일의 상위 디렉토리를 sys.path에 추가하여 모듈 임포트 경로 설정
+# 이 부분은 사용자의 프로젝트 구조에 따라 달라질 수 있습니다.
+# 만약 agents, core 등이 PYTHONPATH에 이미 설정되어 있거나,
+# 현재 스크립트가 프로젝트 루트에서 실행된다면 불필요할 수 있습니다.
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from core.utils import Settings
+# VectorDBHandler 임포트 경로는 실제 프로젝트 구조에 맞게 확인 필요
+# 예: from agents.wbs_analyze_agent.core.vector_db import VectorDBHandler
+# 현재는 사용자가 제공한 경로를 기반으로 가정합니다.
+from agents.wbs_analyze_agent.core.vector_db import VectorDBHandler 
+from qdrant_client import models # Qdrant 필터 사용을 위해 추가
+
 def get_project_task_items_tool(
     project_id: str,
     db_base_path: Optional[str] = None,
     collection_prefix: str = "wbs_data",
-    limit_results: Optional[int] = None
+    limit_results: Optional[int] = None # Qdrant의 limit은 scroll API에서 약간 다르게 동작할 수 있음
 ) -> List[Dict]:
     """
-    지정된 프로젝트 ID에 해당하는 모든 작업 항목(task_item)을 VectorDB에서 조회합니다.
+    지정된 프로젝트 ID에 해당하는 모든 작업 항목(task_item)을 VectorDB(Qdrant)에서 조회합니다.
     """
-    print(f"--- WBS 작업 항목 조회 도구 실행 (전체 작업): 프로젝트 ID '{project_id}' ---")
+    print(f"--- WBS 작업 항목 조회 도구 실행 (Qdrant, 전체 작업): 프로젝트 ID '{project_id}' ---")
     retrieved_tasks: List[Dict] = []
 
     try:
-        app_settings = Settings() # 수정된 Settings 클래스명 사용
+        app_settings = Settings()
         db_path_to_use = db_base_path or app_settings.VECTOR_DB_PATH_ENV or app_settings.DEFAULT_VECTOR_DB_BASE_PATH
         print(f"VectorDB 기본 경로 사용: {db_path_to_use}")
 
+        # VectorDBHandler 초기화 시 embedding_api_key 인자 제거
         db_handler = VectorDBHandler(
             db_base_path=db_path_to_use,
             collection_name_prefix=collection_prefix,
-            project_id=project_id,
-            embedding_api_key=app_settings.OPENAI_API_KEY
+            project_id=project_id
+            # sentence_transformer_model_name은 VectorDBHandler의 기본값을 사용하거나,
+            # 필요시 app_settings 등에서 가져와 명시적으로 전달할 수 있습니다.
         )
 
-        query_params = {
-            "where": {
-                "$and": [
-                    {"project_id": project_id},
-                    {"output_type": "task_item"}
-                ]
-            },
-            "include": ["metadatas"]
-        }
-        if limit_results is not None and limit_results > 0:
-             query_params["limit"] = limit_results
+        # Qdrant 필터 조건 생성
+        qdrant_filter = models.Filter(
+            must=[
+                models.FieldCondition(key="project_id", match=models.MatchValue(value=project_id)),
+                models.FieldCondition(key="output_type", match=models.MatchValue(value="task_item"))
+            ]
+        )
+        # Qdrant에서 가져올 데이터 수 제한 설정
+        fetch_limit = limit_results if limit_results is not None and limit_results > 0 else 1000 # 예시: 최대 1000개로 제한, 또는 None으로 두어 Qdrant 기본값 사용
+                                                                                               # 실제 모든 데이터를 가져오려면 반복 scroll 필요
 
-        print(f"컬렉션 '{db_handler.collection_name}'에서 작업 항목 조회 중 (최대 {limit_results if limit_results else '전체'}건)...")
-        results = db_handler.collection.get(**query_params)
+        print(f"컬렉션 '{db_handler.collection_name}'에서 작업 항목 조회 중 (최대 {fetch_limit}건)...")
+        
+        points, next_page_offset = db_handler.client.scroll(
+            collection_name=db_handler.collection_name,
+            scroll_filter=qdrant_filter,
+            limit=fetch_limit, # 한 번에 가져올 포인트 수
+            with_payload=True, # 페이로드(메타데이터) 포함
+            with_vectors=False # 벡터 데이터는 필요 없음
+        )
 
-        if results and results.get('metadatas'):
-            for meta in results['metadatas']:
-                if 'original_data' in meta:
+        # 모든 데이터를 가져오고 싶다면, next_page_offset이 None이 될 때까지 반복.
+        all_points = list(points) # 초기 포인트 복사
+        while next_page_offset is not None:
+            more_points, next_page_offset = db_handler.client.scroll(
+                collection_name=db_handler.collection_name,
+                scroll_filter=qdrant_filter,
+                limit=fetch_limit,
+                offset=next_page_offset, # 이전 오프셋 사용
+                with_payload=True,
+                with_vectors=False
+            )
+            all_points.extend(more_points)
+        points = all_points # 모든 포인트를 points 변수에 할당
+
+        if points: # points는 List[models.Record]
+            for record in points:
+                payload = record.payload # payload는 dict
+                if payload and 'original_data' in payload:
                     try:
-                        task_data = json.loads(meta['original_data'])
+                        task_data = json.loads(payload['original_data'])
                         retrieved_tasks.append(task_data)
                     except json.JSONDecodeError:
-                        print(f"경고: 메타데이터의 original_data 파싱 실패 - {meta.get('id', 'N/A')}")
-            print(f"VectorDB에서 총 {len(retrieved_tasks)}개의 작업 항목을 가져왔습니다 (Python 후처리 필터링 전).")
+                        print(f"경고: 페이로드의 original_data 파싱 실패 - ID: {record.id}")
+                elif payload: # original_data는 없지만 다른 필드가 있을 경우 (디버깅용)
+                    print(f"정보: ID {record.id}의 페이로드에 'original_data' 필드가 없지만 다른 데이터는 존재: {payload}")
+
+            print(f"VectorDB(Qdrant)에서 총 {len(retrieved_tasks)}개의 작업 항목을 가져왔습니다.")
         else:
-            print("해당 조건으로 VectorDB에서 조회된 작업 항목이 없습니다.")
+            print("해당 조건으로 VectorDB(Qdrant)에서 조회된 작업 항목이 없습니다.")
 
     except ValueError as e:
         print(f"오류: 도구 실행 중 설정 문제 발생 - {e}")
@@ -154,7 +201,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-    example_project_id = "project_sample_002" 
+    example_project_id = "project_qdrant_005" 
     example_db_path = None 
     example_assignee_to_filter = "김용준" 
 

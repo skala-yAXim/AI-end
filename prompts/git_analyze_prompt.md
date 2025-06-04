@@ -22,7 +22,7 @@
 ```json
 {{
   "user_id": "{author_email}",
-  "date": "{current_time_iso}",
+  "date": "{target_date_str}",
   "type": "Git",
   "matched_tasks": [
     {{

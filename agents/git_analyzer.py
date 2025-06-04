@@ -307,7 +307,7 @@ if __name__ == "__main__":
     test_author_email_for_report = "kproh99@naver.com" 
     test_wbs_assignee_name = "노건표" 
     test_repo_name = "skala-yAXim/AI-end" 
-    test_project_id_for_wbs = "project_sample_002" 
+    test_project_id_for_wbs = "project_qdrant_005" 
     test_target_date = "2025-06-02" 
 
     print(f"\n--- Running Test ---")
