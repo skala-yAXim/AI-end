@@ -1,9 +1,25 @@
+"""
+작성자 : 노건표
+작성일 : 2025-06-01 
+작성내용 : 리팩토링 ( WBS 분석 에이전트 실행을 담당하는 클래스 )
+
+def run_wbs_agent(project_id: str, 
+                        wbs_file_path: str, 
+                        prompt_file_path: str, 
+                        db_base_path: Optional[str] = None):
+parameters:
+    project_id (str): 프로젝트 ID
+    wbs_file_path (str): WBS 파일 경로
+    prompt_file_path (str): 프롬프트 파일 경로
+    db_base_path (Optional[str]): VectorDB 기본 경로 (기본값: None)
+"""
+
 import os
 import sys
 from typing import Optional
 
 from wbs_analyze_agent.agent import WBSAnalysisAgent
-from wbs_analyze_agent.core.config import Settings 
+from core.utils import Settings 
 from langchain.globals import set_llm_cache
 
 # LangChain 캐시 비활성화 (LLM 호출 시 항상 최신 응답을 받기 위함)
@@ -13,19 +29,7 @@ def run_wbs_agent(project_id: str,
                         wbs_file_path: str, 
                         prompt_file_path: str, 
                         db_base_path: Optional[str] = None):
-    """
-    WBS 분석 및 VectorDB 적재 에이전트를 실행합니다.
 
-    Args:
-        project_id (str): 분석 대상 프로젝트의 고유 ID.
-        wbs_file_path (str): 분석할 WBS 엑셀 파일의 전체 또는 상대 경로.
-        prompt_file_path (str): LLM에 사용될 프롬프트 파일의 전체 또는 상대 경로.
-        db_base_path (Optional[str]): VectorDB가 저장될 기본 경로. 
-                                     None이면 config의 기본값을 사용합니다.
-
-    Returns:
-        bool: 파이프라인 실행 성공 여부.
-    """
     print("--- WBS 적재 에이전트 실행 ---")
     print(f"프로젝트 ID: {project_id}")
     print(f"WBS 파일 경로: {wbs_file_path}")
@@ -40,15 +44,12 @@ def run_wbs_agent(project_id: str,
         print(f"VectorDB 기본 경로 (지정됨): {db_path_abs}")
     else:
         try:
-            # Settings 인스턴스를 통해 기본 DB 경로 확인 (참고용)
             s = Settings() 
             default_db_path_from_config = s.VECTOR_DB_PATH_ENV or s.DEFAULT_VECTOR_DB_BASE_PATH
             print(f"VectorDB 기본 경로 (설정값 사용 예정): {default_db_path_from_config}")
         except ValueError as e:
-            # API 키 등이 없어 Settings 초기화 실패 시
             print(f"경고: 설정 로드 중 오류로 기본 DB 경로를 확인할 수 없습니다 - {e}")
             print("      .env 파일에 OPENAI_API_KEY가 설정되어 있는지 확인하세요.")
-            # db_base_path가 명시적으로 None으로 전달되면 WBSAnalysisAgent 내부에서 기본값 처리
 
     if not os.path.exists(wbs_file_abs):
         print(f"오류: WBS 파일을 찾을 수 없습니다 - {wbs_file_abs}")
@@ -58,7 +59,6 @@ def run_wbs_agent(project_id: str,
         return False
 
     try:
-        # WBSAnalysisAgent 인스턴스 생성
         agent = WBSAnalysisAgent(
             project_id=project_id,
             wbs_file_path=wbs_file_abs,
@@ -66,7 +66,6 @@ def run_wbs_agent(project_id: str,
             vector_db_base_path=db_path_abs # None일 수 있음 (Agent 내부에서 기본값 처리)
         )
         
-        # 에이전트 파이프라인 실행
         success = agent.run_ingestion_pipeline()
 
         if success:
@@ -88,13 +87,11 @@ def run_wbs_agent(project_id: str,
         return False
 
 if __name__ == "__main__":
-    # 이 스크립트를 직접 실행할 때 사용할 예시 파라미터
-    # 실제 운영 환경에서는 다른 스크립트에서 run_wbs_ingestion 함수를 호출하거나,
-    # 또는 환경 변수, 설정 파일 등에서 이 값들을 가져와서 전달할 수 있습니다.
     
     # 예시: 기본값 사용
-    project_id_example = "project_sample_001"
-    wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
+    project_id_example = "project_sample_002"
+    wbs_file_example = "data/wbs/[야심]_300. WBS_v0.2.xlsx" # 실제 파일 경로로 수정 필요
+    # wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
     prompt_file_example = "prompts/wbs_prompt.md"       # 실제 파일 경로로 수정 필요
     db_path_example = None # 기본 DB 경로 사용
 

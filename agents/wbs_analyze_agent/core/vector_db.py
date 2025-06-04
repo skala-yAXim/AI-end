@@ -1,4 +1,14 @@
-# wbs_ingestion_agent/core/vector_db.py
+"""
+작성자 : 노건표
+작성일 : 2025-06-01 
+작성내용 : 리팩토링 ( VectorDB(ChromaDB) 관련 처리를 담당하는 클래스 ) 
+
+사용법:
+1. 인스턴스 생성: handler = VectorDBHandler(db_base_path, collection_name_prefix, project_id, embedding_api_key)
+2. WBS 해시 조회: stored_hash = handler.get_stored_wbs_hash()
+3. 프로젝트 데이터 삭제: handler.clear_project_data()
+4. LLM 분석 결과 저장 : handler.store_llm_analysis_results(llm_analysis_results, wbs_hash)
+"""
 import chromadb
 from chromadb.utils import embedding_functions
 import json
@@ -152,12 +162,15 @@ class VectorDBHandler:
         elif item_type == "task_item": # task_list 내부의 각 작업 항목
             task_id = item_dict.get('task_id')
             task_name = item_dict.get('task_name')
-            # ... (이전 코드의 task_item 처리 로직과 유사하게 필드 추출 및 메타 추가) ...
+            assignee = item_dict.get('assignee')
+
             identifier_for_id = str(task_id) if task_id else str(task_name)
             # 예시:
             if task_name: doc_text_parts.append(f"작업명: {task_name}")
             if task_id: meta["task_id"] = str(task_id)
-            # ... assignee, start_date, end_date, status, progress, deliverables 등 ...
+            if assignee: # 담당자 정보가 있다면 메타데이터에 명시적으로 추가
+                meta["assignee"] = str(assignee) #
+
             if item_dict.get('deliverables'): meta["has_deliverables"] = True
 
 
@@ -289,3 +302,36 @@ class VectorDBHandler:
                 if metadatas_to_add: print(f"  오류 발생 시 메타데이터 (첫 번째): {str(metadatas_to_add[0])[:200]}...")
         else:
             print("LLM 분석 결과에서 VectorDB에 저장할 청크된 데이터가 없습니다.")
+
+    def add_texts_with_metadata(self, texts: List[str], metadatas: List[Dict], ids: List[str]):
+        """
+        제공된 텍스트, 메타데이터, ID를 사용하여 VectorDB 컬렉션에 문서를 추가합니다.
+        ChromaDB의 collection.add 메소드를 직접 사용합니다.
+        'texts'는 ChromaDB의 'documents' 매개변수에 해당합니다.
+        """
+        if not (texts and metadatas and ids):
+            print("경고 (add_texts_with_metadata): 추가할 텍스트, 메타데이터 또는 ID가 비어있습니다.")
+            return
+        
+        if not (len(texts) == len(metadatas) == len(ids)):
+            print("오류 (add_texts_with_metadata): 텍스트, 메타데이터, ID 리스트의 길이가 일치하지 않습니다.")
+            print(f"  Texts: {len(texts)}, Metadatas: {len(metadatas)}, IDs: {len(ids)}")
+            return
+
+        try:
+            print(f"VectorDB에 새로운 항목 {len(texts)}개 추가 중 (컬렉션: {self.collection_name}) via add_texts_with_metadata...")
+            self.collection.add(
+                ids=ids,
+                documents=texts, # ChromaDB는 'documents' 인자를 사용합니다.
+                metadatas=metadatas
+            )
+            print(f"데이터 {len(ids)}건 추가 완료 (via add_texts_with_metadata).")
+        except Exception as e:
+            print(f"VectorDB에 데이터 추가 중 오류 발생 (add_texts_with_metadata): {e}")
+            print(f"  오류 발생 시 ID (처음 3개): {ids[:3]}")
+            if texts: print(f"  오류 발생 시 문서 (첫 번째): {texts[0][:200]}...")
+            if metadatas: print(f"  오류 발생 시 메타데이터 (첫 번째): {str(metadatas[0])[:200]}...")
+            # 필요시 전체 스택 트레이스 출력
+            # import traceback
+            # traceback.print_exc()
+

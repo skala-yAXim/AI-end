@@ -1,4 +1,13 @@
-# wbs_ingestion_agent/core/llm_interface.py
+"""
+작성자 : 노건표
+작성일자 : 2025-06-01
+작성내용 : 리팩토링 ( LLM 관련 처리를 담당하는 클래스 )
+
+load_prompt_from_file : 파일에서 프롬프트 문자열을 로드.
+analyze_wbs_with_llm : WBS JSON 데이터를 LLM으로 처리하여 분석 결과를 반환.
+                        LLM 응답이 유효한 JSON 구조가 아닐 경우 기본값 반환.
+_default_llm_response : LLM 처리 실패 또는 유효하지 않은 응답 시 반환할 기본 구조.
+"""
 import os
 import json
 from typing import Dict, Any
@@ -8,7 +17,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 class LLMInterface:
-    """LLM 관련 처리를 담당하는 클래스"""
 
     def __init__(self, api_key: str, model_name: str, prompt_template_str: str):
         if not api_key:
@@ -38,7 +46,7 @@ class LLMInterface:
 
     @staticmethod
     def load_prompt_from_file(prompt_file_path: str) -> str:
-        """파일에서 프롬프트 문자열을 로드합니다."""
+
         if not os.path.exists(prompt_file_path):
             raise FileNotFoundError(f"프롬프트 파일을 찾을 수 없습니다: {prompt_file_path}")
         try:
@@ -49,7 +57,6 @@ class LLMInterface:
             raise
 
     def analyze_wbs_with_llm(self, wbs_json_data: str) -> Dict[str, Any]:
-        """WBS JSON 데이터를 LLM으로 처리하여 분석 결과를 반환합니다."""
         if not wbs_json_data:
             print("경고: LLM 분석을 위한 WBS 데이터가 비어있습니다.")
             return self._default_llm_response()
