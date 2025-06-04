@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import os
 import sys
@@ -5,160 +6,53 @@ from datetime import datetime, timezone
 from typing import List, Dict, Optional, Any
 from openai import OpenAI
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+# from core.utils import Settings # 생성자에서 받음
+# tools.wbs_retriever_tool은 WBSDataHandler 내부에서 사용됨
 
-from core.utils import Settings 
-from agents.wbs_analyze_agent.core.vector_db import VectorDBHandler 
-from tools.wbs_retriever_tool import get_tasks_by_assignee_tool
 
 PROMPT_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "prompts", "git_analyze_prompt.md"))
 
 class GitAnalyzerAgent:
-    def __init__(self, settings: Settings, project_id_for_wbs: str):
+    def __init__(self, settings, project_id_for_wbs: str, 
+                 git_data_preprocessor, wbs_data_handler): # WBSDataHandler 주입
+        """
+        GitAnalyzerAgent를 초기화합니다.
+        Args:
+            settings (Settings): 설정 객체.
+            project_id_for_wbs (str): WBS 데이터를 조회할 프로젝트 ID (WBSDataHandler로 전달).
+            git_data_preprocessor (GitDataPreprocessor): Git 데이터 전처리 객체.
+            wbs_data_handler (WBSDataHandler): WBS 데이터 처리 객체.
+        """
         self.settings = settings
-        self.project_id_for_wbs = project_id_for_wbs # Used for WBS queries
+        # project_id_for_wbs는 WBSDataHandler가 상태를 통해 받으므로, agent에 직접 저장할 필요는 없을 수 있음
+        # 하지만, 다른 용도로 필요하다면 유지 가능
+        self.project_id_for_wbs_context = project_id_for_wbs 
+        self.git_data_preprocessor = git_data_preprocessor
+        self.wbs_data_handler = wbs_data_handler # WBS 핸들러 인스턴스 저장
         self.llm_client = OpenAI(api_key=self.settings.OPENAI_API_KEY)
 
-        self.git_vector_db_path = os.path.join(self.settings.VECTOR_DB_PATH_ENV, "git_store")
-        os.makedirs(self.git_vector_db_path, exist_ok=True)
-
-        self.git_db_handler = None
-
-    def _initialize_git_db_handler(self, repo_name: str):
-        """Initializes VectorDBHandler for a specific repository."""
-        safe_repo_name = repo_name.replace("/", "_").replace("-", "_") # Make repo name fs-friendly
-        self.git_db_handler = VectorDBHandler(
-            db_base_path=self.git_vector_db_path,
-            collection_name_prefix="git_events", # Generic prefix
-            project_id=safe_repo_name, # Using repo name as project_id for this DB
-            embedding_api_key=self.settings.OPENAI_API_KEY
-        )
-        print(f"Git VectorDB Handler initialized for repo: {repo_name} -> collection: {self.git_db_handler.collection_name}")
-
-
-    def _load_and_filter_git_data(
-        self,
-        git_data_content: Dict,
-        author_email: str, # This is the author from the git_data.json file's top level
-        repo_name_filter: str,
-        target_date_str: Optional[str] = None
-    ) -> Dict[str, List[Dict]]:
-        print(f"Filtering Git data (source author: {author_email}) for repo: {repo_name_filter}, target date: {target_date_str}")
-
-        target_dt = None
-        if target_date_str:
-            try:
-                target_dt = datetime.strptime(target_date_str, "%Y-%m-%d").date()
-            except ValueError:
-                print(f"Warning: Invalid target_date format '{target_date_str}'. Expected YYYY-MM-DD. Ignoring date filter.")
-
-        filtered_data = {"commits": [], "pull_requests": []}
-
-        for commit in git_data_content.get("commits", []):
-            if commit.get("repo") == repo_name_filter:
-                commit_dt = datetime.fromisoformat(commit["date"].replace("Z", "+00:00")).date()
-                if not target_dt or commit_dt == target_dt:
-                    filtered_data["commits"].append(commit)
-
-        for pr in git_data_content.get("pull_requests", []):
-            if pr.get("repo") == repo_name_filter:
-                pr_dt = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00")).date()
-                if not target_dt or pr_dt == target_dt:
-                    filtered_data["pull_requests"].append(pr)
-        
-        print(f"Found {len(filtered_data['commits'])} commits and {len(filtered_data['pull_requests'])} PRs matching criteria.")
-        return filtered_data
-
-    def _upsert_git_events_to_vector_db(self, git_events: Dict[str, List[Dict]], repo_name: str, author_email_from_file: str):
-        """
-        Embeds and stores git event texts (commit messages, PR titles/bodies) into the VectorDB.
-        Uses upsert logic by relying on unique IDs. author_email_from_file is the one from git_data.json.
-        """
-        if not self.git_db_handler:
-            print("Error: Git DB Handler not initialized. Call _initialize_git_db_handler first.")
-            return
-
-        texts_to_embed = []
-        metadatas = []
-        ids = []
-
-        for commit in git_events.get("commits", []):
-            texts_to_embed.append(f"Commit: {commit['message']}")
-            commit_specific_author = commit.get("author_email", author_email_from_file) 
-            metadatas.append({
-                "type": "commit",
-                "sha": commit["sha"],
-                "repo": repo_name,
-                "author": commit_specific_author, 
-                "date": commit["date"], 
-                "message_summary": commit['message'][:100]
-            })
-            ids.append(f"commit_{commit['sha']}") 
-
-        for pr in git_events.get("pull_requests", []):
-            pr_content_for_embedding = f"PR Title: {pr['title']}\nPR Body: {pr.get('content', '')[:500]}"
-            texts_to_embed.append(pr_content_for_embedding)
-            pr_specific_author = pr.get("user_email", author_email_from_file) 
-            metadatas.append({
-                "type": "pull_request",
-                "number": pr["number"],
-                "repo": repo_name,
-                "author": pr_specific_author, 
-                "date": pr["created_at"], 
-                "title": pr["title"],
-                "state": pr["state"]
-            })
-            ids.append(f"pr_{repo_name.replace('/', '_')}_{pr['number']}")
-
-        if texts_to_embed:
-            try:
-                print(f"Upserting {len(texts_to_embed)} Git events to VectorDB collection: {self.git_db_handler.collection_name}")
-                self.git_db_handler.add_texts_with_metadata(texts=texts_to_embed, metadatas=metadatas, ids=ids)
-                print("Git events successfully upserted/updated in VectorDB.")
-            except Exception as e:
-                print(f"Error upserting Git events to VectorDB: {e}")
-        else:
-            print("No new Git events to upsert to VectorDB for the given filters.")
-
-
-    def _format_wbs_tasks_for_llm(self, tasks: List[Dict]) -> str:
-        if not tasks:
-            return "해당 담당자에게 할당된 WBS 작업을 찾을 수 없거나, WBS 데이터가 없습니다."
-        formatted_tasks = ["### 할당된 WBS 업무 목록:"]
-        for task in tasks:
-            task_details = (
-                f"- 작업명: {task.get('task_name', 'N/A')}\n"
-                f"  ID: {task.get('task_id', 'N/A')}\n"
-                f"  담당자: {task.get('assignee', 'N/A')}\n"
-                f"  상태 (WBS 기준): {task.get('status', 'N/A')}\n"
-                f"  산출물: {task.get('deliverable', 'N/A')}\n"
-                f"  시작 예정: {task.get('start_date', 'N/A')}\n"
-                f"  종료 예정: {task.get('end_date', 'N/A')}"
-            )
-            formatted_tasks.append(task_details)
-        return "\n".join(formatted_tasks)
+    # _format_wbs_tasks_for_llm 메소드는 WBSDataHandler로 이동했으므로 여기서 삭제
 
     def _prepare_git_data_for_llm_prompt(self, git_events: Dict[str, List[Dict]], target_date_str: Optional[str]) -> str:
-        """Formats filtered Git data into a string for the LLM prompt."""
+        """필터링된 Git 데이터를 LLM 프롬프트용 문자열로 포맷합니다. (기존 코드 유지)"""
         date_info = f"({target_date_str} 기준)" if target_date_str else "(최근 활동 기준)"
         prompt_parts = [f"### Git 활동 기록 {date_info}:"]
 
-        if git_events["commits"]:
+        if git_events.get("commits"):
             prompt_parts.append("\n**최근 커밋:**")
             for commit in git_events["commits"][:15]: 
                 commit_date_obj = datetime.fromisoformat(commit['date'].replace("Z", "+00:00"))
                 commit_date_formatted = commit_date_obj.strftime('%Y-%m-%d %H:%M')
-                prompt_parts.append(f"- SHA: {commit['sha'][:7]} ({commit_date_formatted})\n  리포지토리: {commit.get('repo', 'N/A')}\n  메시지: {commit['message']}")
+                prompt_parts.append(f"- SHA: {commit['sha'][:7]} (작성자: {commit.get('author_email_resolved', 'N/A')}, 날짜: {commit_date_formatted})\n  메시지: {commit['message']}")
         else:
             prompt_parts.append(f"\n**최근 커밋:** {date_info} 내역 없음")
 
-        if git_events["pull_requests"]:
+        if git_events.get("pull_requests"):
             prompt_parts.append("\n**관련 Pull Requests:**")
             for pr in git_events["pull_requests"][:10]: 
                 pr_date_obj = datetime.fromisoformat(pr['created_at'].replace("Z", "+00:00"))
                 pr_date_formatted = pr_date_obj.strftime('%Y-%m-%d %H:%M')
-                prompt_parts.append(f"- PR #{pr['number']} ({pr.get('repo', 'N/A')}): {pr['title']} ({pr_date_formatted}, 상태: {pr['state']})")
+                prompt_parts.append(f"- PR #{pr['number']} (요청자: {pr.get('user_email_resolved', 'N/A')}): {pr['title']} ({pr_date_formatted}, 상태: {pr['state']})")
                 if pr.get('content'):
                     pr_content_summary = pr['content'][:200].strip().replace('\r\n', ' ').replace('\n', ' ')
                     prompt_parts.append(f"  내용 요약: {pr_content_summary}...")
@@ -170,59 +64,55 @@ class GitAnalyzerAgent:
     def analyze(
         self,
         git_data_json_path: str, 
-        author_email_for_report: str, 
-        wbs_assignee_name: str, 
+        author_email_for_report: str,
+        wbs_assignee_name: str,
         repo_name: str,         
         target_date_str: Optional[str] = None 
     ) -> Optional[Dict[str, Any]]:
-
+        """
+        Git 데이터와 WBS 데이터를 분석하여 LLM을 통해 종합적인 리포트를 생성합니다.
+        """
         print(f"\n--- Git Analyzer Agent Invoked ---")
         print(f"Report for User ID (Author Email): {author_email_for_report}, WBS Assignee: {wbs_assignee_name}, Repo: {repo_name}, Target Date: {target_date_str or 'All Recent'}")
 
-        self._initialize_git_db_handler(repo_name)
+        # 초기 상태(state) 구성
+        current_state = {
+            "git_data_json_path": git_data_json_path,
+            "author_email_for_report_context": author_email_for_report, # Git 전처리 시 fallback 용도
+            "repo_name": repo_name,
+            "target_date_str": target_date_str,
+            "project_id_for_wbs": self.project_id_for_wbs_context, # WBS 핸들러용
+            "wbs_assignee_name": wbs_assignee_name # WBS 핸들러용
+        }
 
-        try:
-            with open(git_data_json_path, 'r', encoding='utf-8') as f:
-                git_data_content = json.load(f)
-        except FileNotFoundError:
-            print(f"Error: Git data file not found at {git_data_json_path}")
-            return None
-        except json.JSONDecodeError:
-            print(f"Error: Could not decode JSON from {git_data_json_path}")
-            return None
+        # 1. Git 데이터 전처리 (GitDataPreprocessor 호출)
+        current_state = self.git_data_preprocessor(current_state)
         
-        author_email_from_file = git_data_content.get("author")
-        if not author_email_from_file:
-            print(f"Warning: 'author' field not found in {git_data_json_path}. Using report author as fallback for data processing.")
-            author_email_from_file = author_email_for_report 
+        if current_state.get("preprocessing_status") != "success":
+            error_message = current_state.get("preprocessing_error_message", "Unknown Git preprocessing error")
+            print(f"Git data preprocessing failed: {error_message}")
+            # 오류 발생 시 분석 중단 또는 부분적 분석 진행 결정 가능
+            return None # 여기서는 중단
+        
+        filtered_git_events = current_state.get("filtered_git_events", {"commits": [], "pull_requests": []})
+        if not filtered_git_events or (not filtered_git_events.get("commits") and not filtered_git_events.get("pull_requests")):
+            print(f"No Git events found for repo '{repo_name}' and date '{target_date_str}'. Analysis might be limited.")
+            # 빈 Git 정보로 계속 진행할 수 있음
 
-        filtered_git_events = self._load_and_filter_git_data(
-            git_data_content,
-            author_email_from_file, 
-            repo_name,
-            target_date_str
-        )
+        # 2. WBS 데이터 조회 및 포맷팅 (WBSDataHandler 호출)
+        current_state = self.wbs_data_handler(current_state)
 
-        if self.git_db_handler:
-             self._upsert_git_events_to_vector_db(filtered_git_events, repo_name, author_email_from_file)
-        else:
-            print("Skipping Git event upsert to VectorDB as handler is not available.")
-
-        print(f"Retrieving WBS tasks for project '{self.project_id_for_wbs}' and assignee '{wbs_assignee_name}'...")
-        try:
-            assigned_wbs_tasks = get_tasks_by_assignee_tool(
-                project_id=self.project_id_for_wbs,
-                assignee_name_to_filter=wbs_assignee_name,
-                db_base_path=self.settings.VECTOR_DB_PATH_ENV,
-            )
-            print(f"Retrieved {len(assigned_wbs_tasks)} WBS tasks for assignee '{wbs_assignee_name}'.")
-        except Exception as e:
-            print(f"Error retrieving WBS tasks: {e}")
-            assigned_wbs_tasks = []
-            
-        wbs_tasks_str_for_llm = self._format_wbs_tasks_for_llm(assigned_wbs_tasks)
+        if current_state.get("wbs_handling_status") != "success":
+            error_message = current_state.get("wbs_handling_error_message", "Unknown WBS data handling error")
+            print(f"WBS data handling failed: {error_message}")
+            # 오류 발생 시 분석 중단 또는 부분적 분석 진행 결정 가능
+            # WBS 정보 없이 Git 정보만으로 분석을 시도할 수도 있음
+            # 여기서는 WBS 정보가 없어도 LLM 프롬프트에는 "정보 없음"으로 전달됨
+        
+        wbs_tasks_str_for_llm = current_state.get("wbs_tasks_str_for_llm", "WBS 정보를 가져오는 데 실패했습니다.")
+        
+        # 3. LLM 프롬프트 준비
         git_info_str_for_llm = self._prepare_git_data_for_llm_prompt(filtered_git_events, target_date_str)
-        
         current_time_iso = datetime.now(timezone.utc).isoformat()
 
         try:
@@ -232,8 +122,6 @@ class GitAnalyzerAgent:
             print(f"Error: Prompt file not found at {PROMPT_FILE_PATH}")
             return None
         
-        # Populate the prompt template
-        # Added 'git_data' key to provide flexibility for the prompt template placeholder
         prompt = prompt_template.format(
             author_email=author_email_for_report, 
             wbs_assignee_name=wbs_assignee_name,
@@ -241,37 +129,34 @@ class GitAnalyzerAgent:
             target_date_str=target_date_str if target_date_str else "전체 최근 활동",
             current_time_iso=current_time_iso,
             git_info_str_for_llm=git_info_str_for_llm,
-            wbs_tasks_str_for_llm=wbs_tasks_str_for_llm
+            wbs_tasks_str_for_llm=wbs_tasks_str_for_llm # WBSDataHandler로부터 받은 포맷된 문자열
         )
 
         print("\n--- Sending prompt to LLM (details in prompt file) ---")
-        # print(prompt) # Uncomment for debugging
+        # print(prompt) # 디버깅 시 프롬프트 내용 확인
         print("--- End of prompt ---")
 
+        # 4. LLM 호출 및 결과 처리 (기존 코드 유지)
         try:
             response = self.llm_client.chat.completions.create(
-                model=self.settings.OPENAI_MODEL, 
+                model=self.settings.OPENAI_MODEL_NAME, 
                 messages=[
                     {"role": "system", "content": "You are a highly capable AI assistant specialized in analyzing project data and generating reports in a precise JSON format according to the user's instructions."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_object"},
-                temperature=0.1, 
+                temperature=0.1,
             )
             
             llm_output_content = response.choices[0].message.content
             if llm_output_content:
                 analysis_result = json.loads(llm_output_content)
-                print("\n--- LLM Analysis Result (JSON) ---")
+                print("\n--- LLM Analysis Result (JSON from LLM) ---")
                 print(json.dumps(analysis_result, indent=2, ensure_ascii=False))
                 
-                if not all(key in analysis_result for key in ["user_id", "date", "type", "matched_tasks", "unmatched_tasks"]):
-                    print("Warning: LLM output might not fully match the requested JSON structure.")
+                if not isinstance(analysis_result, dict) or not all(key in analysis_result for key in ["summary", "matched_tasks", "unmatched_tasks", "unassigned_git_activities"]):
+                    print("Warning: LLM output might not fully match the requested JSON structure from the prompt's instructions.")
                 
-                analysis_result["user_id"] = author_email_for_report 
-                analysis_result["date"] = current_time_iso 
-                analysis_result["type"] = "Git" 
-
                 return analysis_result
             else:
                 print("Error: LLM returned empty content.")
@@ -279,68 +164,8 @@ class GitAnalyzerAgent:
 
         except json.JSONDecodeError as je:
             print(f"Error decoding LLM JSON response: {je}")
-            print(f"LLM Raw Output:\n{llm_output_content}") 
+            print(f"LLM Raw Output (first 500 chars):\n{llm_output_content[:500] if llm_output_content else 'No content'}") 
             return None
         except Exception as e:
             print(f"Error during LLM interaction: {e}")
             return None
-
-if __name__ == "__main__":
-    print("Git Analyzer Agent - Test Run with Real Data Path using core.utils.Settings")
-
-    settings_instance = Settings()
-    
-    settings_instance.OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
-
-    # Calculate project_root for path configurations within this test script
-    current_script_path = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(current_script_path, "..")) 
-    
-    default_vector_db_base_path = os.path.join(project_root, "db", "vector_store_test")
-    settings_instance.VECTOR_DB_PATH_ENV = os.getenv("VECTOR_DB_PATH", default_vector_db_base_path)
-    os.makedirs(settings_instance.VECTOR_DB_PATH_ENV, exist_ok=True)
-
-    real_git_data_path = os.path.join(project_root, "data", "git_export", "git_data.json")
-    print(f"Attempting to use real git data from: {real_git_data_path}")
-
-    # --- Test Parameters ---
-    test_author_email_for_report = "kproh99@naver.com" 
-    test_wbs_assignee_name = "노건표" 
-    test_repo_name = "skala-yAXim/AI-end" 
-    test_project_id_for_wbs = "project_qdrant_005" 
-    test_target_date = "2025-06-02" 
-
-    print(f"\n--- Running Test ---")
-    print(f"Report for User: {test_author_email_for_report}")
-    print(f"WBS Assignee: {test_wbs_assignee_name}")
-    print(f"Repository Filter: {test_repo_name}")
-    print(f"Target Date: {test_target_date if test_target_date else 'All Recent'}")
-    print(f"WBS Project ID: {test_project_id_for_wbs}")
-    
-    print("\nNote: This test assumes WBS data for the assignee and project ID exists in the VectorDB.")
-
-    # GitAnalyzerAgent 초기화 시 settings 인스턴스 전달
-    git_agent = GitAnalyzerAgent(settings=settings_instance, project_id_for_wbs=test_project_id_for_wbs)
-
-    analysis_output = git_agent.analyze(
-        git_data_json_path=real_git_data_path, 
-        author_email_for_report=test_author_email_for_report,
-        wbs_assignee_name=test_wbs_assignee_name,
-        repo_name=test_repo_name,
-        target_date_str=test_target_date
-    )
-
-    if analysis_output:
-        print("\n--- Test Analysis Complete ---")
-        assert "user_id" in analysis_output, "user_id missing"
-        assert analysis_output["user_id"] == test_author_email_for_report, "user_id mismatch"
-        assert "date" in analysis_output, "date missing"
-        assert "type" in analysis_output and analysis_output["type"] == "Git", "type missing or incorrect"
-        assert "matched_tasks" in analysis_output, "matched_tasks missing"
-        assert "unmatched_tasks" in analysis_output, "unmatched_tasks missing"
-        print("JSON structure basic validation passed.")
-    else:
-        print("\n--- Test Analysis Failed ---")
-
-    print(f"\nReview the git data file used: {real_git_data_path}")
-    print(f"Review the prompt file used: {PROMPT_FILE_PATH}")
