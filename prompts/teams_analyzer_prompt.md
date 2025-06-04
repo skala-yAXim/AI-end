@@ -50,115 +50,37 @@
 
 ```json
 {{
-  "summary": "{user_name}님의 개인 업무 수행 진행 상황 분석 결과입니다. Teams 게시글에서 확인된 작업 진행 상황과 WBS 작업 리스트를 매칭하여 실제 업무 수행 내용을 정리했습니다.",
-  
-  "task_progress_analysis": {{
-    "completed_tasks": [
-      {{
-        "task": "완료된 작업명",
-        "completion_date": "yyyy-mm-dd",
-        "progress_details": "구체적인 완료 내용 및 성과",
-        "evidence": [
-          {{
-            "author": "..."
-            "date": "...",
-            "text": "...",
-          }}
-        ]
-      }}
-    ],
-    "in_progress_tasks": [
-      {{
-        "task": "진행 중인 작업명",
-        "current_status": "현재 진행 상태 설명",
-        // "progress_percentage": 예상_진행률,
-        "recent_activities": "최근 수행한 활동들",
-        "next_steps": "다음 단계 계획",
-        "evidence": [
-          {{
-            "author": "..."
-            "date": "...",
-            "text": "...",
-          }}
-        ]
-      }}
-    ],
-    "pending_tasks": [
-      {{
-        "task": "대기 중인 작업명",
-        "reason": "대기 사유",
-        "blocking_factors": "차단 요소들",
-        "expected_start": "예상 시작 시점",
-        "evidence": [
-          {{
-            "author": "..."
-            "date": "...",
-            "text": "...",
-          }}
-        ]
-      }}
-    ]
-  }},
-  
-  "wbs_task_matching": {{
-    "assigned_wbs_tasks": [
-      {{
-        "task_id": "WBS_작업_ID",
-        "task_name": "WBS_작업명",
-        "wbs_status": "WBS상의_현재_상태",
-        // "wbs_progress": WBS_진행률,
-        "actual_progress_from_data": "게시글에서 확인된 실제 진행 상황",
-        // "progress_gap_analysis": "WBS와 실제 진행 상황의 차이점 분석",
-        "evidence": [
-          {{
-            "author": "..."
-            "date": "...",
-            "text": "...",
-          }}
-        ]
-        "sync_status": "동기화_상태 (일치|앞섬|뒤처짐|불명확)"
-      }}
-    ],
-    "unmatched_chat_tasks": [
-      {{
-        "task": "게시글에서만 확인된 작업",
-        "reason": "WBS에 없는 이유 추정",
-        "evidence": [
-          {{
-            "author": "..."
-            "date": "...",
-            "text": "...",
-          }}
-        ]
-      }}
-    ]
-  }},
-  
-  "work_performance_summary": {{
-    "total_tasks_mentioned": 게시글에서_언급된_전체_작업수,
-    // "completion_rate": 완료율_퍼센트,
-    "productivity_indicators": {{
-      "daily_task_mentions": 일일_평균_작업_언급수,
-      "completion_frequency": "완료_빈도"
+	"user_id": "{user_id}",
+	"date": "{target_date}",
+	"type": "Teams",
+	"matched_tasks":[
+		{{
+      "task_id": "WBS에서 매칭한 작업 ID",
+      "task_name": "진행 중인 작업명",
+      "wbs_status": "WBS 상의 현재 상태",
+      "actual_progress_from_data": "게시슬에서 확인된 실제 진행 상황",
+      "sync_status": "wbs_status와 actual_progress_from_data의 정합성 (일치|앞섬|뒤쳐짐|불명확)", 
+      "evidence": [
+	      {{
+			       "title":"게시물 제목",
+			       "content" : "게시물 내용",
+			       "LLM_reference" : "해당 게시물을 evidence로 제시한 이유"
+		     }},
+      ]
+     }},
+	],
+	"unmatched_tasks":[
+		{{
+      "task_name": "게시글에서만 확인된 작업의 작업명",
+      "evidence": [
+	      {{
+			       "title":"게시물 제목",
+			       "content" : "게시물 내용",
+			       "LLM_reference" : "해당 게시물을 evidence로 제시한 이유"
+		     }},
+      ]
     }},
-    "key_achievements": [
-      "주요_성과_1",
-      "주요_성과_2"
-    ],
-    "current_focus_areas": [
-      "현재_집중_영역_1",
-      "현재_집중_영역_2"
-    ],
-    "upcoming_priorities": [
-      "향후_우선순위_1",
-      "향후_우선순위_2"
-    ],
-    "work_patterns": {{
-      // "peak_activity_hours": ["활발한_작업_시간대"],
-      "preferred_task_types": ["선호하는_작업_유형"],
-      "collaboration_frequency": "협업_빈도"
-    }}
-  }}
+	]
 }}
 ```
 
