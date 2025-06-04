@@ -27,9 +27,7 @@ import numpy
 import traceback # 디버깅을 위해 추가
 
 # 임베딩 모델 정보
-# 다른 sentence-transformer 모델을 사용하려면 여기를 수정하거나, VectorDBHandler 생성 시 명시적으로 전달하세요.
 DEFAULT_SENTENCE_TRANSFORMER_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
-# EMBEDDING_DIMENSIONS 딕셔너리는 더 이상 사용하지 않습니다.
 
 class VectorDBHandler:
     """VectorDB(Qdrant) 관련 처리를 담당하는 클래스 (SentenceTransformer 임베딩 전용, 차원 동적 로드)"""
@@ -50,23 +48,19 @@ class VectorDBHandler:
         os.makedirs(self.db_path, exist_ok=True)
 
         try:
-            self.client = QdrantClient(path=self.db_path)
+            self.client = QdrantClient(host="localhost", port=6333)
         except Exception as e:
             raise RuntimeError(f"Qdrant 클라이언트 초기화 실패 (경로: {self.db_path}): {e}")
 
         self.embedding_model_name = sentence_transformer_model_name
 
-        # EMBEDDING_DIMENSIONS 딕셔너리를 사용하지 않고 항상 모델에서 직접 차원 수를 가져옵니다.
         try:
             print(f"정보: 모델 '{self.embedding_model_name}'의 기본 차원을 동적으로 확인합니다...")
-            # 임시 모델을 로드하여 실제 차원 수를 가져옵니다.
-            # 이 과정은 VectorDBHandler 인스턴스가 생성될 때마다 수행됩니다.
             temp_model = SentenceTransformer(self.embedding_model_name)
             self.embedding_dim = temp_model.get_sentence_embedding_dimension()
             print(f"모델 '{self.embedding_model_name}'의 기본 차원은 {self.embedding_dim}(으)로 확인되어 설정되었습니다.")
             del temp_model # 임시 모델 객체 메모리에서 해제
         except Exception as model_load_e:
-            # 모델 로드 또는 차원 확인 실패 시 예외 발생
             raise ValueError(
                 f"SentenceTransformer 모델 '{self.embedding_model_name}' 로드 또는 차원 확인에 실패했습니다. "
                 f"모델 이름이 정확한지, 모델 파일이 올바르게 다운로드되었는지 확인하세요. 원본 오류: {model_load_e}"
@@ -80,7 +74,6 @@ class VectorDBHandler:
             raise RuntimeError(f"SentenceTransformer 모델 ('{self.embedding_model_name}') 초기화 실패: {se_init_e}. "
                                "sentence-transformers 라이브러리가 올바르게 설치되었는지, 모델 이름이 정확한지 확인하세요.")
 
-        # 컬렉션 확인 및 생성 로직 (이하 동일)
         try:
             collection_exists = False
             current_config_dim = -1 # 컬렉션 차원 초기화
