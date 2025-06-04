@@ -48,7 +48,7 @@ class VectorDBHandler:
         os.makedirs(self.db_path, exist_ok=True)
 
         try:
-            self.client = QdrantClient(path=self.db_path)
+            self.client = QdrantClient(host="localhost", port=6333)
         except Exception as e:
             raise RuntimeError(f"Qdrant 클라이언트 초기화 실패 (경로: {self.db_path}): {e}")
 
