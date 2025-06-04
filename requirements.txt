@@ -16,3 +16,7 @@ python-dotenv>=1.0.0
 # 유틸리티
 tqdm>=4.66.1  # 진행 표시줄
 requests>=2.31.0
+
+#벡터DB
+qdrant-client 
+sentence-transformers

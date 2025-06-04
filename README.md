@@ -48,7 +48,7 @@ your-repository-name/
 │   ├── teams_analyzer.py   # Teams 분석 에이전트 (로컬 데이터 처리)
 │   ├── docs_analyzer.py    # 문서 분석 에이전트
 │   └── report_generator.py # 일일 보고서 생성 에이전트
-├── └── wbs_ingestion_agent/       # WBS 분석 및 적재 에이전트 패키지
+├── └── wbs_analyze_agent/       # WBS 분석 및 적재 에이전트 패키지
 │       ├── __init__.py
 │       ├── core/                  # 핵심 로직 컴포넌트
 │       │   ├── __init__.py
@@ -67,6 +67,7 @@ your-repository-name/
 │   └── daily_report_prompt.md
 │
 ├── tools/                # Tool 모듈
+│   ├── wbs_retriever_tool.py # WBS 데이터 검색 툴
 │   └── __init__.py
 │
 ├── data/                # 분석용 입력 데이터 (샘플 또는 로컬 파일)

@@ -1,0 +1,182 @@
+{
+      "author": "kproh99@naver.com",
+      "commits": [
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "11055403bef69c26414232308195c216af1d87b7",
+          "message": "Feat: 베이스 코드 작성 및 wbs_analyzer 작성.",
+          "date": "2025-05-29T08:02:33Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "bbda1c69913b4d0877c1d260d5a12eea699742ac",
+          "message": "Merge branch 'dev' of https://github.com/skala-yAXim/AI-end into YAX-7-LangGraph-구조-정의",
+          "date": "2025-05-29T08:02:30Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "51963bd29b92686c25781e6ac32f6fdbae9ee583",
+          "message": "feat : base 파일 구조 생성 및 wbs_analyzer 에이전트 생성.\n\nwbs_analyzer 에이전트의 생성이 선행되어야 Retriever의 생성이 완료될 것 같아, 이를  우선적으로 생성.",
+          "date": "2025-05-29T07:52:38Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "9a3fd4e2f225c76022eec1c6947c62c20f6b0320",
+          "message": "chore: wbs-analyze-agent run 코드 변경. / arg로 실행하는게 아닌, run으로 실행하도록 변경.",
+          "date": "2025-06-02T01:39:11Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "97c1a190ce7f4f3c5f8d1c1cae3aa0101f0f9969",
+          "message": "Feat : WBS Agent 설계. gitignore 벡터디비 및 de_store 추가. Readme 수정.\n\nwbs 에이전트를 설계.\n전체 task list는 잘 불러와 지지만, 현재 발생하는 오류는 전체적인 프로젝트 판단이 잘못되고 있음.\n이에대한 내용은 문서허브에 정리함.",
+          "date": "2025-05-31T02:14:29Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "51963bd29b92686c25781e6ac32f6fdbae9ee583",
+          "message": "feat : base 파일 구조 생성 및 wbs_analyzer 에이전트 생성.\n\nwbs_analyzer 에이전트의 생성이 선행되어야 Retriever의 생성이 완료될 것 같아, 이를  우선적으로 생성.",
+          "date": "2025-05-29T07:52:38Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "51963bd29b92686c25781e6ac32f6fdbae9ee583",
+          "message": "feat : base 파일 구조 생성 및 wbs_analyzer 에이전트 생성.\n\nwbs_analyzer 에이전트의 생성이 선행되어야 Retriever의 생성이 완료될 것 같아, 이를  우선적으로 생성.",
+          "date": "2025-05-29T07:52:38Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "a6bf5758c7d163f85a54bd2ea39ef68a5721366a",
+          "message": "Feat: 검색 함수 작성 및 주석 추가\n\nwbs_retriever_tool 내의 함수들을 통해 벡터디비에 적재된 프로젝트 내용 조회.",
+          "date": "2025-06-02T04:43:59Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "9a3fd4e2f225c76022eec1c6947c62c20f6b0320",
+          "message": "chore: wbs-analyze-agent run 코드 변경. / arg로 실행하는게 아닌, run으로 실행하도록 변경.",
+          "date": "2025-06-02T01:39:11Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "97c1a190ce7f4f3c5f8d1c1cae3aa0101f0f9969",
+          "message": "Feat : WBS Agent 설계. gitignore 벡터디비 및 de_store 추가. Readme 수정.\n\nwbs 에이전트를 설계.\n전체 task list는 잘 불러와 지지만, 현재 발생하는 오류는 전체적인 프로젝트 판단이 잘못되고 있음.\n이에대한 내용은 문서허브에 정리함.",
+          "date": "2025-05-31T02:14:29Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "51963bd29b92686c25781e6ac32f6fdbae9ee583",
+          "message": "feat : base 파일 구조 생성 및 wbs_analyzer 에이전트 생성.\n\nwbs_analyzer 에이전트의 생성이 선행되어야 Retriever의 생성이 완료될 것 같아, 이를  우선적으로 생성.",
+          "date": "2025-05-29T07:52:38Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "2e2cfa039d74cb4fa336b457b222bfdf4f0d0f42",
+          "message": "Merge pull request #5 from skala-yAXim/YAX-22-WBS-Analyzer-개발\n\nYax 22 wbs analyzer 개발",
+          "date": "2025-06-02T05:15:13Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "a6bf5758c7d163f85a54bd2ea39ef68a5721366a",
+          "message": "Feat: 검색 함수 작성 및 주석 추가\n\nwbs_retriever_tool 내의 함수들을 통해 벡터디비에 적재된 프로젝트 내용 조회.",
+          "date": "2025-06-02T04:43:59Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "9a3fd4e2f225c76022eec1c6947c62c20f6b0320",
+          "message": "chore: wbs-analyze-agent run 코드 변경. / arg로 실행하는게 아닌, run으로 실행하도록 변경.",
+          "date": "2025-06-02T01:39:11Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "97c1a190ce7f4f3c5f8d1c1cae3aa0101f0f9969",
+          "message": "Feat : WBS Agent 설계. gitignore 벡터디비 및 de_store 추가. Readme 수정.\n\nwbs 에이전트를 설계.\n전체 task list는 잘 불러와 지지만, 현재 발생하는 오류는 전체적인 프로젝트 판단이 잘못되고 있음.\n이에대한 내용은 문서허브에 정리함.",
+          "date": "2025-05-31T02:14:29Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "075e3f803fdf1bd31b05d27a03702e65ec135c40",
+          "message": "Merge pull request #4 from skala-yAXim/revert-3-YAX-22-WBS-Analyzer-개발\n\nRevert \"feat: [#1] wbs_analyze_agnet 구현\" main",
+          "date": "2025-06-02T05:13:08Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "67f48e81c229de110faa23c84ae3935ce2e359d0",
+          "message": "Revert \"feat: [#1] wbs_analyze_agnet 구현\"",
+          "date": "2025-06-02T05:11:11Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "9ae331956f7c88fac778b38a392cc3baf211ab0b",
+          "message": "Merge pull request #3 from skala-yAXim/YAX-22-WBS-Analyzer-개발\n\nfeat: [#1] wbs_analyze_agnet 구현",
+          "date": "2025-06-02T05:09:36Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "a6bf5758c7d163f85a54bd2ea39ef68a5721366a",
+          "message": "Feat: 검색 함수 작성 및 주석 추가\n\nwbs_retriever_tool 내의 함수들을 통해 벡터디비에 적재된 프로젝트 내용 조회.",
+          "date": "2025-06-02T04:43:59Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "9a3fd4e2f225c76022eec1c6947c62c20f6b0320",
+          "message": "chore: wbs-analyze-agent run 코드 변경. / arg로 실행하는게 아닌, run으로 실행하도록 변경.",
+          "date": "2025-06-02T01:39:11Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "67f48e81c229de110faa23c84ae3935ce2e359d0",
+          "message": "Revert \"feat: [#1] wbs_analyze_agnet 구현\"",
+          "date": "2025-06-02T05:11:11Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "9ae331956f7c88fac778b38a392cc3baf211ab0b",
+          "message": "Merge pull request #3 from skala-yAXim/YAX-22-WBS-Analyzer-개발\n\nfeat: [#1] wbs_analyze_agnet 구현",
+          "date": "2025-06-02T05:09:36Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "a6bf5758c7d163f85a54bd2ea39ef68a5721366a",
+          "message": "Feat: 검색 함수 작성 및 주석 추가\n\nwbs_retriever_tool 내의 함수들을 통해 벡터디비에 적재된 프로젝트 내용 조회.",
+          "date": "2025-06-02T04:43:59Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "9a3fd4e2f225c76022eec1c6947c62c20f6b0320",
+          "message": "chore: wbs-analyze-agent run 코드 변경. / arg로 실행하는게 아닌, run으로 실행하도록 변경.",
+          "date": "2025-06-02T01:39:11Z"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "sha": "97c1a190ce7f4f3c5f8d1c1cae3aa0101f0f9969",
+          "message": "Feat : WBS Agent 설계. gitignore 벡터디비 및 de_store 추가. Readme 수정.\n\nwbs 에이전트를 설계.\n전체 task list는 잘 불러와 지지만, 현재 발생하는 오류는 전체적인 프로젝트 판단이 잘못되고 있음.\n이에대한 내용은 문서허브에 정리함.",
+          "date": "2025-05-31T02:14:29Z"
+        }
+      ],
+      "pull_requests": [
+        {
+          "repo": "skala-yAXim/AI-end",
+          "number": 5,
+          "title": "Yax 22 wbs analyzer 개발",
+          "content": "<!--type: [#이슈번호] Title\r\n\r\nex) chore: [#1] PR Templete 생성\r\n\r\n타이틀 양식 참고하고 지우기 !!-->\r\n<!--type은 feat, fix, refactor, chore 4종류-->\r\n\r\n## 🚀 PR 타입(하나 이상의 PR 타입을 선택해주세요)\r\n- [x] 기능 추가\r\n- [ ] 기능 삭제\r\n- [ ] 버그 수정\r\n- [ ] 의존성, 환경 변수, 빌드 관련 코드 업데이트\r\n\r\n## 📝 작업 내용\r\n\r\n### wbs_analyze agent 생성.\r\n1. 벡터db(chroma)에 각 인원의 업무 적재 및 조회 tool 추가.\r\n\r\n2. 엑셀 파일로 넘어오는 wbs를 통해 업무 세부 내역.\r\n   2-1. 첫번째 sheet에 wbs가 존재한다고 가정하고 진행.\r\n   2-2. 담당자, 시작시간, 종료기간, 산출물, 업무 항목 이름이 필수로 기입되어 있어야함.\r\n\r\n코드 리팩토링으로 각 함수 모듈화\r\n \r\n## 스크린샷 (선택)\r\n<!-- 스크린샷 용 마크다운 예시 (표에 이름 넣기)\r\n\r\n| 설명 | 이미지 |\r\n|------------------|-------------|\r\n| PR 예시 이미지 | <img src=\"https://github.com/user-attachments/assets/8f727d11-bebe-4def-8e4e-9af4bda3edce\" width=\"660\"/> |\r\n\r\n-->\r\n \r\n## 💬 리뷰 요구사항 or 추가 코멘트(선택)\r\n> 리뷰어가 특별히 살펴봤으면 하는 부분이나 추가 코멘트가 있다면 작성해주세요\r\n \r\n",
+          "created_at": "2025-06-02T05:15:07Z",
+          "state": "closed"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "number": 4,
+          "title": "Revert \"feat: [#1] wbs_analyze_agnet 구현\" main",
+          "content": "Reverts skala-yAXim/AI-end#3",
+          "created_at": "2025-06-02T05:13:00Z",
+          "state": "closed"
+        },
+        {
+          "repo": "skala-yAXim/AI-end",
+          "number": 3,
+          "title": "feat: [#1] wbs_analyze_agnet 구현",
+          "content": "## 🚀 PR 타입(하나 이상의 PR 타입을 선택해주세요)\r\n- [x] 기능 추가\r\n- [ ] 기능 삭제\r\n- [ ] 버그 수정\r\n- [ ] 의존성, 환경 변수, 빌드 관련 코드 업데이트\r\n\r\n## 📝 작업 내용\r\n\r\n### wbs_analyze agent 생성.\r\n\r\n1. 벡터db(chroma)에 각 인원의 업무 적재 및 조회 tool 추가.\r\n\r\n2. 엑셀 파일로 넘어오는 wbs를 통해 업무 세부 내역. \r\n   2-1. 첫번째 sheet에 wbs가 존재한다고 가정하고 진행.\r\n   2-2. `담당자, 시작시간, 종료기간, 산출물, 업무 항목 이름`이 필수로 기입되어 있어야함. \r\n\r\n3.  코드 리팩토링으로 각 함수 모듈화.\r\n\r\n## 스크린샷 (선택)\r\n<!-- 스크린샷 용 마크다운 예시 (표에 이름 넣기)\r\n\r\n| 설명 | 이미지 |\r\n|------------------|-------------|\r\n| PR 예시 이미지 | <img src=\"https://github.com/user-attachments/assets/8f727d11-bebe-4def-8e4e-9af4bda3edce\" width=\"660\"/> |\r\n\r\n-->\r\n \r\n## 💬 리뷰 요구사항 or 추가 코멘트(선택)\r\n> 리뷰어가 특별히 살펴봤으면 하는 부분이나 추가 코멘트가 있다면 작성해주세요\r\n \r\n",
+          "created_at": "2025-06-02T05:05:46Z",
+          "state": "closed"
+        }
+      ],
+      "issues": []
+}

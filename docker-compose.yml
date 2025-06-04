@@ -1,0 +1,10 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.14.0
+    container_name: qdrant
+    ports:
+      - "6333:6333"  # REST API
+      # - "6334:6334"  # gRPC (원할 경우)
+    volumes:
+      - ./db:/vector_store/qdrant_db  # 로컬 디스크에 영속 저장
+    restart: unless-stopped

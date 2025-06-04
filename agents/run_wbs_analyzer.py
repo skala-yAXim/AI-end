@@ -12,14 +12,18 @@ parameters:
     wbs_file_path (str): WBS 파일 경로
     prompt_file_path (str): 프롬프트 파일 경로
     db_base_path (Optional[str]): VectorDB 기본 경로 (기본값: None)
-"""
 
+업데이트 내역:
+작성자 : 노건표
+작성일 : 2025-06-04
+작성내용 : Qdrant로 벡터DB를 사용하였기에 test 코드 수정.
+"""
 import os
 import sys
 from typing import Optional
 
 from wbs_analyze_agent.agent import WBSAnalysisAgent
-from wbs_analyze_agent.core.config import Settings 
+from core.utils import Settings 
 from langchain.globals import set_llm_cache
 
 # LangChain 캐시 비활성화 (LLM 호출 시 항상 최신 응답을 받기 위함)
@@ -89,8 +93,9 @@ def run_wbs_agent(project_id: str,
 if __name__ == "__main__":
     
     # 예시: 기본값 사용
-    project_id_example = "project_sample_002"
-    wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
+    project_id_example = "project_sample_001"
+    wbs_file_example = "data/wbs/[야심]_300. WBS_v0.2.xlsx" # 실제 파일 경로로 수정 필요
+    # wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
     prompt_file_example = "prompts/wbs_prompt.md"       # 실제 파일 경로로 수정 필요
     db_path_example = None # 기본 DB 경로 사용
 

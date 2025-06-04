@@ -11,7 +11,12 @@ parameters:
 
 run_ingestion_pipeline : WBS 파일을 분석하고 VectorDB에 적재하는 메인 파이프라인.
 """
-from .core.config import Settings
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from core.utils import Settings
 from .core import file_processor
 from .core.llm_interface import LLMInterface
 from .core.vector_db import VectorDBHandler
@@ -48,7 +53,6 @@ class WBSAnalysisAgent:
             db_base_path=db_path_to_use, # 실제 DB 파일이 저장될 최상위 경로
             collection_name_prefix="wbs_data", # 컬렉션 이름 접두사
             project_id=self.project_id,
-            embedding_api_key=self.settings.OPENAI_API_KEY # 임베딩에도 API 키 필요
         )
         
         print(f"WBSAnalysisAgent 초기화 완료: Project ID '{self.project_id}', WBS File '{self.wbs_file_path}'")
