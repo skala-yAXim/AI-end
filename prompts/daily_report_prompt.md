@@ -1,12 +1,26 @@
-# 보고서 생성 프롬프트
+## 보고서 템플릿
+DAILY_REPORT_PROMPT = """
+다음 정보를 바탕으로 {user_name}님의 {target_date} 업무 진행 현황에 대한 종합 보고서를 JSON 형식으로 작성해주세요.
 
-당신은 프로젝트 보고서를 생성하는 전문가입니다. 주어진 모든 분석 데이터를 종합하여 일일/주간 보고서 또는 개인/팀 보고서를 생성해야 합니다.
+### 사용자 정보
+- **사용자 ID**: {user_id}
+- **사용자 이름**: {user_name}
+- **대상 날짜**: {target_date}
 
 ## 입력 데이터
-
 ### WBS 데이터
 ```json
 {wbs_data}
+```
+
+### 문서 분석 결과
+```json
+{docs_analysis}
+```
+
+### Teams 분석 결과
+```json
+{teams_analysis}
 ```
 
 ### Git 분석 결과
@@ -19,43 +33,46 @@
 {email_analysis}
 ```
 
-### Teams 분석 결과
-```json
-{teams_analysis}
-```
-
-### 문서 분석 결과
-```json
-{docs_analysis}
-```
-
-### 보고서 유형
-- 주간 보고서: {is_weekly}
-- 팀 보고서: {is_team}
-
-### 보고서 날짜
-{report_date}
-
 ## 보고서 생성 지침
+### 1. 보고서 기본 구조
 
-1. 보고서 유형에 따라 적절한 형식과 내용을 구성하세요:
-   - 일일 보고서: 당일 활동과 성과에 집중
-   - 주간 보고서: 주간 진행 상황과 다음 주 계획 포함
-   - 개인 보고서: 개인 활동과 성과에 집중
-   - 팀 보고서: 팀 전체의 활동과 협업에 집중
+- "report_title" 필드에는 작성자 이름과 날짜가 들어갑니다. 예: "홍길동님의 2025-06-05 일일 업무 보고서"
+- "info" 필드는 업무 개요와 핵심 지표를 포함합니다.
+  - "date": 보고서 작성 날짜 (예: 2025-06-05)
+  - "total_tasks": 오늘 처리한 업무 총 개수
+  - "completed_tasks": 완료한 업무 수
+  - "in_progress_tasks": 진행 중인 업무 수
+  - "daily_achievement": 오늘의 주요 성과를 한 문장으로 요약
+  - "key_metrics": 코딩 시간, 참석한 회의 수, 작성한 문서 수 등 업무 관련 핵심 수치 포함
 
-2. 다음 섹션을 포함하여 보고서를 구성하세요:
-   - 요약: 전체 상황을 간략히 요약
-   - 작업 진행 상황: WBS 기준 작업 진행 현황
-   - 개발 활동: Git 커밋 기반 개발 활동 요약
-   - 커뮤니케이션: 이메일 및 Teams 기반 커뮤니케이션 요약
-   - 문서 현황: 프로젝트 문서 현황 요약
-   - 이슈 및 리스크: 식별된 문제점과 리스크
-   - 다음 계획: 향후 계획 및 중점 사항
+---
 
-3. 보고서는 마크다운 형식으로 작성하세요.
+### 2. daily_report (일일 업무 진행 내용)
 
-## 응답 요구사항
+- "title"은 "📌 일일 업무 진행 내용"으로 고정합니다.
+- "content"는 업무 진행 상황을 설명하는 여러 문단으로 구성됩니다.
+- 각 문단은 다음을 포함해야 합니다:
+  - "text": 자연스럽고 간결한 문장으로 업무 내용을 설명
+  - 업무명과 task_id는 "**"로 강조하며 괄호 안에 task_id를 포함합니다. 예: **이상 탐지 알고리즘 성능 개선(WBS-231)**
+  - "evidence":  **기존 분석 결과(docs_analysis, teams_analysis, git_analysis, email_analysis)의 evidence 내용을 그대로 인용**
+    - "title": 문서명 또는 회의명
+    - "content": 문서나 회의의 핵심 내용 요약 
+    - "llm_reference":
+        - 예시: docs_analysis의 matched_tasks[0].evidence[0].content 내용을 그대로 가져오기
+        - 예시: teams_analysis의 unmatched_tasks[1].evidence[0].content 내용을 그대로 가져오기
+        - 예시: git_analysis의 matched_tasks[0].evidence[0].content 내용을 그대로 가져오기
+
+- 업무 완료, 진행 중 상황, 회의 내용, 특이 사항 등을 포함해 전체 업무 흐름을 알기 쉽게 작성하세요.
+
+---
+
+### 3. daily_reflection (오늘의 회고 및 개선점)
+
+- "title"은 "🔍 오늘의 회고 및 개선점"으로 고정합니다.
+- "content"는 리스트 형식으로, 업무 중 느낀 점과 개선할 점, 향후 계획을 적습니다.
+- 긍정적인 점과 아쉬운 점, 구체적인 개선 방안까지 균형 있게 서술하세요.
+
+### 응답 요구사항
 
 - 보고서는 객관적이고 데이터에 기반해야 합니다.
 - 모든 수치는 정확해야 합니다.
@@ -65,62 +82,106 @@
 - 데이터가 부족한 경우, 해당 섹션에 "데이터 없음" 또는 "해당 없음"으로 표시하세요.
 
 ## 보고서 템플릿
+DAILY_REPORT_PROMPT = """
+다음 정보를 바탕으로 {user_name}님의 {target_date} 업무 진행 현황에 대한 종합 보고서를 JSON 형식으로 작성해주세요.
 
-```markdown
-# {report_date} {보고서 유형} 보고서
+다음 JSON 구조로 **Daily 보고서 형식의 완전한 보고서 데이터**를 작성해주세요:
 
-## 요약
-
-[전체 상황 요약]
-
-## 작업 진행 상황
-
-### 완료된 작업
-- [작업 목록]
-
-### 진행 중인 작업
-- [작업 목록]
-
-### 지연된 작업
-- [작업 목록]
-
-## 개발 활동
-
-### 주요 커밋
-- [주요 커밋 목록]
-
-### 코드 변경 통계
-- [변경 통계]
-
-## 커뮤니케이션
-
-### 주요 논의 사항
-- [주요 논의 목록]
-
-### 의사결정 사항
-- [의사결정 목록]
-
-## 문서 현황
-
-### 업데이트된 문서
-- [문서 목록]
-
-### 필요한 문서
-- [문서 목록]
-
-## 이슈 및 리스크
-
-### 현재 이슈
-- [이슈 목록]
-
-### 잠재적 리스크
-- [리스크 목록]
-
-## 다음 계획
-
-### 우선순위 작업
-- [작업 목록]
-
-### 중점 사항
-- [중점 사항 목록]
+```json
+{{
+  "report_title": "홍길동님의 2025-06-05 일일 업무 보고서",
+  "info": {{
+    "date": "{target_date}",
+    "total_tasks": 5,
+    "completed_tasks": 2,
+    "in_progress_tasks": 2,
+    "daily_achievement": "AI 기반 이상 탐지 알고리즘 개선 완료 및 문서화",
+    "key_metrics": {{
+      "coding_time": "6시간",
+      "meetings_attended": 2,
+      "documents_created": 1
+    }}
+  }},
+  "daily_report": {{
+    "title": "📌 일일 업무 진행 내용",
+    "summray": "오늘은 총 5개의 업무 항목 중 2건을 완료하고 2건을 진행 중입니다.",
+    "contents": [
+      {
+        "text": "**이상 탐지 알고리즘 성능 개선(WBS-231)** 작업을 완료하였습니다. 기존 F1-score 0.82에서 0.94로 향상되었으며, 개선 과정 및 실험 결과는 문서로 정리되어 공유되었습니다.",
+        "evidence": [
+           {
+              "title": "2025-06-05_AnomalyDetection_ModelRefactor.docx",
+              "content": "성능 개선 결과 및 테스트 비교표 포함",
+              "LLM_reference": "docs_analysis.section[3]"
+           },
+           {
+              "title": "2025-06-05_AnomalyDetection_ModelRefactor.docx",
+              "content": "성능 개선 결과 및 테스트 비교표 포함",
+              "LLM_reference": "docs_analysis.section[3]"
+           }
+        ]
+      },
+      {
+        "text": "**데이터 파이프라인 안정성 점검(WBS-234)** 작업에서는 로그 누락 현상을 중심으로 데이터 흐름을 추적했습니다. 로그 누락이 발생한 시점을 중심으로 전처리 모듈을 재실행하여 오류 발생 조건을 파악하고 있습니다.",
+        "evidence": [
+           {
+              "title": "2025-06-05_AnomalyDetection_ModelRefactor.docx",
+              "content": "성능 개선 결과 및 테스트 비교표 포함",
+              "LLM_reference": "docs_analysis.section[3]"
+           },
+           {
+              "title": "2025-06-05_AnomalyDetection_ModelRefactor.docx",
+              "content": "성능 개선 결과 및 테스트 비교표 포함",
+              "LLM_reference": "docs_analysis.section[3]"
+           }
+        ]
+      },
+      {
+        "text": "**사용자 이탈 원인 분석(AD-HOC-001)**에 착수하여 Google Analytics 로그를 분석한 결과, 특정 단계에서 이탈률이 급증하는 현상을 포착했습니다. 이탈 지점을 시각화한 후 대시보드 형태로 공유할 수 있도록 초안을 구성했습니다.",
+        "evidence": [
+           {
+              "title": "2025-06-05_AnomalyDetection_ModelRefactor.docx",
+              "content": "성능 개선 결과 및 테스트 비교표 포함",
+              "LLM_reference": "docs_analysis.section[3]"
+           },
+           {
+              "title": "2025-06-05_AnomalyDetection_ModelRefactor.docx",
+              "content": "성능 개선 결과 및 테스트 비교표 포함",
+              "LLM_reference": "docs_analysis.section[3]"
+           }
+        ]
+      },
+      {
+        "text": "오전 팀 싱크 회의에서는 이상 탐지 알고리즘 개선 결과를 팀원들과 공유하고, 데이터 파이프라인 관련 이슈에 대해 기술적 논의를 진행하였습니다.",
+        "evidence": [
+           {
+              "title": "2025-06-05_AnomalyDetection_ModelRefactor.docx",
+              "content": "성능 개선 결과 및 테스트 비교표 포함",
+              "LLM_reference": "docs_analysis.section[3]"
+           }
+        ]
+      }
+    ]
+  },
+  "daily_reflection": {
+    "title": "🔍 오늘의 회고 및 개선점",
+    "content": [
+      "이상 탐지 모델 성능 개선은 성공적이었으나, 데이터 파이프라인의 로그 누락 문제를 조기에 발견하지 못해 일부 작업에 지연이 발생했습니다.",
+      "다음부터는 데이터 흐름 모니터링을 자동화하여 초기 이상 징후를 빠르게 감지하는 방안을 마련할 필요가 있습니다.",
+      "사용자 이탈 분석 작업은 유의미한 인사이트를 도출하였으나, 분석 대시보드 완성도를 높이기 위해 시각화 도구 활용을 강화할 계획입니다.",
+      "팀 내 커뮤니케이션 측면에서는 문서화와 시각 자료 공유가 원활히 진행되어, 협업 효율이 증가한 점이 긍정적이었습니다."
+    ]
+  }
+}
+}}
 ```
+
+**중요 사항:**
+1. 모든 내용은 제공된 {target_date} 당일의 분석 데이터를 기반으로 작성하세요
+2. 각 작업(task)의 content는 **Daily 보고서 형식**으로 구체적이고 상세하게 작성하세요
+3. 시간대별 활동, 구체적 성과, 다음 계획 등 일일 보고서에 필요한 요소를 포함하세요
+4. evidence의 source는 "docs", "teams" 중 하나여야 하며, 당일 활동과 직접 연관된 증거만 포함하세요
+5. **evidence의 llm_reference에는 분석 결과에서 실제로 참조한 구체적인 문장이나 내용을 인용해주세요** (예: "김세은 updated the Status on this issue: YAX-566" 또는 "API 설계문서 3페이지 인증 엔드포인트 정의 부분")
+6. Daily reflection 섹션을 통해 당일 업무에 대한 개인적 성찰과 다음 계획을 포함하세요
+7. 완전한 JSON 형식으로 출력하세요 (추가 설명이나 마크다운 없이)
+"""
