@@ -46,7 +46,7 @@ def read_wbs_to_json_text(wbs_file_path: str) -> str:
         print(f"WBS 파일 (시트: {excel_file.sheet_names[0]}) 상위 3개 행:\n{df.head(3)}")
         print("WBS 파일 읽기 완료. JSON으로 변환 중...")
         
-        wbs_json = df.to_json(orient='records', indent=2, force_ascii=False, date_format='iso')
+        wbs_json = df.to_json(orient='records', indent=None, force_ascii=False, date_format='iso')
         return wbs_json
     except FileNotFoundError:
         print(f"오류: WBS 파일을 읽을 수 없습니다 - {wbs_file_path}")
