@@ -3,9 +3,7 @@
 **분석 대상:**
 * 담당자 Git 이메일 (user_id로 사용): {author_email}
 * 담당자 WBS 상 이름: {wbs_assignee_name}
-* Git 저장소: {repo_name}
 * 분석 기준일: {target_date_str}
-* 분석 요청 시점 (ISO 형식 UTC): {current_time_iso}
 
 **제공된 정보:**
 

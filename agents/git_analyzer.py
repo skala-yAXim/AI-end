@@ -1,171 +1,144 @@
-# -*- coding: utf-8 -*-
-import json
+# agents/git_analyzer.py
 import os
 import sys
+import json
 from datetime import datetime, timezone
 from typing import List, Dict, Optional, Any
-from openai import OpenAI
 
-# from core.utils import Settings # 생성자에서 받음
-# tools.wbs_retriever_tool은 WBSDataHandler 내부에서 사용됨
+from qdrant_client import QdrantClient
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import JsonOutputParser
+from langchain.prompts import PromptTemplate
 
-
-PROMPT_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "prompts", "git_analyze_prompt.md"))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from core import config
+from core.state_definition import LangGraphState
+from tools.vector_db_retriever import retrieve_git_activities
 
 class GitAnalyzerAgent:
-    def __init__(self, settings, project_id_for_wbs: str, 
-                 git_data_preprocessor, wbs_data_handler): # WBSDataHandler 주입
-        """
-        GitAnalyzerAgent를 초기화합니다.
-        Args:
-            settings (Settings): 설정 객체.
-            project_id_for_wbs (str): WBS 데이터를 조회할 프로젝트 ID (WBSDataHandler로 전달).
-            git_data_preprocessor (GitDataPreprocessor): Git 데이터 전처리 객체.
-            wbs_data_handler (WBSDataHandler): WBS 데이터 처리 객체.
-        """
-        self.settings = settings
-        # project_id_for_wbs는 WBSDataHandler가 상태를 통해 받으므로, agent에 직접 저장할 필요는 없을 수 있음
-        # 하지만, 다른 용도로 필요하다면 유지 가능
-        self.project_id_for_wbs_context = project_id_for_wbs 
-        self.git_data_preprocessor = git_data_preprocessor
-        self.wbs_data_handler = wbs_data_handler # WBS 핸들러 인스턴스 저장
-        self.llm_client = OpenAI(api_key=self.settings.OPENAI_API_KEY)
-
-    # _format_wbs_tasks_for_llm 메소드는 WBSDataHandler로 이동했으므로 여기서 삭제
-
-    def _prepare_git_data_for_llm_prompt(self, git_events: Dict[str, List[Dict]], target_date_str: Optional[str]) -> str:
-        """필터링된 Git 데이터를 LLM 프롬프트용 문자열로 포맷합니다. (기존 코드 유지)"""
-        date_info = f"({target_date_str} 기준)" if target_date_str else "(최근 활동 기준)"
-        prompt_parts = [f"### Git 활동 기록 {date_info}:"]
-
-        if git_events.get("commits"):
-            prompt_parts.append("\n**최근 커밋:**")
-            for commit in git_events["commits"][:15]: 
-                commit_date_obj = datetime.fromisoformat(commit['date'].replace("Z", "+00:00"))
-                commit_date_formatted = commit_date_obj.strftime('%Y-%m-%d %H:%M')
-                prompt_parts.append(f"- SHA: {commit['sha'][:7]} (작성자: {commit.get('author_email_resolved', 'N/A')}, 날짜: {commit_date_formatted})\n  메시지: {commit['message']}")
-        else:
-            prompt_parts.append(f"\n**최근 커밋:** {date_info} 내역 없음")
-
-        if git_events.get("pull_requests"):
-            prompt_parts.append("\n**관련 Pull Requests:**")
-            for pr in git_events["pull_requests"][:10]: 
-                pr_date_obj = datetime.fromisoformat(pr['created_at'].replace("Z", "+00:00"))
-                pr_date_formatted = pr_date_obj.strftime('%Y-%m-%d %H:%M')
-                prompt_parts.append(f"- PR #{pr['number']} (요청자: {pr.get('user_email_resolved', 'N/A')}): {pr['title']} ({pr_date_formatted}, 상태: {pr['state']})")
-                if pr.get('content'):
-                    pr_content_summary = pr['content'][:200].strip().replace('\r\n', ' ').replace('\n', ' ')
-                    prompt_parts.append(f"  내용 요약: {pr_content_summary}...")
-        else:
-            prompt_parts.append(f"\n**관련 Pull Requests:** {date_info} 내역 없음")
+    def __init__(self, qdrant_client: QdrantClient):
+        self.qdrant_client = qdrant_client
         
-        return "\n".join(prompt_parts)
-
-    def analyze(
-        self,
-        git_data_json_path: str, 
-        author_email_for_report: str,
-        wbs_assignee_name: str,
-        repo_name: str,         
-        target_date_str: Optional[str] = None 
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Git 데이터와 WBS 데이터를 분석하여 LLM을 통해 종합적인 리포트를 생성합니다.
-        """
-        print(f"\n--- Git Analyzer Agent Invoked ---")
-        print(f"Report for User ID (Author Email): {author_email_for_report}, WBS Assignee: {wbs_assignee_name}, Repo: {repo_name}, Target Date: {target_date_str or 'All Recent'}")
-
-        # 초기 상태(state) 구성
-        current_state = {
-            "git_data_json_path": git_data_json_path,
-            "author_email_for_report_context": author_email_for_report, # Git 전처리 시 fallback 용도
-            "repo_name": repo_name,
-            "target_date_str": target_date_str,
-            "project_id_for_wbs": self.project_id_for_wbs_context, # WBS 핸들러용
-            "wbs_assignee_name": wbs_assignee_name # WBS 핸들러용
-        }
-
-        # 1. Git 데이터 전처리 (GitDataPreprocessor 호출)
-        current_state = self.git_data_preprocessor(current_state)
-        
-        if current_state.get("preprocessing_status") != "success":
-            error_message = current_state.get("preprocessing_error_message", "Unknown Git preprocessing error")
-            print(f"Git data preprocessing failed: {error_message}")
-            # 오류 발생 시 분석 중단 또는 부분적 분석 진행 결정 가능
-            return None # 여기서는 중단
-        
-        filtered_git_events = current_state.get("filtered_git_events", {"commits": [], "pull_requests": []})
-        if not filtered_git_events or (not filtered_git_events.get("commits") and not filtered_git_events.get("pull_requests")):
-            print(f"No Git events found for repo '{repo_name}' and date '{target_date_str}'. Analysis might be limited.")
-            # 빈 Git 정보로 계속 진행할 수 있음
-
-        # 2. WBS 데이터 조회 및 포맷팅 (WBSDataHandler 호출)
-        current_state = self.wbs_data_handler(current_state)
-
-        if current_state.get("wbs_handling_status") != "success":
-            error_message = current_state.get("wbs_handling_error_message", "Unknown WBS data handling error")
-            print(f"WBS data handling failed: {error_message}")
-            # 오류 발생 시 분석 중단 또는 부분적 분석 진행 결정 가능
-            # WBS 정보 없이 Git 정보만으로 분석을 시도할 수도 있음
-            # 여기서는 WBS 정보가 없어도 LLM 프롬프트에는 "정보 없음"으로 전달됨
-        
-        wbs_tasks_str_for_llm = current_state.get("wbs_tasks_str_for_llm", "WBS 정보를 가져오는 데 실패했습니다.")
-        
-        # 3. LLM 프롬프트 준비
-        git_info_str_for_llm = self._prepare_git_data_for_llm_prompt(filtered_git_events, target_date_str)
-        current_time_iso = datetime.now(timezone.utc).isoformat()
-
-        try:
-            with open(PROMPT_FILE_PATH, 'r', encoding='utf-8') as f:
-                prompt_template = f.read()
-        except FileNotFoundError:
-            print(f"Error: Prompt file not found at {PROMPT_FILE_PATH}")
-            return None
-        
-        prompt = prompt_template.format(
-            author_email=author_email_for_report, 
-            wbs_assignee_name=wbs_assignee_name,
-            repo_name=repo_name,
-            target_date_str=target_date_str if target_date_str else "전체 최근 활동",
-            current_time_iso=current_time_iso,
-            git_info_str_for_llm=git_info_str_for_llm,
-            wbs_tasks_str_for_llm=wbs_tasks_str_for_llm # WBSDataHandler로부터 받은 포맷된 문자열
+        self.llm_client = ChatOpenAI(
+            model=config.DEFAULT_MODEL, temperature=0.1,
+            openai_api_key=config.OPENAI_API_KEY, max_tokens=2500
         )
+        # self.wbs_data_handler 제거
 
-        print("\n--- Sending prompt to LLM (details in prompt file) ---")
-        # print(prompt) # 디버깅 시 프롬프트 내용 확인
-        print("--- End of prompt ---")
-
-        # 4. LLM 호출 및 결과 처리 (기존 코드 유지)
+        prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "git_analyze_prompt.md")
         try:
-            response = self.llm_client.chat.completions.create(
-                model=self.settings.OPENAI_MODEL_NAME, 
-                messages=[
-                    {"role": "system", "content": "You are a highly capable AI assistant specialized in analyzing project data and generating reports in a precise JSON format according to the user's instructions."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"},
-                temperature=0.1,
-            )
-            
-            llm_output_content = response.choices[0].message.content
-            if llm_output_content:
-                analysis_result = json.loads(llm_output_content)
-                print("\n--- LLM Analysis Result (JSON from LLM) ---")
-                print(json.dumps(analysis_result, indent=2, ensure_ascii=False))
-                
-                if not isinstance(analysis_result, dict) or not all(key in analysis_result for key in ["summary", "matched_tasks", "unmatched_tasks", "unassigned_git_activities"]):
-                    print("Warning: LLM output might not fully match the requested JSON structure from the prompt's instructions.")
-                
-                return analysis_result
-            else:
-                print("Error: LLM returned empty content.")
-                return None
+            with open(prompt_file_path, 'r', encoding='utf-8') as f: 
+                prompt_template_str = f.read()
+            # 예상 프롬프트 변수: {author_identifier}, {wbs_assignee_name}, {target_date_str}, {git_info_str_for_llm}, {wbs_tasks_str_for_llm}
+            self.prompt = PromptTemplate.from_template(prompt_template_str)
+        except FileNotFoundError:
+            print(f"GitAnalyzerAgent: 오류 - 프롬프트 파일을 찾을 수 없습니다: {prompt_file_path}")
+            self.prompt_template_str = """
+사용자 식별자 {author_identifier} (WBS 담당자명: {wbs_assignee_name})의 모든 레포지토리에 대한 Git 활동({git_info_str_for_llm})을 {target_date_str} 기준으로 분석하고, 
+관련 WBS 작업({wbs_tasks_str_for_llm})과의 연관성을 파악하여 JSON 형식으로 상세 리포트를 작성해주세요. 
+리포트에는 주요 활동 요약, WBS 매칭된 작업, 매칭되지 않은 작업, 할당되지 않은 Git 활동 목록을 포함해야 합니다.
+"""
+            self.prompt = PromptTemplate.from_template(self.prompt_template_str)
+        
+        self.parser = JsonOutputParser()
 
-        except json.JSONDecodeError as je:
-            print(f"Error decoding LLM JSON response: {je}")
-            print(f"LLM Raw Output (first 500 chars):\n{llm_output_content[:500] if llm_output_content else 'No content'}") 
-            return None
+    def _prepare_git_data_for_llm(self, retrieved_git_activities: List[Dict], target_date_str: Optional[str]) -> str:
+        date_info = f"({target_date_str} 기준)" if target_date_str else "(최근 활동 기준)"
+        display_count = min(len(retrieved_git_activities), 30)  # 최대 30건만 출력
+
+        parts = [f"### 전체 Git 활동 요약 {date_info} (최대 {display_count}건):"]
+
+        if display_count == 0:
+            parts.append("활동 내역이 없습니다.")
+            return "\n".join(parts)
+
+        for item in retrieved_git_activities[:display_count]:
+            meta = item.get("metadata", {})
+            repo = meta.get("repo_name", "N/A")
+            sha_or_id = meta.get("sha", meta.get("id", "N/A"))[:7]
+            author = meta.get("author", "N/A")
+            event_date = meta.get("date", "N/A")
+            event_type = meta.get("type", "N/A")
+            message = item.get("page_content", meta.get("message", "N/A"))[:300]
+
+            parts.append(f"- [{event_type}] 레포: {repo}, ID: {sha_or_id} (작성자: {author}, 날짜: {event_date})")
+            parts.append(f"  메시지: {message}")
+
+        return "\n".join(parts)
+
+
+    def _analyze_git_internal(
+    self, 
+    git_author_id: str,  # Git 분석에 사용된 실제 ID (github_email or user_id)
+    wbs_user_name: Optional[str],  # WBS 컨텍스트 및 LLM 프롬프트용 user_name
+    wbs_data: Optional[Dict], 
+    target_date: str, 
+    retrieved_activities: List[Dict]  # 단일 List로 처리됨
+    ) -> Dict[str, Any]:
+        total_count = len(retrieved_activities)
+        print(f"GitAnalyzerAgent: 사용자 식별자 '{git_author_id}' Git 활동 분석. 총 {total_count}건 (대상일: {target_date}).")
+        
+        if total_count == 0:
+            print(f"GitAnalyzerAgent: 사용자 식별자 '{git_author_id}'에 대한 분석할 Git 활동이 없습니다 (대상일: {target_date}).")
+            return {
+                "summary": "분석할 관련 Git 활동을 찾지 못했습니다.",
+                "matched_tasks": [],
+                "unmatched_tasks": [],
+                "unassigned_git_activities": [],
+                "error": "No Git activities to analyze"
+            }
+
+        wbs_data_str = json.dumps(wbs_data, ensure_ascii=False, indent=2) if wbs_data else "WBS 정보 없음"
+        git_data_str = self._prepare_git_data_for_llm(retrieved_activities, target_date)
+
+        chain = self.prompt | self.llm_client | self.parser
+
+        try:
+            llm_input = {
+                "author_email": git_author_id,
+                "wbs_assignee_name": wbs_user_name,
+                "target_date_str": target_date,
+                "git_info_str_for_llm": git_data_str,
+                "wbs_tasks_str_for_llm": wbs_data_str
+            }
+            analysis_result = chain.invoke(llm_input)
+            return analysis_result
         except Exception as e:
-            print(f"Error during LLM interaction: {e}")
-            return None
+            print(f"GitAnalyzerAgent: LLM Git 분석 중 오류: {e}")
+            return {"summary": "Git 활동 분석 중 오류 발생", "error": str(e)}
+
+    def analyze_git(self, state: LangGraphState) -> LangGraphState:
+        git_identifier = state.get("github_email", state.get("user_id"))
+        print(f"GitAnalyzerAgent: 사용자 식별자 '{git_identifier}' Git 활동 분석 시작 (날짜: {state.get('target_date')})...")
+        
+        user_name_for_context = state.get("user_name")
+        target_date = state.get("target_date")
+        wbs_data = state.get("wbs_data")
+
+        analysis_result = {} # 기본값 초기화
+        if not git_identifier:
+            error_msg = "Git 분석용 식별자(github_email/user_id) 누락"; print(f"GitAnalyzerAgent: {error_msg}")
+            analysis_result = {"error": error_msg, "summary": "사용자 식별자 누락"}
+        elif not target_date: # Git 활동은 날짜 필터링 필수
+            error_msg = "GitAnalyzerAgent: target_date가 State에 제공되지 않아 분석을 건너뜁니다."
+            print(error_msg)
+            analysis_result = {"error": error_msg, "summary": "대상 날짜 누락"}
+        else:
+            retrieved_dict = retrieve_git_activities(
+                qdrant_client=self.qdrant_client, 
+                git_author_identifier=git_identifier, 
+                target_date_str=target_date
+                # scroll_limit은 retriever 내부 기본값 사용 또는 여기서 지정
+            )
+
+            state["retrieved_git_activities"] = retrieved_dict # 필요시 저장
+
+            analysis_result = self._analyze_git_internal(
+                git_identifier, user_name_for_context, wbs_data, target_date, retrieved_dict
+            )
+        
+        state["git_analysis_result"] = analysis_result
+        return state
+
+    def __call__(self, state: LangGraphState) -> LangGraphState:
+        return self.analyze_git(state)
