@@ -43,16 +43,11 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from core.utils import Settings
-# VectorDBHandler 임포트 경로는 실제 프로젝트 구조에 맞게 확인 필요
-# 예: from agents.wbs_analyze_agent.core.vector_db import VectorDBHandler
-# 현재는 사용자가 제공한 경로를 기반으로 가정합니다.
-from agents.wbs_analyze_agent.core.vector_db import VectorDBHandler 
 from qdrant_client import models # Qdrant 필터 사용을 위해 추가
 
 def get_project_task_items_tool(
     project_id: str,
     db_base_path: Optional[str] = None,
-    collection_prefix: str = "wbs_data",
     limit_results: Optional[int] = None # Qdrant의 limit은 scroll API에서 약간 다르게 동작할 수 있음
 ) -> List[Dict]:
     """
@@ -69,7 +64,6 @@ def get_project_task_items_tool(
         # VectorDBHandler 초기화 시 embedding_api_key 인자 제거
         db_handler = VectorDBHandler(
             db_base_path=db_path_to_use,
-            collection_name_prefix=collection_prefix,
             project_id=project_id
             # sentence_transformer_model_name은 VectorDBHandler의 기본값을 사용하거나,
             # 필요시 app_settings 등에서 가져와 명시적으로 전달할 수 있습니다.
@@ -142,7 +136,6 @@ def get_tasks_by_assignee_tool(
     project_id: str,
     assignee_name_to_filter: str,
     db_base_path: Optional[str] = None,
-    collection_prefix: str = "wbs_data",
     initial_fetch_limit: Optional[int] = None
 ) -> List[Dict]:
     """
@@ -158,7 +151,6 @@ def get_tasks_by_assignee_tool(
     all_project_tasks = get_project_task_items_tool(
         project_id=project_id,
         db_base_path=db_base_path,
-        collection_prefix=collection_prefix,
         limit_results=initial_fetch_limit
     )
 
@@ -201,7 +193,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-    example_project_id = "project_qdrant_005" 
+    example_project_id = "project_sample_001" 
     example_db_path = None 
     example_assignee_to_filter = "김용준" 
 
@@ -211,7 +203,6 @@ if __name__ == "__main__":
         project_id=example_project_id,
         assignee_name_to_filter=example_assignee_to_filter,
         db_base_path=example_db_path,
-        collection_prefix="wbs_data",
         initial_fetch_limit=None
     )
 
