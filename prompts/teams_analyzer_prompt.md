@@ -12,6 +12,11 @@
 - 사용자 ID: {user_id}
 - 사용자 이름: {user_name}
 
+### 분석 대상 문서 데이터
+```json
+{posts}
+```
+
 ### WBS 작업 데이터
 ```json
 {wbs_data}
