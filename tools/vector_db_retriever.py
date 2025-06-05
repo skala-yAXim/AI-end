@@ -12,7 +12,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from core import config 
 
 # scroll API 사용 시 한 번에 가져올 기본 최대 문서 수
-DEFAULT_SCROLL_LIMIT = 100
+DEFAULT_SCROLL_LIMIT = 10
 
 def _format_qdrant_points(points: List[Any], field_name: str = "page_content") -> List[Dict]:
     """ 구조 변환 : Qdrant PointStruct 리스트를 Dict 리스트로 변환. """
@@ -79,14 +79,9 @@ def retrieve_documents(
     """
     print(f"VectorDBRetriever: '{config.COLLECTION_DOCUMENTS}' 컬렉션 scroll 검색 중 (author: {user_id}, limit: {scroll_limit})")
     
-    must_conditions = []
-    author_filter = Filter(
-        must=[
-            FieldCondition(key="author", match=MatchValue(value=user_id)) # 실제 author 필드명
-        ]
-    )
-    must_conditions.append(author_filter)
-
+    must_conditions = [
+        FieldCondition(key="author", match=MatchValue(value=user_id))
+    ]
     # date_filter_condition = _create_date_filter(target_date_str, "metadata.date") 
     # if date_filter_condition:
     #     must_conditions.append(date_filter_condition)
@@ -122,14 +117,11 @@ def retrieve_emails(
     필터: metadata.sender 또는 metadata.receiver 중 하나가 user_id와 일치. metadata.date로 날짜 필터링.
     """
     print(f"VectorDBRetriever: '{config.COLLECTION_EMAILS}' 컬렉션 scroll 검색 중 (user_id: {user_id}, 날짜: {target_date_str or '전체'}, limit: {scroll_limit})")
-    must_conditions = []
     
-    email_user_filter = Filter(
-        should=[ # Qdrant에 저장된 실제 발신자/수신자 필드명 사용
-            FieldCondition(key="author", match=MatchValue(value=user_id)),
-        ]
-    )
-    must_conditions.append(email_user_filter)
+    must_conditions = [
+        FieldCondition(key="author", match=MatchValue(value=user_id))
+    ]
+
     
     # date_filter_condition = _create_date_filter(target_date_str, "metadata.date") 
     # if date_filter_condition:

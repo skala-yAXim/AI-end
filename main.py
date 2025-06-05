@@ -16,7 +16,7 @@ def run_analysis_workflow():
     load_dotenv()
     print("환경 변수 로드 시도 완료.")
 
-    input_user_id = " kpro@yasim2861.onmicrosoft.com" 
+    input_user_id = "kpro@yasim2861.onmicrosoft.com" 
     input_user_name = "노건표" 
     input_github_email = "kproh99@naver.com" 
     input_target_date = "2025-06-02" 
