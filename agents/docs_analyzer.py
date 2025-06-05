@@ -1,157 +1,151 @@
 # agents/docs_analyzer.py
-# LangGraph Agent용 Docs 분석기 (Qdrant + LLM 기반)
 import os
 import sys
+from typing import Dict, Any, Optional
+
 from qdrant_client import QdrantClient
 from langchain_openai import ChatOpenAI
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain_qdrant import QdrantVectorStore
+# from langchain_core.embeddings import Embeddings # retriever 직접 사용 안 함
+# from langchain_community.embeddings import HuggingFaceEmbeddings # retriever 직접 사용 안 함
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from qdrant_client.models import Filter, FieldCondition, MatchAny
-from typing import Dict, Any, Optional
 
-# Add parent directory to path for config import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from config import OPENAI_API_KEY, DEFAULT_MODEL, PROMPTS_DIR, DATA_DIR, EMBEDDING_MODEL, DOCS_COLLECTION
-
-class State(Dict):
-    user_id: Optional[str]
-    user_name: Optional[str]
-    target_date: Optional[str]
-    wbs_data: Optional[Dict]
-    docs_analysis_result: Optional[Dict]
+from core import config 
+from core.state_definition import LangGraphState 
+from tools.vector_db_retriever import retrieve_documents 
 
 class DocsAnalyzer:
-    """LangGraph Agent용 Docs 분석기"""
-    
-    def __init__(self, qdrant_vectorstore=None):
-        # Qdrant DB 초기화
-        if qdrant_vectorstore is None:
-            client = QdrantClient(host="localhost", port=6333)
-            self.db = QdrantVectorStore(
-                client=client,
-                collection_name=DOCS_COLLECTION,
-                embedding=HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-            )
-        else:
-            self.db = qdrant_vectorstore
+    def __init__(self, qdrant_client: QdrantClient): # embeddings_model 제거
+        self.qdrant_client = qdrant_client
+        # self.embeddings_model = embeddings_model # 제거
             
-        # LLM 초기화
         self.llm = ChatOpenAI(
-            model=DEFAULT_MODEL,
+            model=config.DEFAULT_MODEL,
             temperature=0.2,
-            max_tokens=2000
+            max_tokens=2000,
+            openai_api_key=config.OPENAI_API_KEY
         )
         
-        # 프롬프트 템플릿 로드
-        with open(os.path.join(PROMPTS_DIR, "docs_analyze_prompt.md"), "r", encoding="utf-8") as f:
-            self.prompt_template_str = f.read()
-        
-        self.prompt = PromptTemplate.from_template(self.prompt_template_str)
+        prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "docs_analyze_prompt.md")
+        try:
+            with open(prompt_file_path, "r", encoding="utf-8") as f:
+                prompt_template_str = f.read()
+            self.prompt = PromptTemplate.from_template(prompt_template_str)
+        except FileNotFoundError:
+            print(f"DocsAnalyzer: 오류 - 프롬프트 파일을 찾을 수 없습니다: {prompt_file_path}")
+            self.prompt = PromptTemplate.from_template(
+                "사용자 ID {user_id} (이름: {user_name})의 다음 문서들을 분석하여 WBS({wbs_data})와 관련된 주요 내용을 요약하고, 관련 작업 매칭 결과를 JSON으로 반환해주세요:\n\n{documents}\n\n분석 기준일: {target_date}"
+            ) # user_id 사용 명시
         self.parser = JsonOutputParser()
+    
+    def _analyze_docs_data_internal(
+        self,
+        user_id: str,
+        user_name: Optional[str],
+        target_date: str,
+        wbs_data: Optional[dict],
+        retrieved_docs_list: list
+    ) -> Dict[str, Any]:
+        print(f"DocsAnalyzer: 사용자 ID '{user_id}'의 문서 {len(retrieved_docs_list)}개 분석 시작.")
+        
+        # 문서가 아예 없으면 요약 없이 종료
+        if not retrieved_docs_list:
+            return {
+                "user_id": user_id,
+                "user_name": user_name or user_id,
+                "date": target_date,
+                "type": ["docs"],
+                "source_collection": config.COLLECTION_DOCUMENTS,
+                "matched_tasks": [],
+                "unmatched_tasks": [],
+                "summary": "분석할 관련 문서를 찾지 못했습니다.",
+                "error": None,
+                "retrieved_count": 0
+            }
 
-    def analyze_docs_data(
-            self,
-            user_id: str,
-            user_name: str,  
-            target_date: str, 
-            wbs_data: dict
-        ) -> Dict[str, Any]:
-        """
-        문서 데이터를 분석하여 특정 사용자의 문서 기반 업무 수행을 요약합니다.
-        
-        :param user_id: 분석할 사용자 ID
-        :param user_name: 사용자 이름 (문서 작성자명과 매칭)  
-        :param target_date: 분석 기준 날짜 (YYYY-MM-DD 형식)
-        :param wbs_data: WBS 작업 데이터
-        :return: 분석 결과 딕셔너리
-        """
+        # 문서 내용을 텍스트로 정리
+        documents_text_parts = []
+        for doc_item in retrieved_docs_list:
+            metadata = doc_item.get("metadata", {})
+            filename = metadata.get("filename", metadata.get("title", "Unknown Document"))
+            title = doc_item.get("title", "")
+            author = metadata.get("author", user_id)  # 작성자 없으면 user_id 사용
+            
+            documents_text_parts.append(f"파일명: {filename}\n작성자: {author}\n제목:\n{title}...\n---")
 
-        # 문서는 작성자 기준으로 필터링 (날짜 제한 없음)
-        # author 필드가 리스트일 수 있으므로 다양한 경우 고려
-        filter_ = Filter(
-                should=[  # OR 조건으로 변경
-                    FieldCondition(
-                        key="metadata.author",
-                        match=MatchAny(any=[user_name, user_id])
-                    ),
-                    FieldCondition(
-                        key="metadata.author",
-                        match=MatchAny(any=[f'["{user_name}"]', f'["{user_id}"]'])  # 리스트 형태
-                    ),
-                    FieldCondition(
-                        key="metadata.filename",
-                        match=MatchAny(any=[user_name])  # 파일명에서도 검색
-                    )
-                ]
-            )
-        
-        # 사용자 관련 문서 검색 (LangChain retriever 사용)
-        retriever = self.db.as_retriever(search_kwargs={"filter": filter_, "k": 20})
-        docs = retriever.invoke(f"사용자 {user_name}의 문서")
-        
-        print(f"사용자 '{user_name}' ({user_id})의 문서 {len(docs)}개 발견")
-        
-        # 문서 내용 결합
-        documents_text = "\n\n".join([
-            f"파일명: {doc.metadata.get('filename', 'Unknown')}\n내용: {doc.page_content}"
-            for doc in docs
-        ])
-        
-        # Chain 생성 (Agent 대신)
+        documents_text = "\n\n".join(documents_text_parts)
+        wbs_data_str = str(wbs_data) if wbs_data else "WBS 정보 없음"
+
+        # 프롬프트로 넘길 입력값 구성 
         chain = (
             {
-                "documents": lambda x: documents_text,
-                "wbs_data": lambda x: x["wbs_data"],
-                "user_id": lambda x: x["user_id"],
-                "user_name": lambda x: x["user_name"],
-                "target_date": lambda x: x["target_date"]
+                "documents": lambda x: x["documents_text"],
+                "wbs_data": lambda x: x["wbs_info"],
+                "user_id": lambda x: x["in_user_id"],
+                "user_name": lambda x: x["in_user_name"],
+                "target_date": lambda x: x["in_target_date"]
             }
-            | self.prompt 
-            | self.llm 
+            | self.prompt
+            | self.llm
             | self.parser
         )
 
         try:
             result = chain.invoke({
-                "user_id": user_id,
-                "user_name": user_name,
-                "wbs_data": wbs_data,
-                "target_date": target_date
+                "in_user_id": user_id,
+                "in_user_name": user_name or user_id,
+                "in_target_date": target_date,
+                "wbs_info": wbs_data_str,
+                "documents_text": documents_text
             })
             return result
         except Exception as e:
-            print(f"분석 중 오류 발생: {e}")
+            print(f"DocsAnalyzer: LLM 분석 중 오류 발생: {e}")
             return {
                 "user_id": user_id,
+                "user_name": user_name or user_id,
                 "date": target_date,
                 "type": ["docs"],
-                "matched_tasks": [],
-                "unmatched_tasks": [],
-                "error": str(e)
+                "source_collection": config.COLLECTION_DOCUMENTS,
+                "error": str(e),
+                "retrieved_count": len(retrieved_docs_list)
             }
+
+    def analyze_documents(self, state: LangGraphState) -> LangGraphState:
+        print(f"DocsAnalyzer: 사용자 ID '{state.get('user_id')}'의 문서 분석 시작...")
         
-    def __call__(self, state: State) -> Dict[str, Any]:
-        """State를 입력받아 분석 결과 반환하는 callable 메서드"""
-        analysis_result = self.analyze_docs_data(
-            user_id=state["user_id"],
-            user_name=state["user_name"],
-            target_date=state["target_date"],
-            wbs_data=state["wbs_data"]
-        )
-        return analysis_result
-    
-    def analyze_documents(self, state: State) -> State:
-        """LangGraph Agent 호출용 메서드"""
-        analysis_result = self.analyze_docs_data(
-            user_id=state["user_id"],
-            user_name=state["user_name"],
-            target_date=state["target_date"],
-            wbs_data=state["wbs_data"]
-        )
-        return {
-            **state,
-            "docs_analysis_result": analysis_result
-        }
+        user_id = state.get("user_id")
+        user_name = state.get("user_name") # 표시용으로 사용 가능
+        target_date = state.get("target_date")
+        wbs_data = state.get("wbs_data")
+
+        if not user_id:
+            error_msg = "DocsAnalyzer: user_id가 State에 제공되지 않아 분석을 건너뜁니다."
+            print(error_msg)
+            analysis_result = {"error": error_msg, "type": ["docs"]}
+        elif not target_date: # 날짜 필터링 필수
+            error_msg = "EmailAnalyzerAgent: target_date가 State에 제공되지 않아 분석을 건너뜁니다."
+            print(error_msg); analysis_result = {"error": error_msg, "type": "Email"}
+        else:
+            retrieved_docs_list = retrieve_documents(
+                qdrant_client=self.qdrant_client,
+                user_id=user_id,
+                target_date_str=target_date,
+            )
+            state["retrieved_documents"] = retrieved_docs_list 
+
+            analysis_result = self._analyze_docs_data_internal(
+                user_id=user_id,
+                user_name=user_name, # LLM 프롬프트용
+                target_date=target_date, # 분석 컨텍스트용 날짜
+                wbs_data=wbs_data,
+                retrieved_docs_list=retrieved_docs_list
+            )
+        
+        state["documents_analysis_result"] = analysis_result
+        return state
+
+    def __call__(self, state: LangGraphState) -> LangGraphState:
+        return self.analyze_documents(state)

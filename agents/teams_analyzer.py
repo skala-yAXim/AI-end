@@ -1,158 +1,127 @@
 # agents/teams_analyzer.py
-# LangGraph Agent용 Teams 분석기 (Qdrant + LLM 기반)
 import os
 import sys
+import json
+from datetime import datetime, timezone
+from typing import Dict, Any, Optional, List
+
 from qdrant_client import QdrantClient
 from langchain_openai import ChatOpenAI
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain_qdrant import QdrantVectorStore
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import PromptTemplate
-from langchain.tools.retriever import create_retriever_tool
-from langchain.agents import create_openai_functions_agent, AgentExecutor
-from qdrant_client.models import Filter, FieldCondition, MatchAny, DatetimeRange
-from typing import Dict, Any, Optional
 
-# Add parent directory to path for config import
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from config import OPENAI_API_KEY, DEFAULT_MODEL,FAST_MODEL, PROMPTS_DIR, DATA_DIR, EMBEDDING_MODEL, TEAMS_COLLECTION
-
-class State(Dict):
-    user_id: Optional[str]
-    user_name: Optional[str]
-    target_date: Optional[str]
-    wbs_data: Optional[Dict]
-    teams_analysis_result: Optional[Dict]
+from core import config
+from core.state_definition import LangGraphState
+from tools.vector_db_retriever import retrieve_teams_posts
 
 class TeamsAnalyzer:
-    """LangGraph Agent용 Teams 분석기"""
-    
-    def __init__(self, qdrant_vectorstore=None):
-        # Qdrant DB 초기화
-        if qdrant_vectorstore is None:
-            client = QdrantClient(host="localhost", port=6333)
-            self.db = QdrantVectorStore(
-                client=client,
-                collection_name=TEAMS_COLLECTION,
-                embedding=HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-            )
-        else:
-            self.db = qdrant_vectorstore
+    def __init__(self, qdrant_client: QdrantClient):
+        self.qdrant_client = qdrant_client
             
-        # LLM 초기화
         self.llm = ChatOpenAI(
-            model=FAST_MODEL,
-            temperature=0.2,
-            max_tokens=2000
+            model=config.FAST_MODEL, temperature=0.2,
+            max_tokens=2000, openai_api_key=config.OPENAI_API_KEY
         )
+        # self.wbs_data_handler 제거
         
-        # 프롬프트 템플릿 로드
-        with open(os.path.join(PROMPTS_DIR, "teams_analyzer_prompt.md"), "r", encoding="utf-8") as f:
-            self.prompt_template_str = f.read()
-        
-        self.prompt = PromptTemplate.from_template(self.prompt_template_str)
+        prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "teams_analyzer_prompt.md")
+        try:
+            with open(prompt_file_path, "r", encoding="utf-8") as f: 
+                prompt_template_str = f.read()
+            # 예상 프롬프트 변수: {user_id}, {user_name}, {target_date}, {posts}, {wbs_data}
+            self.prompt = PromptTemplate.from_template(prompt_template_str)
+        except FileNotFoundError:
+            print(f"TeamsAnalyzer: 오류 - 프롬프트 파일을 찾을 수 없습니다: {prompt_file_path}")
+            self.prompt_template_str = """
+사용자 ID {user_id} (이름: {user_name})의 {target_date} Teams 활동 내역({posts})과 WBS 업무({wbs_data})를 분석하여, 
+주요 대화 내용 요약, 업무 관련성, WBS 작업 매칭 결과를 JSON 형식으로 반환해주세요.
+"""
+            self.prompt = PromptTemplate.from_template(self.prompt_template_str)
+            
         self.parser = JsonOutputParser()
 
-    def analyze_teams_data(
-            self,
-            user_id: str,
-            user_name: str,  
-            target_date: str, 
-            wbs_data: dict
-        ) -> Dict[str, Any]:
-        """
-        Teams 데이터를 분석하여 특정 사용자의 활동을 요약합니다.
+    def _prepare_teams_posts_for_llm(self, retrieved_posts_list: List[Dict], target_date_str: Optional[str]) -> str:
+        date_info = f"({target_date_str} 기준)" if target_date_str else "(최근 활동 기준)"
+        if not retrieved_posts_list: 
+            return f"### Teams 게시물 데이터 {date_info}:\n분석할 Teams 게시물이 없습니다."
         
-        :param user_id: 분석할 사용자 ID
-        :param user_name: 사용자 이름
-        :param target_date: 분석할 날짜 (YYYY-MM-DD 형식)
-        :param wbs_data: WBS 작업 데이터
-        :return: 분석 결과 딕셔너리
-        """
+        # LLM 컨텍스트 길이 고려하여 최대 30건, 각 게시물 내용도 일부만
+        parts = [f"### Teams 게시물 데이터 {date_info} (최대 {min(len(retrieved_posts_list), 30)}건 표시):"]
+        for item in retrieved_posts_list[:30]: 
+            meta = item.get("metadata", {})
+            content = item.get("page_content", "")[:500] # 내용 일부
+            # 실제 Teams 작성자 ID 필드명 (예: user_id, author_id 등)
+            author_display = meta.get("user_id", meta.get("author_name", meta.get("author_id", "익명"))) 
+            timestamp = meta.get("date", "시간 정보 없음") # 실제 Qdrant 필드명: date
+            channel = meta.get("channel_name", meta.get("channel", "알 수 없는 채널"))
+            parts.append(f"- 작성자: {author_display}\n  채널: {channel}\n  시간: {timestamp}\n  내용: {content}...\n---")
+        return "\n".join(parts)
 
-        start_str = f"{target_date}T00:00:00Z"
-        end_str = f"{target_date}T23:59:59Z"
+    def _analyze_teams_data_internal(
+            self, 
+            user_id: str, # Teams 분석 대상 user_id
+            user_name: Optional[str], # LLM 프롬프트용 user_name 
+            target_date: str, # target_date는 필수
+            wbs_data: Optional[dict],
+            retrieved_posts_list: List[Dict]
+        ) -> Dict[str, Any]:
+        print(f"TeamsAnalyzer: 사용자 ID '{user_id}'의 Teams 게시물 {len(retrieved_posts_list)}개 분석 시작 (대상일: {target_date}).")
 
-        filter_ = Filter(
-                must=[
-                    FieldCondition(
-                        key="metadata.author",
-                        match=MatchAny(
-                            any=[user_id, "Jira Cloud"])
-                    ),
-                    FieldCondition(
-                        key="metadata.date",
-                        range=DatetimeRange(
-                            gte=start_str,
-                            lte=end_str
-                        )
-                    )
-                ]
+        if not retrieved_posts_list:
+            print(f"TeamsAnalyzer: 사용자 ID '{user_id}'에 대한 분석할 Teams 게시물이 없습니다 (대상일: {target_date}).")
+            return {"summary": "분석할 관련 Teams 게시물을 찾지 못했습니다.", "matched_tasks": [], "unmatched_tasks": [], "error": "No Teams posts to analyze"}
+
+        wbs_data_str = json.dumps(wbs_data, ensure_ascii=False, indent=2) if wbs_data else "WBS 정보 없음"
+        posts_data_str = self._prepare_teams_posts_for_llm(retrieved_posts_list, target_date)
+
+        chain = self.prompt | self.llm | self.parser
+        
+        try:
+            llm_input = {
+                "user_id": user_id,
+                "user_name": user_name or user_id,
+                "target_date": target_date,
+                "posts": posts_data_str, # 프롬프트의 {posts} 변수
+                "wbs_data": wbs_data_str # 프롬프트의 {wbs_data} 변수
+            }
+            result = chain.invoke(llm_input)
+            return result # LLM 순수 결과만 반환
+        except Exception as e:
+            print(f"TeamsAnalyzer: LLM Teams 분석 중 오류: {e}")
+            return {"summary": "Teams 활동 분석 중 오류 발생", "error": str(e)}
+
+    def analyze_teams(self, state: LangGraphState) -> LangGraphState:
+        print(f"TeamsAnalyzer: 사용자 ID '{state.get('user_id')}' Teams 활동 분석 시작 (날짜: {state.get('target_date')})...")
+        
+        user_id = state.get("user_id")
+        user_name = state.get("user_name")
+        target_date = state.get("target_date")
+        wbs_data = state.get("wbs_data")
+
+        analysis_result = {} # 기본값 초기화
+        if not user_id:
+            error_msg = "TeamsAnalyzer: user_id가 State에 제공되지 않아 분석을 건너뜁니다."
+            print(error_msg)
+            analysis_result = {"error": error_msg, "summary": "사용자 ID 누락"}
+        elif not target_date: # Teams는 날짜 필터링 필수
+            error_msg = "TeamsAnalyzer: target_date가 State에 제공되지 않아 분석을 건너뜁니다."
+            print(error_msg)
+            analysis_result = {"error": error_msg, "summary": "대상 날짜 누락"}
+        else:
+            retrieved_list = retrieve_teams_posts(
+                qdrant_client=self.qdrant_client, 
+                user_id=user_id, 
+                target_date_str=target_date
+                # scroll_limit은 retriever 내부 기본값 사용 또는 여기서 지정
+            )
+            state["retrieved_teams_posts"] = retrieved_list # 필요시 저장
+
+            analysis_result = self._analyze_teams_data_internal(
+                user_id, user_name, target_date, wbs_data, retrieved_list
             )
         
-        retriever = self.db.as_retriever(search_kwargs={"filter": filter_})
-        posts = retriever.invoke(f"사용자 {user_name}의 게시물")
-        print(f"사용자 '{user_name}' ({user_id})의 문서 {len(posts)}개 발견")
-        
-        # 게시물 내용 결합
-        posts_text = "\n\n".join([
-            f"작성자: {post.metadata.get('author', 'Unknown')}\n내용: {post.page_content}"
-            for post in posts
-        ])
-        
-        # Chain 생성 (Agent 대신)
-        chain = (
-            {
-                "posts": lambda x: posts_text,
-                "wbs_data": lambda x: x["wbs_data"],
-                "user_id": lambda x: x["user_id"],
-                "user_name": lambda x: x["user_name"],
-                "target_date": lambda x: x["target_date"],
-                "agent_scratchpad": lambda x: ""
-            }
-            | self.prompt 
-            | self.llm 
-            | self.parser
-        )
+        state["teams_analysis_result"] = analysis_result
+        return state
 
-        try:
-            result = chain.invoke({
-                "user_id": user_id,
-                "user_name": user_name,
-                "wbs_data": wbs_data,
-                "target_date": target_date
-            })
-            return result
-        except Exception as e:
-            print(f"분석 중 오류 발생: {e}")
-            return {
-                "user_id": user_id,
-                "date": target_date,
-                "type": ["docs"],
-                "matched_tasks": [],
-                "unmatched_tasks": [],
-                "error": str(e)
-            }
-
-    def __call__(self, state: State) -> Dict[str, Any]:
-        """State를 입력받아 분석 결과 반환하는 callable 메서드"""
-        analysis_result = self.analyze_teams_data(
-            user_id=state["user_id"],
-            user_name=state["user_name"],
-            target_date=state["target_date"],
-            wbs_data=state["wbs_data"]
-        )
-        return analysis_result
-    
-    def analyze_teams(self, state: State) -> State:
-        """LangGraph Agent 호출용 메서드"""
-        analysis_result = self.analyze_teams_data(
-            user_id=state["user_id"],
-            user_name=state["user_name"],
-            target_date=state["target_date"],
-            wbs_data=state["wbs_data"]
-        )
-        return {
-            **state,
-            "teams_analysis_result": analysis_result
-        }
+    def __call__(self, state: LangGraphState) -> LangGraphState:
+        return self.analyze_teams(state)

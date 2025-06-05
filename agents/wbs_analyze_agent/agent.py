@@ -51,7 +51,6 @@ class WBSAnalysisAgent:
         # vector_db_base_path 아래에 프로젝트별/컬렉션별로 실제 DB 파일이 생성됨
         self.db_handler = VectorDBHandler(
             db_base_path=db_path_to_use, # 실제 DB 파일이 저장될 최상위 경로
-            collection_name_prefix="wbs_data", # 컬렉션 이름 접두사
             project_id=self.project_id,
         )
         

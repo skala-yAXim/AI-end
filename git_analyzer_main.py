@@ -26,16 +26,6 @@ def main():
 
     real_git_data_path = os.path.join(PROJECT_ROOT, "data", "git_export", "git_data.json")
     print(f"Attempting to use real git data from: {real_git_data_path}")
-    if not os.path.exists(real_git_data_path):
-        os.makedirs(os.path.dirname(real_git_data_path), exist_ok=True)
-        dummy_git_data = {
-            "author": "test_user_from_json@example.com",
-            "commits": [{"sha": "abc123xyz789", "message": "Initial commit", "author_email": "kproh99@naver.com", "date": "2025-06-02T10:00:00Z", "repo": "skala-yAXim/AI-end"}],
-            "pull_requests": [{"number": 1, "title": "Add feature X", "content": "PR content.", "user_email": "kproh99@naver.com", "created_at": "2025-06-02T14:00:00Z", "state": "open", "repo": "skala-yAXim/AI-end"}]
-        }
-        with open(real_git_data_path, 'w', encoding='utf-8') as f:
-            json.dump(dummy_git_data, f, indent=2)
-        print(f"Created dummy git_data.json at {real_git_data_path}")
 
     test_author_email_for_report = "kproh99@naver.com" 
     test_wbs_assignee_name = "노건표" 

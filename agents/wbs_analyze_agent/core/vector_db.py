@@ -26,13 +26,14 @@ import uuid
 import numpy
 import traceback # 디버깅을 위해 추가
 
+from core.config import COLLECTION_WBS_DATA
 # 임베딩 모델 정보
 DEFAULT_SENTENCE_TRANSFORMER_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 
 class VectorDBHandler:
     """VectorDB(Qdrant) 관련 처리를 담당하는 클래스 (SentenceTransformer 임베딩 전용, 차원 동적 로드)"""
 
-    def __init__(self, db_base_path: str, collection_name_prefix: str, project_id: str,
+    def __init__(self, db_base_path: str, project_id: str, collection_name_prefix: str = COLLECTION_WBS_DATA,
                  sentence_transformer_model_name: str = DEFAULT_SENTENCE_TRANSFORMER_MODEL, **kwargs):
         if not project_id:
             raise ValueError("VectorDBHandler 초기화: project_id가 필요합니다.")
@@ -41,8 +42,7 @@ class VectorDBHandler:
             print(f"경고: 'embedding_api_key' 인자가 VectorDBHandler에 전달되었으나, SentenceTransformer 전용 모드에서는 사용되지 않고 무시됩니다.")
 
         self.project_id = project_id
-        safe_project_id = "".join(c if c.isalnum() else "_" for c in project_id)
-        self.collection_name = f"{collection_name_prefix}_{safe_project_id}_revised"
+        self.collection_name = f"{collection_name_prefix}"
 
         self.db_path = os.path.join(db_base_path, "qdrant_db")
         os.makedirs(self.db_path, exist_ok=True)

@@ -28,7 +28,7 @@ class LLMInterface:
             model_name=model_name,
             openai_api_key=api_key,
             temperature=0, # 일관된 출력을 위해 온도 조절
-            model_kwargs={"response_format": {"type": "json_object"}} # JSON 모드 활성화
+            # model_kwargs={"response_format": {"type": "json_object"}} # JSON 모드 활성화
         )
         try:
             self.prompt_template = PromptTemplate.from_template(prompt_template_str)
@@ -62,10 +62,15 @@ class LLMInterface:
             return self._default_llm_response()
 
         print("LLM에 WBS 데이터 전송 및 분석 요청 중...")
+        prompt_preview = self.prompt_template.format(wbs_data=wbs_json_data)
+        print(f"[DEBUG] Prompt 길이 (문자): {len(prompt_preview)}")
+
         try:
             response_str = self.chain.invoke(wbs_json_data)
             print("LLM 분석 완료. 응답 파싱 중...")
-            
+            # prompt_str = self.prompt_template.format(wbs_data=wbs_json_data)
+            # response_str = self.llm.invoke(prompt_str)  # LangChain chain 안 거침
+
             # LLM 응답이 마크다운 코드 블록(```json ... ```)으로 감싸져 오는 경우가 있으므로 처리
             clean_response_str = response_str.strip()
             if clean_response_str.startswith("```json"):
