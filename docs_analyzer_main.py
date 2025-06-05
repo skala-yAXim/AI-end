@@ -1,4 +1,4 @@
-from agents.docs_analyzer import analyze_docs_data
+from agents.docs_analyzer import DocsAnalyzer
 import json
 import os
 
@@ -12,5 +12,17 @@ user_name = "조민서"
 target_date = "2025-05-29"
 wbs_data = json.dumps(raw_wbs, ensure_ascii=False, indent=2)
 
-result = analyze_docs_data(user_id, user_name, target_date, wbs_data)
+# DocsAnalyzer 인스턴스 생성
+analyzer = DocsAnalyzer()
+
+# State 객체 생성
+state = {
+    "user_id": user_id,
+    "user_name": user_name,
+    "target_date": target_date,
+    "wbs_data": wbs_data
+}
+
+# __call__ 메서드를 사용하여 호출
+result = analyzer(state)
 print(result)

@@ -2,27 +2,27 @@ import json
 import re
 import sys
 import os
-from langchain_openai import OpenAIEmbeddings
+from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from config import OPENAI_API_KEY, DATA_DIR
+from config import OPENAI_API_KEY, DATA_DIR, EMBEDDING_MODEL
 
 client = QdrantClient(
     host="localhost",
     port=6333
 )
 
-embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
+embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
 
 collection_name = "teams-posts"
 
 if not client.collection_exists(collection_name):
     client.create_collection(
         collection_name=collection_name,
-        vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+        vectors_config=VectorParams(size=768, distance=Distance.COSINE),
     )
 
 qdrant_store = QdrantVectorStore(
