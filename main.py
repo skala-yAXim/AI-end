@@ -8,9 +8,8 @@ import json
 # 현재 디렉토리를 sys.path에 추가 (graph.py가 루트에 있다고 가정)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-
 from graph import create_analysis_graph 
-from core.state_definition import LangGraphState 
+from core.state_definition import LangGraphState
 
 def run_analysis_workflow():
     load_dotenv()
@@ -40,6 +39,7 @@ def run_analysis_workflow():
         git_analysis_result=None,
         teams_analysis_result=None,
         wbs_data=None, # 초기 WBS 데이터는 None
+        comprehensive_report=None, # 일일 보고서 결과
         error_message="" 
     )
 
@@ -96,6 +96,29 @@ def run_analysis_workflow():
             pprint(final_state.get("teams_analysis_result"))
         else:
             print("Teams 활동 분석 결과가 없습니다.")
+
+        # 일일 보고서 결과 출력
+        print("\n=== Daily 보고서 (comprehensive_report) ===")
+        comprehensive_report = final_state.get("comprehensive_report")
+        if comprehensive_report:
+            if comprehensive_report and not comprehensive_report.get("error"):
+                print("Daily 보고서 생성 성공!")
+
+                # 파일 저장
+                json_string = json.dumps(comprehensive_report, ensure_ascii=False, indent=2)
+                output_filename = f"daily_report_{input_user_name}_{input_target_date}.json"
+                output_path = os.path.join("outputs", output_filename)
+                os.makedirs("outputs", exist_ok=True)
+                with open(output_path, "w", encoding="utf-8") as f:
+                    f.write(json_string)
+                print(f"보고서 파일 저장: {output_path}")
+                
+                pprint(comprehensive_report)
+            else:
+                print("Daily 보고서 생성 실패")
+                pprint(comprehensive_report)
+        else:
+            print("Daily 보고서가 생성되지 않았습니다.")
 
         if final_state.get("error_message") and final_state.get("error_message").strip():
             print("\n--- 워크플로우 실행 중 발생한 전체 오류 메시지 ---")

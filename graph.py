@@ -15,6 +15,7 @@ from agents.docs_analyzer import DocsAnalyzer
 from agents.email_analyzer import EmailAnalyzerAgent
 from agents.git_analyzer import GitAnalyzerAgent
 from agents.teams_analyzer import TeamsAnalyzer
+from agents.report_generator import DailyReportGenerator
 
 qdrant_client_instance = None
 
@@ -88,6 +89,23 @@ def analyze_teams_node(state: LangGraphState) -> LangGraphState:
     teams_analyzer = TeamsAnalyzer(qdrant_client=qdrant_client_instance)
     return teams_analyzer(state)
 
+# 🚀 새로 추가된 report_generator 노드
+def generate_report_node(state: LangGraphState) -> LangGraphState:
+    print("\n--- Daily 보고서 생성 노드 실행 ---")
+    try:
+        report_generator = DailyReportGenerator()
+        updated_state = report_generator.generate_daily_report(state)
+        print("Daily 보고서 생성 완료.")
+        return updated_state
+    except Exception as e:
+        print(f"Daily 보고서 생성 실패: {e}")
+        state["error_message"] = (state.get("error_message","") + f"\n 보고서 생성 실패: {e}").strip()
+        state["comprehensive_report"] = {
+            "report_metadata": {"success": False, "error": str(e)},
+            "report_content": {"error": "보고서 생성 실패"}
+        }
+        return state
+
 def create_analysis_graph():
     initialize_global_clients()
     if not qdrant_client_instance:
@@ -100,13 +118,17 @@ def create_analysis_graph():
     workflow.add_node("analyze_emails", analyze_emails_node)
     workflow.add_node("analyze_git", analyze_git_node)
     workflow.add_node("analyze_teams", analyze_teams_node)
+    # 🚀 report_generator 노드 추가
+    workflow.add_node("generate_report", generate_report_node)
 
     workflow.set_entry_point("load_wbs")
     workflow.add_edge("load_wbs", "analyze_docs")
     workflow.add_edge("analyze_docs", "analyze_emails")
     workflow.add_edge("analyze_emails", "analyze_git")
     workflow.add_edge("analyze_git", "analyze_teams")
-    workflow.add_edge("analyze_teams", END) 
+    # 🚀 워크플로우 수정: Teams → Report Generator → END
+    workflow.add_edge("analyze_teams", "generate_report")
+    workflow.add_edge("generate_report", END) 
     
     app = workflow.compile()
     print("LangGraph 애플리케이션 컴파일 완료.")
@@ -119,4 +141,3 @@ if __name__ == "__main__":
         print(f"테스트 그래프 생성 성공: {test_app}")
     except Exception as e:
         print(f"그래프 생성 중 오류: {e}")
-

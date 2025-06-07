@@ -1,41 +1,38 @@
-from typing import Dict, Optional, List
+# agents/report_generator.py
+import os
+import sys
+import json
+from typing import Dict, Optional, Any
+from datetime import datetime
+
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
-from langchain.schema import AIMessage
 from langchain_core.output_parsers import JsonOutputParser
 
-import os
-import json
-from datetime import datetime
-from config import DEFAULT_MODEL, FAST_MODEL, PROMPTS_DIR
-
-class State(Dict):
-    user_id: Optional[str]
-    user_name: Optional[str]
-    target_date: Optional[str]
-    wbs_data: Optional[Dict]
-    docs_analysis_result: Optional[Dict]
-    teams_analysis_result: Optional[Dict]  
-    git_analysis_result: Optional[Dict]
-    email_analysis_result: Optional[Dict]
-    final_report: Optional[Dict]
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from core import config
+from core.state_definition import LangGraphState
 
 class DailyReportGenerator:
+    """
+    LangGraph 워크플로우와 통합된 일일 보고서 생성기
+    분석된 Teams, Docs, Git, Email 데이터를 종합하여 JSON 형식의 보고서 생성
+    """
+    
     def __init__(self):
         self.llm = ChatOpenAI(
-            model=DEFAULT_MODEL,  # gpt-4o 사용 (더 긴 컨텍스트 지원)
-            temperature=0.2
+            model=config.DEFAULT_MODEL,  # gpt-4o 사용
+            temperature=0.2,
+            openai_api_key=config.OPENAI_API_KEY
         )
         
         # 프롬프트 템플릿 로드
-        with open(os.path.join(PROMPTS_DIR, "daily_report_prompt.md"), "r", encoding="utf-8") as f:
+        prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "daily_report_prompt.md")
+        with open(prompt_file_path, "r", encoding="utf-8") as f:
             prompt_content = f.read()
-        
-        # JSON 구조의 중괄호를 LangChain 변수와 구분하기 위해 이스케이프 처리
-        self.prompt_template = self._escape_json_braces(prompt_content)
-        
+
         self.prompt = PromptTemplate(
-            template=self.prompt_template,
+            template=prompt_content,
             input_variables=[
                 "user_name", "user_id", "target_date",
                 "wbs_data", "docs_analysis", "teams_analysis", 
@@ -44,56 +41,50 @@ class DailyReportGenerator:
         )
         self.parser = JsonOutputParser()
 
-    def _escape_json_braces(self, content: str) -> str:
+    def generate_daily_report(self, state: LangGraphState) -> LangGraphState:
         """
-JSON 구조의 중괄호를 LangChain 변수와 구분하기 위해 이스케이프 처리
+        종합 일일 보고서 생성 (LangGraph 노드 함수)
         """
-        # LangChain 변수들을 임시 플레이스홀더로 교체
-        variables = [
-            "{user_name}", "{user_id}", "{target_date}", "{wbs_data}", 
-            "{docs_analysis}", "{teams_analysis}", "{git_analysis}", "{email_analysis}"
-        ]
+        print(f"DailyReportGenerator: 사용자 '{state.get('user_name')}' ({state.get('user_id')})의 {state.get('target_date')} 보고서 생성 시작...")
         
-        placeholders = {}
-        for i, var in enumerate(variables):
-            placeholder = f"__PLACEHOLDER_{i}__"
-            placeholders[placeholder] = var
-            content = content.replace(var, placeholder)
-        
-        # 모든 중괄호를 이스케이프 처리
-        content = content.replace("{", "{{").replace("}", "}}")
-        
-        # 플레이스홀더를 다시 원래 변수로 교체
-        for placeholder, var in placeholders.items():
-            content = content.replace(placeholder, var)
-        
-        return content
-
-    def generate_daily_report(self, state: State) -> Dict:
-        """Daily 보고서 생성"""
-
-        prompt_data = {
-            "user_name": state.get("user_name"),
-            "user_id": state.get("user_id"),
-            "target_date": state.get("target_date"),
-            "wbs_data": str(state.get("wbs_data")),
-            "docs_analysis": str(state.get("docs_analysis_result", {})),
-            "teams_analysis": str(state.get("teams_analysis_result", {})),
-            "git_analysis": str(state.get("git_analysis_result", "{}")),
-            "email_analysis": str(state.get("email_analysis_result", "{}"))
+        try:
+            # state에서 직접 데이터 추출
+            prompt_data = {
+                "user_name": state.get("user_name", "사용자"),
+                "user_id": state.get("user_id", "알 수 없음"),
+                "target_date": state.get("target_date", datetime.now().strftime('%Y-%m-%d')),
+                "wbs_data": str(state.get("wbs_data", "WBS 데이터 없음")),
+                "docs_analysis": str(state.get("documents_analysis_result", "문서 분석 결과 없음")),
+                "teams_analysis": str(state.get("teams_analysis_result", "Teams 분석 결과 없음")),
+                "git_analysis": str(state.get("git_analysis_result", "Git 분석 결과 없음")),
+                "email_analysis": str(state.get("email_analysis_result", "이메일 분석 결과 없음"))
             }
+            
+            # 체인 구성 및 실행
+            chain = self.prompt | self.llm | self.parser
+            
+            print("DailyReportGenerator: LLM을 통한 보고서 생성 중...")
+            report_result = chain.invoke(prompt_data)
+            
+            # 성공적인 보고서 생성 결과를 state에 직접 저장
+            state["comprehensive_report"] = report_result
+            print(f"DailyReportGenerator: 보고서 생성 완료 - 제목: {report_result.get('report_title', '제목 없음')}")
+            
+        except Exception as e:
+            print(f"DailyReportGenerator: 보고서 생성 중 오류 발생: {e}")
+            state["comprehensive_report"] = {
+                "error": "보고서 생성 실패",
+                "message": str(e)
+            }
+            
+            # 에러를 state의 error_message에도 추가
+            current_error = state.get("error_message", "")
+            state["error_message"] = (current_error + f"\n DailyReportGenerator 오류: {e}").strip()
         
-        # 체인 구성 및 실행
-        chain = self.prompt | self.llm | self.parser
-        
-        # 보고서 생성
-        report_result = chain.invoke(prompt_data)
-        
-        return {
-            "final_report": {
-                "json_content": json.dumps(report_result, ensure_ascii=False, indent=2),
-                "parsed_content": report_result
-            },
-            "success": True,
-            "generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        }
+        return state
+
+    def __call__(self, state: LangGraphState) -> LangGraphState:
+        """
+        다른 analyzer들과 동일한 호출 패턴 지원
+        """
+        return self.generate_daily_report(state)
