@@ -75,16 +75,16 @@ def retrieve_documents(
 ) -> List[Dict]:
     """
     'Documents' 컬렉션에서 특정 사용자의 문서를 검색합니다. (scroll API 사용)
-    필터: metadata.author 필드를 user_id로 필터링. 날짜 필터링.
+    필터: author 필드를 user_id로 필터링. 날짜 필터링.
     """
     print(f"VectorDBRetriever: '{config.COLLECTION_DOCUMENTS}' 컬렉션 scroll 검색 중 (author: {user_id}, limit: {scroll_limit})")
     
     must_conditions = [
         FieldCondition(key="author", match=MatchValue(value=user_id))
     ]
-    # date_filter_condition = _create_date_filter(target_date_str, "metadata.date") 
-    # if date_filter_condition:
-    #     must_conditions.append(date_filter_condition)
+    date_filter_condition = _create_date_filter(target_date_str, "date") 
+    if date_filter_condition:
+        must_conditions.append(date_filter_condition)
 
     qdrant_final_filter = Filter(must=must_conditions)
 
@@ -114,7 +114,7 @@ def retrieve_emails(
 ) -> List[Dict]:
     """
     'Emails' 컬렉션에서 특정 사용자의 이메일을 검색합니다. (scroll API 사용)
-    필터: metadata.sender 또는 metadata.receiver 중 하나가 user_id와 일치. metadata.date로 날짜 필터링.
+    필터: author 필드가 user_id와 일치. metadata.date로 날짜 필터링.
     """
     print(f"VectorDBRetriever: '{config.COLLECTION_EMAILS}' 컬렉션 scroll 검색 중 (user_id: {user_id}, 날짜: {target_date_str or '전체'}, limit: {scroll_limit})")
     
@@ -123,9 +123,9 @@ def retrieve_emails(
     ]
 
     
-    # date_filter_condition = _create_date_filter(target_date_str, "metadata.date") 
-    # if date_filter_condition:
-    #     must_conditions.append(date_filter_condition)
+    date_filter_condition = _create_date_filter(target_date_str, "date") 
+    if date_filter_condition:
+        must_conditions.append(date_filter_condition)
 
     qdrant_final_filter = Filter(must=must_conditions)
 
@@ -164,9 +164,9 @@ def retrieve_git_activities(
         )
     ]
     
-    # date_filter_condition = _create_date_filter(target_date_str, "metadata.date")
-    # if date_filter_condition:
-    #     must_conditions.append(date_filter_condition)
+    date_filter_condition = _create_date_filter(target_date_str, "date")
+    if date_filter_condition:
+        must_conditions.append(date_filter_condition)
     
     qdrant_filter = Filter(must=must_conditions)
 
@@ -203,9 +203,9 @@ def retrieve_teams_posts(
         FieldCondition(key="user_id", match=MatchValue(value=user_id)) # 실제 Teams 사용자 ID 필드명
     ]
     
-    # date_filter_condition = _create_date_filter(target_date_str, "metadata.date") # 실제 Teams 게시물 날짜 필드명
-    # if date_filter_condition:
-    #     must_conditions.append(date_filter_condition)
+    date_filter_condition = _create_date_filter(target_date_str, "date") # 실제 Teams 게시물 날짜 필드명
+    if date_filter_condition:
+        must_conditions.append(date_filter_condition)
 
     qdrant_filter = Filter(must=must_conditions)
 
