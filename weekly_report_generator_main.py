@@ -12,7 +12,7 @@ def main():
     """
     # 명령줄 인자를 파싱하여 사용자 정보를 받을 수 있도록 설정합니다.
     parser = argparse.ArgumentParser(description="사용자의 주간 업무 보고서를 생성합니다.")
-    parser.add_argument("--user-name", type=str, default="노건표", help="보고서를 생성할 사용자 이름")
+    parser.add_argument("--user-name", type=str, default="조민서", help="보고서를 생성할 사용자 이름")
     parser.add_argument("--user-id", type=str, default="G-12345", help="사용자의 고유 ID")
     parser.add_argument("--start-date", type=str, default="2025-06-02", help="보고서 시작일 (YYYY-MM-DD)")
     parser.add_argument("--end-date", type=str, default="2025-06-06", help="보고서 종료일 (YYYY-MM-DD)")
