@@ -4,7 +4,6 @@ import argparse
 
 # weekly_report_generator 모듈에서 WeeklyReportGenerator 클래스를 임포트합니다.
 # 이 스크립트는 프로젝트의 루트 디렉토리에서 실행되는 것을 가정합니다.
-from agents.weekly_report_generator import WeeklyReportGenerator
 from core.state_definition import WeeklyLangGraphState
 from weekly_graph import create_weekly_graph
 
