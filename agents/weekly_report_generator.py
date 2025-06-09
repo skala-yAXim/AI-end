@@ -9,6 +9,8 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 
+from core.state_definition import WeeklyLangGraphState
+
 # core.config 모듈을 임포트하기 위해 상위 디렉토리 경로 추가
 # 이 스크립트가 'agents' 폴더 내에 위치한다고 가정합니다.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -32,6 +34,9 @@ class WeeklyReportGenerator:
             openai_api_key=config.OPENAI_API_KEY
         )
         
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        self.reports_input_dir = os.path.join(project_root, 'outputs')
+        
         # 주간 보고서 프롬프트 템플릿 파일 경로 설정
         prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "weekly_report_prompt.md")
         
@@ -48,19 +53,14 @@ class WeeklyReportGenerator:
         self.prompt = PromptTemplate.from_template(prompt_template_str)
         self.parser = JsonOutputParser()
 
-    def load_daily_reports(self, user_name: str, start_date_str: str, end_date_str: str, reports_dir: str) -> List[Dict[str, Any]]:
+    def load_daily_reports(self, state: WeeklyLangGraphState) -> WeeklyLangGraphState:
         """
         지정된 기간과 사용자에 해당하는 일일 보고서 파일들을 로드합니다.
-        
-        Args:
-            user_name (str): 보고서를 생성할 사용자 이름.
-            start_date_str (str): 보고서 시작일 (YYYY-MM-DD).
-            end_date_str (str): 보고서 종료일 (YYYY-MM-DD).
-            reports_dir (str): 일일 보고서 파일이 저장된 디렉토리 경로.
-
-        Returns:
-            List[Dict[str, Any]]: 로드된 일일 보고서 데이터의 리스트.
         """
+        start_date_str = state.get("start_date")
+        end_date_str = state.get("end_date")
+        user_name = state.get("user_name")
+        
         daily_reports = []
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
@@ -69,7 +69,9 @@ class WeeklyReportGenerator:
         while current_date <= end_date:
             date_str = current_date.strftime('%Y-%m-%d')
             file_name = f"daily_report_{user_name}_{date_str}.json"
-            file_path = os.path.join(reports_dir, file_name)
+            file_path = os.path.join(self.reports_input_dir, file_name)
+            
+            print(file_path)
             
             if os.path.exists(file_path):
                 try:
@@ -86,22 +88,21 @@ class WeeklyReportGenerator:
 
             current_date += timedelta(days=1)
             
-        return daily_reports
+        state["daily_reports_data"] = daily_reports
+        
+        return state
 
-    def generate_weekly_report(self, user_name: str, user_id: str, start_date: str, end_date: str, daily_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def generate_weekly_report(self, state: WeeklyLangGraphState) -> WeeklyLangGraphState:
         """
         일일 보고서 목록을 기반으로 주간 보고서를 생성합니다.
-        
-        Args:
-            user_name (str): 사용자 이름.
-            user_id (str): 사용자 ID.
-            start_date (str): 주간 보고서 시작일.
-            end_date (str): 주간 보고서 종료일.
-            daily_reports (List[Dict[str, Any]]): 분석할 일일 보고서 데이터 리스트.
-
-        Returns:
-            Dict[str, Any]: 생성된 주간 보고서 결과 (JSON 형식).
         """
+        user_name = state.get("user_name")
+        user_id = state.get("user_id")
+        start_date = state.get("start_date")
+        end_date = state.get("end_date")
+        daily_reports = state.get("daily_reports_data")
+        wbs_data = state.get("wbs_data")
+        
         print(f"WeeklyReportGenerator: 사용자 '{user_name}' ({user_id})의 {start_date} ~ {end_date} 주간 보고서 생성 시작...")
         
         if not daily_reports:
@@ -119,7 +120,8 @@ class WeeklyReportGenerator:
                 "start_date": start_date,
                 "end_date": end_date,
                 # 일일 보고서 목록을 JSON 문자열로 변환하여 전달
-                "daily_reports": json.dumps(daily_reports, ensure_ascii=False, indent=2)
+                "daily_reports": json.dumps(daily_reports, ensure_ascii=False, indent=2),
+                "wbs_data": json.dumps(wbs_data, ensure_ascii=False, indent=2),
             }
             
             # LangChain 체인 구성 및 실행
@@ -129,7 +131,10 @@ class WeeklyReportGenerator:
             report_result = chain.invoke(prompt_data)
             
             print(f"WeeklyReportGenerator: 주간 보고서 생성 완료 - 제목: {report_result.get('report_title', '제목 없음')}")
-            return report_result
+            
+            state["weekly_report_result"] = report_result
+            
+            return state
             
         except Exception as e:
             print(f"WeeklyReportGenerator: 주간 보고서 생성 중 오류 발생: {e}")

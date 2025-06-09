@@ -4,9 +4,10 @@ import argparse
 
 # weekly_report_generator 모듈에서 WeeklyReportGenerator 클래스를 임포트합니다.
 # 이 스크립트는 프로젝트의 루트 디렉토리에서 실행되는 것을 가정합니다.
-from agents.weekly_report_generator import WeeklyReportGenerator
+from core.state_definition import WeeklyLangGraphState
+from weekly_graph import create_weekly_graph
 
-def main():
+def run_weekly_workflow():
     """
     주간 업무 보고서 생성 프로세스를 실행하는 메인 함수입니다.
     """
@@ -42,20 +43,35 @@ def main():
     print(f"주간 보고서 출력 디렉토리: {os.path.abspath(REPORTS_OUTPUT_DIR)}")
     print("-" * 30)
     
+    initial_state = WeeklyLangGraphState(
+        user_name=USER_NAME,
+        user_id=USER_ID,
+        start_date=START_DATE,
+        end_date=END_DATE,
+        project_id="project_sample_001",
+        wbs_data=None,
+        daily_reports_data=None,
+        weekly_report_result=None,
+        error_message=""
+    )
+    
     # --- 실행 ---
     try:
-        # 1. 보고서 생성기 인스턴스 생성
-        generator = WeeklyReportGenerator()
+        app = create_weekly_graph()
         
-        # 2. 해당 기간의 일일 보고서 로드
-        daily_reports_data = generator.load_daily_reports(USER_NAME, START_DATE, END_DATE, REPORTS_INPUT_DIR)
+        print(f"DEBUG: initial_state: {initial_state}")
+
+        print("\n--- LangGraph 워크플로우 실행 시작 ---")
+        final_state = app.invoke(initial_state)
+        print("--- LangGraph 워크플로우 실행 완료 ---\n")
+
+        print("최종 분석 결과 (State 내용):")
         
-        # 3. 일일 보고서 데이터를 기반으로 주간 보고서 생성
-        if daily_reports_data:
-            weekly_report_result = generator.generate_weekly_report(USER_NAME, USER_ID, START_DATE, END_DATE, daily_reports_data)
-            
-            # 4. 생성된 주간 보고서를 파일로 저장
-            if "error" not in weekly_report_result:
+        weekly_report_result = final_state.get("weekly_report_result")
+        if weekly_report_result:
+            if weekly_report_result and not weekly_report_result.get("error"):
+                print("주간 보고서 생성 성공!")
+                
                 output_filename = f"weekly_report_{USER_NAME}_{START_DATE}_to_{END_DATE}.json"
                 output_filepath = os.path.join(REPORTS_OUTPUT_DIR, output_filename)
                 
@@ -68,20 +84,13 @@ def main():
                 print("\n--- 생성된 주간 보고서 내용 미리보기 ---")
                 print(json.dumps(weekly_report_result, ensure_ascii=False, indent=2))
                 print("---------------------------------------\n")
-                
             else:
                 print(f"\n[실패] 주간 보고서 생성에 실패했습니다: {weekly_report_result['message']}")
         else:
             print("\n[알림] 주간 보고서를 생성할 데이터가 없어 작업을 종료합니다.")
-            
-    except FileNotFoundError:
-        # WeeklyReportGenerator 초기화 시 프롬프트 파일을 찾지 못한 경우
-        print("\n[오류] 필수 설정 파일(prompt)을 찾지 못해 프로그램을 종료합니다.")
     except Exception as e:
         print(f"\n[오류] 예기치 않은 오류가 발생했습니다: {e}")
 
-
 if __name__ == '__main__':
     # 이 스크립트가 직접 실행될 때 main 함수를 호출합니다.
-    main()
-
+    run_weekly_workflow()

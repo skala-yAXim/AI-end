@@ -15,10 +15,10 @@ def run_analysis_workflow():
     load_dotenv()
     print("환경 변수 로드 시도 완료.")
 
-    input_user_id = "kpro@yasim2861.onmicrosoft.com" 
-    input_user_name = "노건표" 
-    input_github_email = "kproh99@naver.com" 
-    input_target_date = "2025-06-02" 
+    input_user_id = "minsuh3203@yasim2861.onmicrosoft.com" 
+    input_user_name = "조민서" 
+    input_github_email = "minsuh3203@gmail.com" 
+    input_target_date = "2025-06-05" 
     input_project_id = "project_sample_001" # 테스트할 실제 프로젝트 ID
 
     print(f"\n분석 실행 파라미터:")
