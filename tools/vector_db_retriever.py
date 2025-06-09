@@ -12,7 +12,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from core import config 
 
 # scroll API 사용 시 한 번에 가져올 기본 최대 문서 수
-DEFAULT_SCROLL_LIMIT = 10
+DEFAULT_SCROLL_LIMIT = 50
 
 def _format_qdrant_points(points: List[Any], field_name: str = "page_content") -> List[Dict]:
     """ 구조 변환 : Qdrant PointStruct 리스트를 Dict 리스트로 변환. """
