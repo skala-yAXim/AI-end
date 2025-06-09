@@ -6,7 +6,7 @@ data/wbs_analysis_result.json
 data/yaxim_wbs.xlsx
 data/test_refactored_result.json
 archive
-
+outputs/
 # mac DS_Store
 .DS_Store
 
