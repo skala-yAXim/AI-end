@@ -53,13 +53,11 @@ def load_daily_reports_node(state: WeeklyLangGraphState) -> WeeklyLangGraphState
         
         print(start_date, end_date, user_name, state.get("user_name"), state.get("project_id"))
 
-        daily_reports_data = generator.load_daily_reports(user_name, start_date, end_date)
-
-        if not daily_reports_data:
-            raise ValueError("일일 보고서 데이터가 없습니다.")
-
-        state["daily_reports_data"] = daily_reports_data
+        updated_state = generator.load_daily_reports(state)
+        
         print("일일 보고서 로드 완료")
+        
+        return updated_state
 
     except Exception as e:
         print(f"일일 보고서 로드 실패: {e}")
@@ -86,15 +84,9 @@ def generate_weekly_report_node(state: WeeklyLangGraphState) -> WeeklyLangGraphS
         if not daily_reports_data:
             raise ValueError("일일 보고서 데이터가 없습니다.")
 
-        weekly_report_result = generator.generate_weekly_report(
-            user_name, user_id, start_date, end_date, daily_reports_data
-        )
+        updated_state = generator.generate_weekly_report(state)
 
-        if "error" not in weekly_report_result:
-            state["weekly_report_result"] = weekly_report_result
-            print("주간 보고서 생성 완료")
-        else:
-            raise ValueError("주간 보고서 생성 중 오류 발생")
+        return updated_state
 
     except Exception as e:
         print(f"주간 보고서 생성 실패: {e}")
