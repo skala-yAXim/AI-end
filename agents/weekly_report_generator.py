@@ -32,6 +32,9 @@ class WeeklyReportGenerator:
             openai_api_key=config.OPENAI_API_KEY
         )
         
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        self.reports_input_dir = os.path.join(project_root, 'outputs')
+        
         # 주간 보고서 프롬프트 템플릿 파일 경로 설정
         prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "weekly_report_prompt.md")
         
@@ -48,7 +51,7 @@ class WeeklyReportGenerator:
         self.prompt = PromptTemplate.from_template(prompt_template_str)
         self.parser = JsonOutputParser()
 
-    def load_daily_reports(self, user_name: str, start_date_str: str, end_date_str: str, reports_dir: str) -> List[Dict[str, Any]]:
+    def load_daily_reports(self, user_name: str, start_date_str: str, end_date_str: str) -> List[Dict[str, Any]]:
         """
         지정된 기간과 사용자에 해당하는 일일 보고서 파일들을 로드합니다.
         
@@ -69,7 +72,9 @@ class WeeklyReportGenerator:
         while current_date <= end_date:
             date_str = current_date.strftime('%Y-%m-%d')
             file_name = f"daily_report_{user_name}_{date_str}.json"
-            file_path = os.path.join(reports_dir, file_name)
+            file_path = os.path.join(self.reports_input_dir, file_name)
+            
+            print(file_path)
             
             if os.path.exists(file_path):
                 try:
