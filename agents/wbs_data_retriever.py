@@ -13,7 +13,7 @@ from core.state_definition import LangGraphState
 # 이전 core.vector_db_retriever.retrieve_wbs_data 대신 새로운 도구 사용
 from tools.wbs_retriever_tool import get_project_task_items_tool, get_tasks_by_assignee_tool
 
-class WBSDataRetrieverAgent:
+class WBSDataRetriever:
     """
     LangGraph 노드로서 tools/wbs_retriever_tools.py의 함수를 사용하여
     VectorDB에서 WBS 데이터를 조회하여 State에 저장합니다.
