@@ -39,6 +39,17 @@ class DocsAnalyzer:
                 "사용자 ID {user_id} (이름: {user_name})의 다음 문서들을 분석하여 WBS({wbs_data})와 관련된 주요 내용을 요약하고, 관련 작업 매칭 결과를 JSON으로 반환해주세요:\n\n{documents}\n\n분석 기준일: {target_date}"
             ) # user_id 사용 명시
         self.parser = JsonOutputParser()
+
+    def _count_unique_documents(self, retrieved_docs_list: list) -> int:
+        """문서 리스트에서 고유한 문서의 개수를 계산합니다."""
+        unique_filenames = set()
+        
+        for doc_item in retrieved_docs_list:
+            metadata = doc_item.get("metadata", {})
+            filename = metadata.get("filename", metadata.get("title", "Unknown Document"))
+            unique_filenames.add(filename)
+        
+        return len(unique_filenames)
     
     def _analyze_docs_data_internal(
         self,
@@ -51,6 +62,9 @@ class DocsAnalyzer:
     ) -> Dict[str, Any]:
         print(f"DocsAnalyzer: 사용자 ID '{user_id}'의 문서 {len(retrieved_docs_list)}개 분석 시작.")
         
+        # Unique 문서 개수 계산
+        unique_count = self._count_unique_documents(retrieved_docs_list)
+
         # 문서가 아예 없으면 요약 없이 종료
         if not retrieved_docs_list:
             return {
@@ -87,7 +101,8 @@ class DocsAnalyzer:
                 "user_id": lambda x: x["in_user_id"],
                 "user_name": lambda x: x["in_user_name"],
                 "target_date": lambda x: x["in_target_date"],
-                "docs_quality_result": lambda x: x["docs_quality_result"]
+                "docs_quality_result": lambda x: x["docs_quality_result"],
+                "total_tasks": lambda x: x["in_total_tasks"]
             }
             | self.prompt
             | self.llm
@@ -101,9 +116,11 @@ class DocsAnalyzer:
                 "in_target_date": target_date,
                 "wbs_info": wbs_data_str,
                 "documents_text": documents_text,
-                "docs_quality_result": docs_quality_result
+                "docs_quality_result": docs_quality_result,
+                "in_total_tasks": unique_count
             })
             return result
+        
         except Exception as e:
             print(f"DocsAnalyzer: LLM 분석 중 오류 발생: {e}")
             return {
