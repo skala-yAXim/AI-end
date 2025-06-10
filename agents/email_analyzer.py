@@ -81,7 +81,8 @@ class EmailAnalyzerAgent:
                 "target_user": user_name,
                 "target_date": target_date,
                 "email_data": email_data_str, # 프롬프트의 {email_data} 변수
-                "wbs_data": wbs_data_str     # 프롬프트의 {wbs_data} 변수
+                "wbs_data": wbs_data_str,     # 프롬프트의 {wbs_data} 변수
+                "total_tasks": len(retrieved_emails_list)
             }
             analysis_result = chain.invoke(llm_input)
             return analysis_result # LLM 순수 결과만 반환
