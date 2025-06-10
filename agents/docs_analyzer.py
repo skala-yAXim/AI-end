@@ -14,7 +14,7 @@ from langchain_core.runnables import RunnablePassthrough
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from core import config 
 from core.state_definition import LangGraphState 
-from tools.vector_db_retriever import retrieve_documents 
+from tools.vector_db_retriever import retrieve_documents, retrieve_wbs_data
 
 class DocsAnalyzer:
     def __init__(self, qdrant_client: QdrantClient): # embeddings_model 제거
@@ -124,7 +124,7 @@ class DocsAnalyzer:
         if not user_id:
             error_msg = "DocsAnalyzer: user_id가 State에 제공되지 않아 분석을 건너뜁니다."
             print(error_msg)
-            analysis_result = {"error": error_msg, "type": ["docs"]}
+            analysis_result = {"error": error_msg, "type": "docs"}
         elif not target_date: # 날짜 필터링 필수
             error_msg = "EmailAnalyzerAgent: target_date가 State에 제공되지 않아 분석을 건너뜁니다."
             print(error_msg); analysis_result = {"error": error_msg, "type": "Email"}
@@ -134,7 +134,7 @@ class DocsAnalyzer:
                 user_id=user_id,
                 target_date_str=target_date,
             )
-            state["retrieved_documents"] = retrieved_docs_list 
+            state["retrieved_documents"] = retrieved_docs_list
 
             analysis_result = self._analyze_docs_data_internal(
                 user_id=user_id,

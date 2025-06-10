@@ -17,6 +17,7 @@ class LangGraphState(Dict):
     wbs_data: Optional[Dict] = None 
 
     documents_analysis_result: Optional[Dict] = None
+    documents_quality_result: Optional[Dict] = None # 문서 품질 분석 결과 (DocsAnalyzerAgent에서 사용)
     email_analysis_result: Optional[Dict] = None
     git_analysis_result: Optional[Dict] = None
     teams_analysis_result: Optional[Dict] = None

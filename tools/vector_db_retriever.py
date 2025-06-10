@@ -71,7 +71,7 @@ def retrieve_documents(
     qdrant_client: QdrantClient,
     user_id: str,
     target_date_str: Optional[str] = None,
-    scroll_limit: int = DEFAULT_SCROLL_LIMIT 
+    scroll_limit: int = DEFAULT_SCROLL_LIMIT
 ) -> List[Dict]:
     """
     'Documents' 컬렉션에서 특정 사용자의 문서를 검색합니다. (scroll API 사용)
@@ -82,7 +82,7 @@ def retrieve_documents(
     must_conditions = [
         FieldCondition(key="author", match=MatchValue(value=user_id))
     ]
-    date_filter_condition = _create_date_filter(target_date_str, "date") 
+    date_filter_condition = _create_date_filter(target_date_str, "last_modified") 
     if date_filter_condition:
         must_conditions.append(date_filter_condition)
 
@@ -222,4 +222,79 @@ def retrieve_teams_posts(
         return formatted_docs
     except Exception as e:
         print(f"VectorDBRetriever: Teams 게시물 검색 중 오류 (scroll API): {e}")
+        return []
+
+
+# --- WBS Data ---
+def retrieve_wbs_data(
+    qdrant_client: QdrantClient,
+    project_id: Optional[str] = None,
+    scroll_limit: int = DEFAULT_SCROLL_LIMIT
+) -> List[Dict]:
+    """
+    'WBSData' 컬렉션에서 WBS 정보를 검색합니다. (scroll API 사용)
+    필터: project_id가 있으면 해당 프로젝트만, 없으면 전체 조회
+    """
+    print(f"VectorDBRetriever: '{config.COLLECTION_WBS_DATA}' 컬렉션 scroll 검색 중 (project_id: {project_id or '전체'}, limit: {scroll_limit})")
+    
+    must_conditions = []
+    if project_id:
+        must_conditions.append(
+            FieldCondition(key="project_id", match=MatchValue(value=project_id))
+        )
+    
+    # project_id가 없으면 필터 없이 전체 조회
+    qdrant_filter = Filter(must=must_conditions) if must_conditions else None
+    
+    try:
+        points, _next_offset = qdrant_client.scroll(
+            collection_name=config.COLLECTION_WBS_DATA,
+            scroll_filter=qdrant_filter,
+            limit=scroll_limit,
+            with_payload=True,
+            with_vectors=False
+        )
+        formatted_docs = _format_qdrant_points(points, "deliverables")
+        print(f"VectorDBRetriever: '{config.COLLECTION_WBS_DATA}'에서 {len(formatted_docs)}개 WBS 데이터 발견.")
+        return formatted_docs
+    except Exception as e:
+        print(f"VectorDBRetriever: WBS 데이터 검색 중 오류 (scroll API): {e}")
+        return []
+
+
+def retrieve_documents_for_wbs_matching(
+    qdrant_client: QdrantClient,
+    user_id: str,
+    deliverable_keywords: Optional[List[str]] = None,
+    scroll_limit: int = DEFAULT_SCROLL_LIMIT
+) -> List[Dict]:
+    """
+    WBS 매칭을 위한 특화된 문서 검색입니다.
+    기본 retrieve_documents와 동일하지만, deliverable_keywords 힌트를 활용할 수 있습니다.
+    """
+    print(f"VectorDBRetriever: WBS 매칭용 문서 검색 (author: {user_id}, keywords: {deliverable_keywords or '전체'}, limit: {scroll_limit})")
+    
+    must_conditions = [
+        FieldCondition(key="author", match=MatchValue(value=user_id))
+    ]
+    
+    # 향후 deliverable_keywords를 활용한 고급 필터링 추가 가능
+    # 현재는 기본 문서 검색과 동일하게 동작
+    
+    qdrant_final_filter = Filter(must=must_conditions)
+    
+    try:
+        points, _next_offset = qdrant_client.scroll(
+            collection_name=config.COLLECTION_DOCUMENTS,
+            scroll_filter=qdrant_final_filter,
+            limit=scroll_limit,
+            with_payload=True,
+            with_vectors=False
+        )
+        # WBS 매칭용이므로 전체 page_content 포함하여 반환
+        formatted_docs = _format_qdrant_points(points, "page_content")
+        print(f"VectorDBRetriever: WBS 매칭용 문서 {len(formatted_docs)}개 발견 (author: {user_id}).")
+        return formatted_docs
+    except Exception as e:
+        print(f"VectorDBRetriever: WBS 매칭용 문서 검색 중 오류 (scroll API): {e}")
         return []
