@@ -33,7 +33,7 @@ DEFAULT_SENTENCE_TRANSFORMER_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 class VectorDBHandler:
     """VectorDB(Qdrant) 관련 처리를 담당하는 클래스 (SentenceTransformer 임베딩 전용, 차원 동적 로드)"""
 
-    def __init__(self, db_base_path: str, project_id: str, collection_name_prefix: str = COLLECTION_WBS_DATA,
+    def __init__(self, project_id: str, collection_name_prefix: str = COLLECTION_WBS_DATA,
                  sentence_transformer_model_name: str = DEFAULT_SENTENCE_TRANSFORMER_MODEL, **kwargs):
         if not project_id:
             raise ValueError("VectorDBHandler 초기화: project_id가 필요합니다.")
@@ -44,13 +44,10 @@ class VectorDBHandler:
         self.project_id = project_id
         self.collection_name = f"{collection_name_prefix}"
 
-        self.db_path = os.path.join(db_base_path, "qdrant_db")
-        os.makedirs(self.db_path, exist_ok=True)
-
         try:
             self.client = QdrantClient(host="localhost", port=6333)
         except Exception as e:
-            raise RuntimeError(f"Qdrant 클라이언트 초기화 실패 (경로: {self.db_path}): {e}")
+            raise RuntimeError(f"Qdrant 클라이언트 초기화 실패 : {e}")
 
         self.embedding_model_name = sentence_transformer_model_name
 
@@ -115,7 +112,7 @@ class VectorDBHandler:
         except Exception as e:
             raise RuntimeError(f"Qdrant 컬렉션 '{self.collection_name}' 처리 중 오류: {e}")
 
-        print(f"VectorDBHandler(Qdrant, SentenceTransformer) 초기화 완료. DB 경로: {self.db_path}, 컬렉션: {self.collection_name}, 임베딩 모델: {self.embedding_model_name} (차원: {self.embedding_dim})")
+        print(f"VectorDBHandler(Qdrant, SentenceTransformer) 초기화 완료. , 컬렉션: {self.collection_name}, 임베딩 모델: {self.embedding_model_name} (차원: {self.embedding_dim})")
 
     def _get_embeddings(self, texts: List[str]) -> List[List[float]]:
         """텍스트 리스트를 임베딩 벡터 리스트(List[List[float]])로 변환합니다."""

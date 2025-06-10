@@ -63,7 +63,6 @@ def get_project_task_items_tool(
 
         # VectorDBHandler 초기화 시 embedding_api_key 인자 제거
         db_handler = VectorDBHandler(
-            db_base_path=db_path_to_use,
             project_id=project_id
             # sentence_transformer_model_name은 VectorDBHandler의 기본값을 사용하거나,
             # 필요시 app_settings 등에서 가져와 명시적으로 전달할 수 있습니다.

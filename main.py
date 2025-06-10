@@ -11,6 +11,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 from graph import create_analysis_graph 
 from core.state_definition import LangGraphState
 
+from langchain.globals import set_llm_cache
+set_llm_cache(None)
+
 def run_analysis_workflow():
     load_dotenv()
     print("환경 변수 로드 시도 완료.")
@@ -31,7 +34,7 @@ def run_analysis_workflow():
     initial_state = LangGraphState(
         user_id=input_user_id,
         user_name=input_user_name,
-        github_email=input_github_email,
+        github_email=input_user_id,
         target_date=input_target_date,
         project_id=input_project_id,
         documents_analysis_result=None,

@@ -1,80 +1,74 @@
-# -*- coding: utf-8 -*-
+# test_runner.py (최종 수정본)
+
 import os
-import sys
 import json
-from datetime import datetime
+import sys
+import pandas as pd
+from datetime import datetime, timedelta
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(PROJECT_ROOT)
+COLLECTION_NAME = "Git-Activities" 
+TEST_USER_EMAIL = "kproh99@naver.com"  # 분석할 사용자의 Git 이메일
+TEST_USER_NAME = "노건표"              # 리포트에 표시될 사용자 이름
+TEST_TARGET_DATE = "2025-06-05"       # 분석할 날짜 (YYYY-MM-DD 형식)
 
-from core.utils import Settings
-from preprocessing.git_data_preprocessor import GitDataPreprocessor
-from tools.wbs_data_handler import WBSDataHandler # WBS 핸들러 임포트
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+if not os.getenv("OPENAI_API_KEY"):
+    print("오류: OPENAI_API_KEY 환경변수가 설정되지 않았습니다.")
+    print("터미널에서 'export OPENAI_API_KEY=your_key'를 실행하거나 .env 파일을 설정해주세요.")
+    sys.exit(1)
+
+from qdrant_client import QdrantClient, models
 from agents.git_analyzer import GitAnalyzerAgent
 
-import os
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+LangGraphState = dict
 
 def main():
-    print("Git Analyzer Agent - Test Run with Refactored Code (including WBSDataHandler)")
-
-    settings_instance = Settings()
-    default_vector_db_base_path = os.path.join(PROJECT_ROOT, "db", "vector_store_test")
-    settings_instance.VECTOR_DB_PATH_ENV = os.getenv("VECTOR_DB_PATH", default_vector_db_base_path)
-    os.makedirs(settings_instance.VECTOR_DB_PATH_ENV, exist_ok=True)
-    print(f"Using VECTOR_DB_PATH_ENV: {settings_instance.VECTOR_DB_PATH_ENV}")
-
-    real_git_data_path = os.path.join(PROJECT_ROOT, "data", "git_export", "git_data.json")
-    print(f"Attempting to use real git data from: {real_git_data_path}")
-
-    test_author_email_for_report = "kproh99@naver.com" 
-    test_wbs_assignee_name = "노건표" 
-    test_repo_name = "skala-yAXim/AI-end" 
-    test_project_id_for_wbs = "project_sample_001"
-    test_target_date = "2025-06-02"
-
-    print(f"\n--- Running Test ---")
-    print(f"Report for User: {test_author_email_for_report}")
-    print(f"WBS Assignee: {test_wbs_assignee_name}")
-    print(f"Repository Filter: {test_repo_name}")
-    print(f"Target Date: {test_target_date if test_target_date else 'All Recent'}")
-    print(f"WBS Project ID: {test_project_id_for_wbs}")
+    """메인 테스트 실행 함수"""
+    print("--- Git Analyzer Agent 테스트 시작 (localhost:6333 연결) ---")
     
-    # 핸들러들 초기화
-    git_preprocessor = GitDataPreprocessor(settings=settings_instance)
-    wbs_handler = WBSDataHandler(settings=settings_instance) # WBS 핸들러 초기화
-
-    # GitAnalyzerAgent 초기화 시 핸들러들 전달
-    git_agent = GitAnalyzerAgent(
-        settings=settings_instance, 
-        project_id_for_wbs=test_project_id_for_wbs, # 컨텍스트용 ID 전달
-        git_data_preprocessor=git_preprocessor,
-        wbs_data_handler=wbs_handler # WBS 핸들러 전달
-    )
-
-    analysis_output = git_agent.analyze(
-        git_data_json_path=real_git_data_path, 
-        author_email_for_report=test_author_email_for_report,
-        wbs_assignee_name=test_wbs_assignee_name,
-        repo_name=test_repo_name,
-        target_date_str=test_target_date
-    )
-
-    if analysis_output:
-        print("\n--- Test Analysis Complete ---")
-        assert "user_id" in analysis_output, "user_id missing"
-        # LLM이 user_id를 채우도록 프롬프트에서 요청했으므로, LLM 결과에 따라 달라질 수 있음
-        # 여기서는 LLM이 author_email_for_report 값으로 채웠다고 가정
-        # assert analysis_output["user_id"] == test_author_email_for_report, "user_id mismatch" 
-        assert "date" in analysis_output, "date missing"
-        assert "type" in analysis_output and analysis_output["type"] == "Git", "type missing or incorrect"
-        assert "matched_tasks" in analysis_output, "matched_tasks missing"
-        assert "unmatched_tasks" in analysis_output, "unmatched_tasks missing"
-        print("JSON structure basic validation passed.")
+    # 1. 실제 Qdrant 클라이언트 초기화
+    try:
+        qdrant_client = QdrantClient(host="localhost", port=6333)
+        qdrant_client.get_collections() 
+        print("Qdrant DB (localhost:6333) 연결 성공.")
+    except Exception as e:
+        print(f"오류: Qdrant DB (localhost:6333)에 연결할 수 없습니다. Qdrant 서버가 실행 중인지 확인해주세요.")
+        print(f"에러 상세: {e}")
+        sys.exit(1)
+    
+    # 2. GitAnalyzerAgent 인스턴스 생성
+    # 에이전트가 초기화되면서 자체적으로 './prompts/git_analyze_prompt.md' 파일을 로드합니다.
+    git_agent = GitAnalyzerAgent(qdrant_client=qdrant_client)
+    
+    # 3. LangGraph State 시뮬레이션
+    initial_state = LangGraphState({
+        "github_email": TEST_USER_EMAIL,
+        "user_name": TEST_USER_NAME,
+        "target_date": TEST_TARGET_DATE,
+        "wbs_data": {
+            "project_name": "AI-end-Test",
+            "taks": [
+                {"task_id": "T01", "task_name": "로그인 기능 개발", "assignee": TEST_USER_NAME, "status": "진행중"},
+                {"task_id": "T02", "task_name": "백엔드 API 연동", "assignee": TEST_USER_NAME, "status": "예정"}
+            ]
+        }
+    })
+    
+    print(f"\n--- 에이전트 실행 (State: {json.dumps(initial_state, indent=2, ensure_ascii=False)}) ---")
+    
+    # 4. 에이전트 호출
+    result_state = git_agent(initial_state)
+    
+    # 5. 결과 출력
+    print("\n--- 에이전트 실행 완료 ---")
+    git_analysis_result = result_state.get("git_analysis_result")
+    
+    if git_analysis_result:
+        print("최종 분석 결과 (git_analysis_result):")
+        print(json.dumps(git_analysis_result, indent=2, ensure_ascii=False))
     else:
-        print("\n--- Test Analysis Failed ---")
-
-    print(f"Review the git data file used: {real_git_data_path}")
+        print("분석 결과가 없습니다.")
 
 if __name__ == "__main__":
     main()
