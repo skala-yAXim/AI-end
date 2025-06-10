@@ -35,7 +35,7 @@
 "evidence": 위 "text" 내용에 대한 핵심적인 증거를 일일 보고서에서 1~2개 선별하여 요약합니다. title과 content는 일일 보고서의 evidence에서 가져와 재구성합니다. 재구성한 title 뒤에 해당 내용을 가져온 일일 보고서의 날짜를 포함합니다. source는 일일 보고서의 evidence에 작성되어있는 값을 그대로 사용하세요.
 
 2. weekly_reflection (주간 회고 및 개선 계획)
-각 일일 보고서의 daily_reflection 내용을 종합하여 주간 전체의 회고를 작성합니다.
+각 일일 보고서의 daily_reflection의 내용을 종합하여 주간 전체의 회고를 작성합니다.
 
 "title"은 "🔍 주간 회고 및 개선점"으로 고정합니다.
 
