@@ -56,7 +56,6 @@ def get_project_task_items_tool(
     retrieved_tasks: List[Dict] = []
 
     try:
-
         # VectorDBHandler 초기화 시 embedding_api_key 인자 제거
         db_handler = VectorDBHandler(
             project_id=project_id
