@@ -31,8 +31,7 @@ set_llm_cache(None)
 
 def run_wbs_agent(project_id: str, 
                         wbs_file_path: str, 
-                        prompt_file_path: str, 
-                        db_base_path: Optional[str] = None):
+                        prompt_file_path: str):
 
     print("--- WBS 적재 에이전트 실행 ---")
     print(f"프로젝트 ID: {project_id}")
@@ -42,18 +41,6 @@ def run_wbs_agent(project_id: str,
     # 파일 경로를 절대 경로로 변환
     wbs_file_abs = os.path.abspath(wbs_file_path)
     prompt_file_abs = os.path.abspath(prompt_file_path)
-    db_path_abs = os.path.abspath(db_base_path) if db_base_path else None
-
-    if db_path_abs:
-        print(f"VectorDB 기본 경로 (지정됨): {db_path_abs}")
-    else:
-        try:
-            s = Settings() 
-            default_db_path_from_config = s.VECTOR_DB_PATH_ENV or s.DEFAULT_VECTOR_DB_BASE_PATH
-            print(f"VectorDB 기본 경로 (설정값 사용 예정): {default_db_path_from_config}")
-        except ValueError as e:
-            print(f"경고: 설정 로드 중 오류로 기본 DB 경로를 확인할 수 없습니다 - {e}")
-            print("      .env 파일에 OPENAI_API_KEY가 설정되어 있는지 확인하세요.")
 
     if not os.path.exists(wbs_file_abs):
         print(f"오류: WBS 파일을 찾을 수 없습니다 - {wbs_file_abs}")
@@ -67,7 +54,6 @@ def run_wbs_agent(project_id: str,
             project_id=project_id,
             wbs_file_path=wbs_file_abs,
             prompt_file_path=prompt_file_abs,
-            vector_db_base_path=db_path_abs # None일 수 있음 (Agent 내부에서 기본값 처리)
         )
         
         success = agent.run_ingestion_pipeline()
@@ -97,7 +83,6 @@ if __name__ == "__main__":
     wbs_file_example = "data/wbs/[야심]_300. WBS_v0.2.xlsx" # 실제 파일 경로로 수정 필요
     # wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
     prompt_file_example = "prompts/wbs_prompt.md"       # 실제 파일 경로로 수정 필요
-    db_path_example = None # 기본 DB 경로 사용
 
     print(f"예시 실행: 프로젝트 ID '{project_id_example}'")
     
@@ -115,7 +100,6 @@ if __name__ == "__main__":
         project_id=project_id_example,
         wbs_file_path=wbs_file_example,
         prompt_file_path=prompt_file_example,
-        db_base_path=db_path_example
     )
 
     if success_status:

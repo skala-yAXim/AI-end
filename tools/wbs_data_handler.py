@@ -48,7 +48,6 @@ class WBSDataHandler:
             assigned_wbs_tasks = get_tasks_by_assignee_tool(
                 project_id=project_id_for_wbs,
                 assignee_name_to_filter=wbs_assignee_name,
-                db_base_path=self.settings.VECTOR_DB_PATH_ENV # WBS VectorDB의 기본 경로
             )
             print(f"Retrieved {len(assigned_wbs_tasks)} WBS tasks for assignee '{wbs_assignee_name}'.")
             state["raw_wbs_tasks"] = assigned_wbs_tasks
