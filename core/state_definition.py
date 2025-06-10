@@ -34,3 +34,16 @@ class LangGraphState(Dict):
     retrieved_git_activities: Optional[Dict[str, List[Dict]]] = None
     retrieved_teams_posts: Optional[List[Dict]] = None
 
+class TeamWeeklyLangGraphState(Dict):
+    team_id: str
+    team_name: str
+    team_description: str
+    start_date: str
+    end_date: str
+    team_members: List[str]
+    project_id: str
+    wbs_data: Optional[Dict] = None
+    weekly_reports_data: Optional[List[Dict]] = None
+    team_weekly_report_result: Optional[Dict] = None
+    error_message: Optional[str] = None
+    
