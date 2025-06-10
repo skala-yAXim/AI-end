@@ -32,7 +32,7 @@
 
 "text": 한 주간의 주요 업무 흐름을 자연스럽고 구체적으로 서술합니다. 업무를 진행한 날짜를 표시합니다. 문장은 종결형 "습니다"체 대신, 간결하고 보고서에 적합한 서술 요약체로 작성해주세요. '~함', '~됨', '~필요' 등 간결한 동사형 표현을 사용해주세요.
 
-"evidence": 위 "text" 내용에 대한 핵심적인 증거를 일일 보고서에서 1~2개 선별하여 요약합니다. title과 content는 일일 보고서의 evidence에서 가져와 재구성합니다. 재구성한 title 뒤에 해당 내용을 가져온 일일 보고서의 날짜를 포함합니다.
+"evidence": 위 "text" 내용에 대한 핵심적인 증거를 일일 보고서에서 1~2개 선별하여 요약합니다. title과 content는 일일 보고서의 evidence에서 가져와 재구성합니다. 재구성한 title 뒤에 해당 내용을 가져온 일일 보고서의 날짜를 포함합니다. source는 일일 보고서의 evidence에 작성되어있는 값을 그대로 사용하세요.
 
 2. weekly_reflection (주간 회고 및 개선 계획)
 각 일일 보고서의 daily_reflection 내용을 종합하여 주간 전체의 회고를 작성합니다.
@@ -67,6 +67,7 @@ weekly_reflection 섹션을 통해 한 주간의 업무에 대한 개인적 성�
         "text": "(예시: **Git 데이터 기반 개인 업무 내용 파악 에이전트** 개발 작업을 주도적으로 진행. 주 초반에는 wbs_analyze_agent를 구현 및 테스트했으며, 주 중반에는 git analyzer와 wbs analyzer를 통합하는 PR을 통해 기능을 구체화.(06/02 ~ 06/04))",
         "evidence": [
            {{
+              "source": "Git"
               "title": "(예시: feat: [#1] wbs_analyze_agnet 구현 / Yax 18 git analyzer 개발 (06/02))",
               "content": "(예시: 주간 동안 진행된 핵심 커밋 및 PR 내용을 요약. wbs_analyze agent 생성 및 벡터DB 연동, git/wbs analyzer 에이전트 개발 및 기능 추가.)",
               "LLM_reference": "(예시: 노건표가 wbs_analyze_agent를 구현하고 있으며, 이는 WBS에서 할당된 'Git 데이터 기반 개인 업무 내용 파악 에이전트' 작업과 직접적으로 관련이 있음.)"
@@ -77,6 +78,7 @@ weekly_reflection 섹션을 통해 한 주간의 업무에 대한 개인적 성�
         "text": "(예시: 프로젝트 데이터의 **전처리 및 데이터베이스 적재** 작업을 수행. 특히 git, email 데이터의 전처리 및 VectorDB 적재 코드를 추가하고 리팩토링.(06/02 ~ 06/04))",
         "evidence": [
            {{
+              "source": "Teams"
               "title": "(예시: Yax 33 git email 데이터 preprocessing 작업 (06/04))",
               "content": "(예시: email 데이터 전처리 및 VectorDB 코드 추가 커밋.)",
               "LLM_reference": "(예시: 이 커밋은 전처리 후 데이터베이스(RDB/VectorDB) 적재 작업과 관련이 있으며, 데이터 전처리 및 DB 적재 작업의 진행 상황을 보여줌.)"
