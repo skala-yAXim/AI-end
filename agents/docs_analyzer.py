@@ -14,7 +14,7 @@ from langchain_core.runnables import RunnablePassthrough
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from core import config 
 from core.state_definition import LangGraphState 
-from tools.vector_db_retriever import retrieve_documents, retrieve_wbs_data
+from tools.vector_db_retriever import retrieve_documents
 
 class DocsAnalyzer:
     def __init__(self, qdrant_client: QdrantClient): # embeddings_model 제거
@@ -46,7 +46,8 @@ class DocsAnalyzer:
         user_name: Optional[str],
         target_date: str,
         wbs_data: Optional[dict],
-        retrieved_docs_list: list
+        retrieved_docs_list: list,
+        docs_quality_result: Optional[dict] = None
     ) -> Dict[str, Any]:
         print(f"DocsAnalyzer: 사용자 ID '{user_id}'의 문서 {len(retrieved_docs_list)}개 분석 시작.")
         
@@ -85,7 +86,8 @@ class DocsAnalyzer:
                 "wbs_data": lambda x: x["wbs_info"],
                 "user_id": lambda x: x["in_user_id"],
                 "user_name": lambda x: x["in_user_name"],
-                "target_date": lambda x: x["in_target_date"]
+                "target_date": lambda x: x["in_target_date"],
+                "docs_quality_result": lambda x: x["docs_quality_result"]
             }
             | self.prompt
             | self.llm
@@ -98,7 +100,8 @@ class DocsAnalyzer:
                 "in_user_name": user_name or user_id,
                 "in_target_date": target_date,
                 "wbs_info": wbs_data_str,
-                "documents_text": documents_text
+                "documents_text": documents_text,
+                "docs_quality_result": docs_quality_result
             })
             return result
         except Exception as e:
@@ -120,6 +123,7 @@ class DocsAnalyzer:
         user_name = state.get("user_name") # 표시용으로 사용 가능
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
+        quality_result = state.get("documents_quality_analysis_result", {})
 
         if not user_id:
             error_msg = "DocsAnalyzer: user_id가 State에 제공되지 않아 분석을 건너뜁니다."
@@ -141,7 +145,8 @@ class DocsAnalyzer:
                 user_name=user_name, # LLM 프롬프트용
                 target_date=target_date, # 분석 컨텍스트용 날짜
                 wbs_data=wbs_data,
-                retrieved_docs_list=retrieved_docs_list
+                retrieved_docs_list=retrieved_docs_list,
+                docs_quality_result=quality_result
             )
         
         state["documents_analysis_result"] = analysis_result
