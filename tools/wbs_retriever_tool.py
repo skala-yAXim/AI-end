@@ -58,8 +58,8 @@ def get_project_task_items_tool(
 
     try:
         app_settings = Settings()
-        db_path_to_use = db_base_path or app_settings.VECTOR_DB_PATH_ENV or app_settings.DEFAULT_VECTOR_DB_BASE_PATH
-        print(f"VectorDB 기본 경로 사용: {db_path_to_use}")
+        # db_path_to_use = db_base_path or app_settings.VECTOR_DB_PATH_ENV or app_settings.DEFAULT_VECTOR_DB_BASE_PATH
+        # print(f"VectorDB 기본 경로 사용: {db_path_to_use}")
 
         # VectorDBHandler 초기화 시 embedding_api_key 인자 제거
         db_handler = VectorDBHandler(
