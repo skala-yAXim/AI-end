@@ -8,9 +8,8 @@ from qdrant_client import QdrantClient
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core import config # config.DEFAULT_VECTOR_DB_BASE_PATH 등 사용 가능성
+from core import config 
 from core.state_definition import LangGraphState
-# 이전 core.vector_db_retriever.retrieve_wbs_data 대신 새로운 도구 사용
 from tools.wbs_retriever_tool import get_project_task_items_tool, get_tasks_by_assignee_tool
 
 class WBSDataRetriever:
@@ -43,7 +42,6 @@ class WBSDataRetriever:
         print(f"WBSDataRetriever (load_wbs_data): 프로젝트 '{project_id}'의 WBS 데이터 로딩 시작 (tools 사용)...")
         
         task_list: List[Dict] = []
-        db_base_path_for_tool = None # 또는 config.DEFAULT_VECTOR_DB_BASE_PATH
 
         # 담당자 필터링 조건 결정 (user_id 우선, 없으면 user_name)
         assignee_filter_identifier = user_name_for_task_filter
@@ -53,13 +51,11 @@ class WBSDataRetriever:
             task_list = get_tasks_by_assignee_tool(
                 project_id=project_id,
                 assignee_name_to_filter=assignee_filter_identifier,
-                db_base_path=db_base_path_for_tool,
             )
         else:
             print("담당자 필터링 없이 프로젝트의 모든 WBS 작업 조회 시도.")
             task_list = get_project_task_items_tool(
                 project_id=project_id,
-                db_base_path=db_base_path_for_tool,
             )
         
         # State에 저장할 wbs_data 구조 구성
