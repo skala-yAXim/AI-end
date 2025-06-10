@@ -1,7 +1,7 @@
 import json
 import os
 from qdrant_client import QdrantClient
-from agents.wbs_data_retriever_agent import WBSDataRetrieverAgent
+from agents.wbs_data_retriever import WBSDataRetriever
 from agents.weekly_report_generator import WeeklyReportGenerator
 from core import config
 from core.state_definition import LangGraphState, WeeklyLangGraphState
@@ -34,7 +34,7 @@ def load_wbs_node(state: WeeklyLangGraphState) -> WeeklyLangGraphState:
     # WBSDataRetrieverAgent는 __init__에서 qdrant_client를 받지만,
     # tools/wbs_retriever_tools.py의 함수들은 자체적으로 DB 핸들러를 생성함.
     # 따라서 여기서 전달하는 qdrant_client_instance는 현재 WBS 조회에는 직접 사용되지 않을 수 있음.
-    wbs_retriever_agent = WBSDataRetrieverAgent(qdrant_client=qdrant_client_instance)
+    wbs_retriever_agent = WBSDataRetriever(qdrant_client=qdrant_client_instance)
     updated_state = wbs_retriever_agent(state) 
     if updated_state.get("wbs_data") and updated_state.get("wbs_data", {}).get("task_list"):
         print("WBS 데이터 로딩 완료.")
