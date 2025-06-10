@@ -6,8 +6,8 @@ from typing import List, Dict, Optional, Any
 import json 
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue, DatetimeRange
-
+from qdrant_client.models import Filter, FieldCondition, MatchValue, DatetimeRange, MatchText
+from utils.embed_query import embed_query 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from core import config 
 
@@ -71,7 +71,7 @@ def retrieve_documents(
     qdrant_client: QdrantClient,
     user_id: str,
     target_date_str: Optional[str] = None,
-    scroll_limit: int = DEFAULT_SCROLL_LIMIT 
+    scroll_limit: int = DEFAULT_SCROLL_LIMIT
 ) -> List[Dict]:
     """
     'Documents' 컬렉션에서 특정 사용자의 문서를 검색합니다. (scroll API 사용)
@@ -82,7 +82,7 @@ def retrieve_documents(
     must_conditions = [
         FieldCondition(key="author", match=MatchValue(value=user_id))
     ]
-    date_filter_condition = _create_date_filter(target_date_str, "date") 
+    date_filter_condition = _create_date_filter(target_date_str, "last_modified") 
     if date_filter_condition:
         must_conditions.append(date_filter_condition)
 
@@ -223,3 +223,65 @@ def retrieve_teams_posts(
     except Exception as e:
         print(f"VectorDBRetriever: Teams 게시물 검색 중 오류 (scroll API): {e}")
         return []
+
+
+def retrieve_documents_content(
+    qdrant_client: QdrantClient,
+    document_list: List[Dict],   # file_id, filename 등 포함된 문서 리스트
+    queries: List[str],          # LLM이 뽑은 중요 평가 항목 키워드
+    top_k: int = 5
+) -> List[Dict]:
+    """
+    문서 리스트와 평가 항목(queries)을 기반으로,
+    해당 문서에 속한 page_content에서 의미 있는 chunk들을 hybrid 방식으로 추출
+    """
+
+    target_file_names = [doc["filename"] for doc in document_list]
+    print(f"VectorDBRetriever: 타겟 파일들: {target_file_names}")
+
+    # 파일 필터: 문서 리스트에 포함된 파일명으로 필터링
+    file_conditions = []
+    for filename in target_file_names:
+        file_conditions.append(
+            FieldCondition(key="filename", match=MatchValue(value=filename))
+        )
+    
+    # OR 조건으로 파일 필터 생성
+    from qdrant_client.models import Filter
+    file_filter = Filter(should=file_conditions)  # should = OR 조건
+
+    retrieved_docs_content = []
+    seen_ids = set()
+    print(f"VectorDBRetriever: {len(document_list)}개의 문서에서 {len(queries)}개의 쿼리로 검색 시작...")
+    for query in queries:
+        print(f"VectorDBRetriever: '{query}' 쿼리로 검색 중...")
+        try:
+            vector = embed_query(query)  # 의미 벡터 임베딩 함수
+            
+            # Qdrant 검색 (필터 매개변수명 수정)
+            results = qdrant_client.search(
+                collection_name=config.COLLECTION_DOCUMENTS,
+                query_vector=vector,
+                limit=top_k,
+                with_payload=True,
+                query_filter=file_filter,  # filter → query_filter로 변경
+                search_params={"hnsw_ef": 128}
+            )
+            
+            for r in results:
+                if r.id not in seen_ids:
+                    retrieved_docs_content.append({
+                        "id": str(r.id),
+                        "filename": r.payload.get("filename"),
+                        "chunk_id": r.payload.get("chunk_id"),
+                        "page_content": r.payload.get("page_content"),
+                        "score": r.score
+                    })
+                    seen_ids.add(r.id)
+                    
+        except Exception as e:
+            print(f"VectorDBRetriever: '{query}' 검색 중 오류: {e}")
+            continue
+
+    print(f"VectorDBRetriever: 총 {len(retrieved_docs_content)}개 청크 추출 완료")
+    return retrieved_docs_content

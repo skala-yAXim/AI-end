@@ -14,7 +14,7 @@ from langchain_core.runnables import RunnablePassthrough
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from core import config 
 from core.state_definition import LangGraphState 
-from tools.vector_db_retriever import retrieve_documents 
+from tools.vector_db_retriever import retrieve_documents
 
 class DocsAnalyzer:
     def __init__(self, qdrant_client: QdrantClient): # embeddings_model 제거
@@ -39,6 +39,17 @@ class DocsAnalyzer:
                 "사용자 ID {user_id} (이름: {user_name})의 다음 문서들을 분석하여 WBS({wbs_data})와 관련된 주요 내용을 요약하고, 관련 작업 매칭 결과를 JSON으로 반환해주세요:\n\n{documents}\n\n분석 기준일: {target_date}"
             ) # user_id 사용 명시
         self.parser = JsonOutputParser()
+
+    def _count_unique_documents(self, retrieved_docs_list: list) -> int:
+        """문서 리스트에서 고유한 문서의 개수를 계산합니다."""
+        unique_filenames = set()
+        
+        for doc_item in retrieved_docs_list:
+            metadata = doc_item.get("metadata", {})
+            filename = metadata.get("filename", metadata.get("title", "Unknown Document"))
+            unique_filenames.add(filename)
+        
+        return len(unique_filenames)
     
     def _analyze_docs_data_internal(
         self,
@@ -46,10 +57,14 @@ class DocsAnalyzer:
         user_name: Optional[str],
         target_date: str,
         wbs_data: Optional[dict],
-        retrieved_docs_list: list
+        retrieved_docs_list: list,
+        docs_quality_result: Optional[dict] = None
     ) -> Dict[str, Any]:
         print(f"DocsAnalyzer: 사용자 ID '{user_id}'의 문서 {len(retrieved_docs_list)}개 분석 시작.")
         
+        # Unique 문서 개수 계산
+        unique_count = self._count_unique_documents(retrieved_docs_list)
+
         # 문서가 아예 없으면 요약 없이 종료
         if not retrieved_docs_list:
             return {
@@ -85,7 +100,9 @@ class DocsAnalyzer:
                 "wbs_data": lambda x: x["wbs_info"],
                 "user_id": lambda x: x["in_user_id"],
                 "user_name": lambda x: x["in_user_name"],
-                "target_date": lambda x: x["in_target_date"]
+                "target_date": lambda x: x["in_target_date"],
+                "docs_quality_result": lambda x: x["docs_quality_result"],
+                "total_tasks": lambda x: x["in_total_tasks"]
             }
             | self.prompt
             | self.llm
@@ -98,9 +115,12 @@ class DocsAnalyzer:
                 "in_user_name": user_name or user_id,
                 "in_target_date": target_date,
                 "wbs_info": wbs_data_str,
-                "documents_text": documents_text
+                "documents_text": documents_text,
+                "docs_quality_result": docs_quality_result,
+                "in_total_tasks": unique_count
             })
             return result
+        
         except Exception as e:
             print(f"DocsAnalyzer: LLM 분석 중 오류 발생: {e}")
             return {
@@ -120,11 +140,12 @@ class DocsAnalyzer:
         user_name = state.get("user_name") # 표시용으로 사용 가능
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
+        quality_result = state.get("documents_quality_analysis_result", {})
 
         if not user_id:
             error_msg = "DocsAnalyzer: user_id가 State에 제공되지 않아 분석을 건너뜁니다."
             print(error_msg)
-            analysis_result = {"error": error_msg, "type": ["docs"]}
+            analysis_result = {"error": error_msg, "type": "docs"}
         elif not target_date: # 날짜 필터링 필수
             error_msg = "EmailAnalyzerAgent: target_date가 State에 제공되지 않아 분석을 건너뜁니다."
             print(error_msg); analysis_result = {"error": error_msg, "type": "Email"}
@@ -134,14 +155,15 @@ class DocsAnalyzer:
                 user_id=user_id,
                 target_date_str=target_date,
             )
-            state["retrieved_documents"] = retrieved_docs_list 
+            state["retrieved_documents"] = retrieved_docs_list
 
             analysis_result = self._analyze_docs_data_internal(
                 user_id=user_id,
                 user_name=user_name, # LLM 프롬프트용
                 target_date=target_date, # 분석 컨텍스트용 날짜
                 wbs_data=wbs_data,
-                retrieved_docs_list=retrieved_docs_list
+                retrieved_docs_list=retrieved_docs_list,
+                docs_quality_result=quality_result
             )
         
         state["documents_analysis_result"] = analysis_result
