@@ -46,11 +46,8 @@ class WBSAnalysisAgent:
             prompt_template_str=prompt_template_string
         )
 
-        # VectorDB 핸들러 초기화
-        db_path_to_use = vector_db_base_path or self.settings.VECTOR_DB_PATH_ENV or self.settings.DEFAULT_VECTOR_DB_BASE_PATH
         # vector_db_base_path 아래에 프로젝트별/컬렉션별로 실제 DB 파일이 생성됨
         self.db_handler = VectorDBHandler(
-            db_base_path=db_path_to_use, # 실제 DB 파일이 저장될 최상위 경로
             project_id=self.project_id,
         )
         

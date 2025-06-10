@@ -30,7 +30,6 @@ class Settings:
     # VectorDB 기본 경로 (프로젝트 루트를 기준으로 db/vector_store_wbs 로 가정)
     # 이 경로는 run_agent.py 등에서 오버라이드 될 수 있음
     _project_root_guess = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # core -> wbs_ingestion_agent -> project_root
-    DEFAULT_VECTOR_DB_BASE_PATH: str = os.path.join(_project_root_guess, "db", "vector_store")
     
     # 환경 변수에서 VECTOR_DB_PATH가 설정되어 있으면 그것을 사용
     VECTOR_DB_PATH_ENV: str = os.getenv("VECTOR_DB_PATH")
