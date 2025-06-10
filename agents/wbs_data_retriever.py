@@ -71,7 +71,9 @@ class WBSDataRetriever:
                 "task_list": task_list
             }
             state["wbs_data"] = wbs_data_for_state
+            
             print(f"WBSDataRetriever (load_w_bs_data): WBS 데이터 로드 완료. 작업 수: {len(task_list)} (필터링 적용됨)")
+
         else:
             state["wbs_data"] = { # 데이터가 없더라도 기본 구조는 유지
                 "project_id": project_id,
