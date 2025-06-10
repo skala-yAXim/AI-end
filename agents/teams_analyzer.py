@@ -69,7 +69,21 @@ class TeamsAnalyzer:
 
         if not retrieved_posts_list:
             print(f"TeamsAnalyzer: 사용자 ID '{user_id}'에 대한 분석할 Teams 게시물이 없습니다 (대상일: {target_date}).")
-            return {"summary": "분석할 관련 Teams 게시물을 찾지 못했습니다.", "matched_tasks": [], "unmatched_tasks": [], "error": "No Teams posts to analyze"}
+            return {
+                "user_id": user_id,
+                "date": target_date,
+                "type": "Teams",
+                "total_tasks": 0,
+                "teams_analysis": {
+                    "matched_tasks": [],
+                    "unmatched_tasks": [],
+                    "daily_reflection": {
+                        "title": "🔍 오늘의 회고 및 개선점",
+                        "content": "분석할 Teams 게시물이 없어 업무 현황을 파악할 수 없습니다."
+                    }
+                },
+                "error": "No Teams posts to analyze"
+            }
 
         wbs_data_str = json.dumps(wbs_data, ensure_ascii=False, indent=2) if wbs_data else "WBS 정보 없음"
         posts_data_str = self._prepare_teams_posts_for_llm(retrieved_posts_list, target_date)
