@@ -37,6 +37,7 @@ def run_analysis_workflow():
         github_email=input_user_id,
         target_date=input_target_date,
         project_id=input_project_id,
+        docs_quality_analysis_result=None, # 문서 품질 분석 결과
         documents_analysis_result=None,
         email_analysis_result=None,
         git_analysis_result=None,
@@ -74,6 +75,12 @@ def run_analysis_workflow():
             # print("--- WBS 전체 내용 끝 ---")
         else:
             print("WBS 데이터가 로드되지 않았거나 유효한 형식이 아닙니다.")
+            
+        print("\n=== 문서 퀄리티 분석 결과 (documents_quality_analysis_result) ===")
+        if final_state.get("documents_quality_analysis_result"):
+            pprint(final_state.get("documents_quality_analysis_result"))
+        else:
+            print("문서 분석 결과가 없습니다.")
 
         print("\n=== 문서 분석 결과 (documents_analysis_result) ===")
         if final_state.get("documents_analysis_result"):
