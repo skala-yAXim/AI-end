@@ -25,8 +25,7 @@ import os
 
 class WBSAnalysisAgent:
 
-    def __init__(self, project_id: str, wbs_file_path: str, prompt_file_path: str, 
-                 vector_db_base_path: Optional[str] = None):
+    def __init__(self, project_id: str, wbs_file_path: str, prompt_file_path: str):
 
         if not all([project_id, wbs_file_path, prompt_file_path]):
             raise ValueError("project_id, wbs_file_path, prompt_file_path는 필수 인자입니다.")

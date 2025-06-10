@@ -47,7 +47,6 @@ from qdrant_client import models # Qdrant 필터 사용을 위해 추가
 
 def get_project_task_items_tool(
     project_id: str,
-    db_base_path: Optional[str] = None,
     limit_results: Optional[int] = None # Qdrant의 limit은 scroll API에서 약간 다르게 동작할 수 있음
 ) -> List[Dict]:
     """
@@ -57,9 +56,6 @@ def get_project_task_items_tool(
     retrieved_tasks: List[Dict] = []
 
     try:
-        app_settings = Settings()
-        db_path_to_use = db_base_path or app_settings.VECTOR_DB_PATH_ENV or app_settings.DEFAULT_VECTOR_DB_BASE_PATH
-        print(f"VectorDB 기본 경로 사용: {db_path_to_use}")
 
         # VectorDBHandler 초기화 시 embedding_api_key 인자 제거
         db_handler = VectorDBHandler(
@@ -134,7 +130,6 @@ def get_project_task_items_tool(
 def get_tasks_by_assignee_tool(
     project_id: str,
     assignee_name_to_filter: str,
-    db_base_path: Optional[str] = None,
     initial_fetch_limit: Optional[int] = None
 ) -> List[Dict]:
     """
@@ -149,7 +144,6 @@ def get_tasks_by_assignee_tool(
 
     all_project_tasks = get_project_task_items_tool(
         project_id=project_id,
-        db_base_path=db_base_path,
         limit_results=initial_fetch_limit
     )
 
@@ -193,7 +187,6 @@ if __name__ == "__main__":
 
 
     example_project_id = "project_sample_001" 
-    example_db_path = None 
     example_assignee_to_filter = "김용준" 
 
     # --- 담당자별 작업 조회 (후처리 필터링 방식) 테스트 ---
@@ -201,7 +194,6 @@ if __name__ == "__main__":
     tasks_for_specific_assignee = get_tasks_by_assignee_tool(
         project_id=example_project_id,
         assignee_name_to_filter=example_assignee_to_filter,
-        db_base_path=example_db_path,
         initial_fetch_limit=None
     )
 

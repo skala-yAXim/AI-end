@@ -31,9 +31,6 @@ class Settings:
     # 이 경로는 run_agent.py 등에서 오버라이드 될 수 있음
     _project_root_guess = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # core -> wbs_ingestion_agent -> project_root
     
-    # 환경 변수에서 VECTOR_DB_PATH가 설정되어 있으면 그것을 사용
-    VECTOR_DB_PATH_ENV: str = os.getenv("VECTOR_DB_PATH")
-
     def __init__(self):
         if not self.OPENAI_API_KEY:
             # 이 에이전트는 OPENAI_API_KEY가 필수적이므로, 없으면 에러 발생
