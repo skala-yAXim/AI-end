@@ -13,7 +13,7 @@ from core.state_definition import LangGraphState
 # 이전 core.vector_db_retriever.retrieve_wbs_data 대신 새로운 도구 사용
 from tools.wbs_retriever_tool import get_project_task_items_tool, get_tasks_by_assignee_tool
 
-class WBSDataRetrieverAgent:
+class WBSDataRetriever:
     """
     LangGraph 노드로서 tools/wbs_retriever_tools.py의 함수를 사용하여
     VectorDB에서 WBS 데이터를 조회하여 State에 저장합니다.
@@ -25,22 +25,22 @@ class WBSDataRetrieverAgent:
         """
         self.qdrant_client_param = qdrant_client # 파라미터로 받은 클라이언트 (현재 직접 사용 X)
         if not qdrant_client:
-             print("WBSDataRetrieverAgent 경고: QdrantClient 인스턴스가 제공되지 않았습니다. WBS 도구는 자체 클라이언트를 생성합니다.")
-        print("WBSDataRetrieverAgent: 초기화 완료. WBS 조회는 tools/wbs_retriever_tools.py의 함수를 사용합니다.")
+             print("WBSDataRetriever 경고: QdrantClient 인스턴스가 제공되지 않았습니다. WBS 도구는 자체 클라이언트를 생성합니다.")
+        print("WBSDataRetriever: 초기화 완료. WBS 조회는 tools/wbs_retriever_tools.py의 함수를 사용합니다.")
 
     def load_wbs_data(self, state: LangGraphState) -> LangGraphState:
         project_id = state.get("project_id")
         user_name_for_task_filter = state.get("user_name") # WBS 작업 필터링용 user_name
 
         if not project_id:
-            error_msg = "WBSDataRetrieverAgent (load_wbs_data): project_id가 State에 제공되지 않았습니다."
+            error_msg = "WBSDataRetriever (load_wbs_data): project_id가 State에 제공되지 않았습니다."
             print(error_msg)
             state["wbs_data"] = None
             current_error = state.get("error_message", "")
             state["error_message"] = (current_error + "\n" + error_msg).strip() if current_error else error_msg
             return state
             
-        print(f"WBSDataRetrieverAgent (load_wbs_data): 프로젝트 '{project_id}'의 WBS 데이터 로딩 시작 (tools 사용)...")
+        print(f"WBSDataRetriever (load_wbs_data): 프로젝트 '{project_id}'의 WBS 데이터 로딩 시작 (tools 사용)...")
         
         task_list: List[Dict] = []
         db_base_path_for_tool = None # 또는 config.DEFAULT_VECTOR_DB_BASE_PATH
@@ -71,7 +71,7 @@ class WBSDataRetrieverAgent:
                 "task_list": task_list
             }
             state["wbs_data"] = wbs_data_for_state
-            print(f"WBSDataRetrieverAgent (load_w_bs_data): WBS 데이터 로드 완료. 작업 수: {len(task_list)} (필터링 적용됨)")
+            print(f"WBSDataRetriever (load_w_bs_data): WBS 데이터 로드 완료. 작업 수: {len(task_list)} (필터링 적용됨)")
         else:
             state["wbs_data"] = { # 데이터가 없더라도 기본 구조는 유지
                 "project_id": project_id,
@@ -81,7 +81,7 @@ class WBSDataRetrieverAgent:
             not_found_msg = f"프로젝트 '{project_id}'에 대한 WBS 작업을 찾을 수 없거나 조회 중 오류 발생 (필터: {assignee_filter_identifier or '없음'})."
             current_error = state.get("error_message", "")
             state["error_message"] = (current_error + "\n" + not_found_msg).strip() if current_error else not_found_msg
-            print(f"WBSDataRetrieverAgent (load_wbs_data): {not_found_msg}")
+            print(f"WBSDataRetriever (load_wbs_data): {not_found_msg}")
             
         return state
 
