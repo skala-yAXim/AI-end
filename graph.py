@@ -12,6 +12,7 @@ from core.state_definition import LangGraphState
 # WBS 데이터 로드용으로 새로운 WBSDataRetrieverAgent 사용
 from agents.wbs_data_retriever import WBSDataRetriever
 from agents.docs_analyzer import DocsAnalyzer
+from agents.docs_quality_analyzer import DocsQualityAnalyzer
 from agents.email_analyzer import EmailAnalyzerAgent
 from agents.git_analyzer import GitAnalyzerAgent
 from agents.teams_analyzer import TeamsAnalyzer
@@ -89,6 +90,16 @@ def analyze_teams_node(state: LangGraphState) -> LangGraphState:
     teams_analyzer = TeamsAnalyzer(qdrant_client=qdrant_client_instance)
     return teams_analyzer(state)
 
+
+def analyze_docs_quality_node(state: LangGraphState) -> LangGraphState:
+    print("\n--- 문서 품질 분석 노드 실행 ---")
+    if not qdrant_client_instance:
+        state["error_message"] = (state.get("error_message","") + "\n 문서 품질 분석 실패: Qdrant 클라이언트 미초기화").strip()
+        state["documents_quality_result"] = {"error": "Qdrant client not initialized"}
+        return state
+    docs_quality_analyzer = DocsQualityAnalyzer(qdrant_client=qdrant_client_instance)
+    return docs_quality_analyzer.analyze_document_quality(state)
+
 # 🚀 새로 추가된 report_generator 노드
 def generate_report_node(state: LangGraphState) -> LangGraphState:
     print("\n--- Daily 보고서 생성 노드 실행 ---")
@@ -118,11 +129,13 @@ def create_analysis_graph():
     workflow.add_node("analyze_emails", analyze_emails_node)
     workflow.add_node("analyze_git", analyze_git_node)
     workflow.add_node("analyze_teams", analyze_teams_node)
+    workflow.add_node("analyze_docs_quality", analyze_docs_quality_node)
     # 🚀 report_generator 노드 추가
     workflow.add_node("generate_report", generate_report_node)
 
     workflow.set_entry_point("load_wbs")
-    workflow.add_edge("load_wbs", "analyze_docs")
+    workflow.add_edge("load_wbs", "analyze_docs_quality")
+    workflow.add_edge("analyze_docs_quality", "analyze_docs")
     workflow.add_edge("analyze_docs", "analyze_emails")
     workflow.add_edge("analyze_emails", "analyze_git")
     workflow.add_edge("analyze_git", "analyze_teams")
