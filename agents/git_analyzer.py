@@ -2,7 +2,7 @@
 import os
 import sys
 import json
-from datetime import datetime, timezone
+import pandas as pd
 from typing import List, Dict, Optional, Any
 
 from qdrant_client import QdrantClient
@@ -41,6 +41,61 @@ class GitAnalyzerAgent:
             self.prompt = PromptTemplate.from_template(self.prompt_template_str)
         
         self.parser = JsonOutputParser()
+
+    def _calculate_git_stats(self, retrieved_activities: List[Dict]) -> Dict[str, Any]:
+        """
+        검색된 Git 활동 목록을 기반으로 통계 정보를 계산합니다.
+        """
+        if not retrieved_activities:
+            return {
+                "total_commits": 0,
+                "commit_by_hour": {},
+                "summary_str": "분석할 Git 활동이 없습니다."
+            }
+
+        commit_payloads = []
+        for act in retrieved_activities:
+            payload = act.get("metadata") # LangChain Qdrant Retriever는 payload를 'metadata'에 담아줍니다.
+            if payload and payload.get("type") == "commit" and "date" in payload:
+                commit_payloads.append(payload)
+
+        if not commit_payloads:
+            return {
+                "total_commits": 0,
+                "commit_by_hour": {},
+                "summary_str": "분석할 커밋(commit) 활동이 없습니다."
+            }
+
+        # 필터링된 커밋 페이로드로 DataFrame 생성
+        df = pd.DataFrame(commit_payloads)
+        # 이미지에서 확인된 'date' 필드(ISO 8601 형식)를 datetime 객체로 변환합니다.
+        df['date'] = pd.to_datetime(df['date'])
+
+        total_commits = len(df)
+        
+        # 시간대별 커밋 빈도 계산 (0-23시)
+        # .dt accessor는 Series의 각 값이 datetime 객체일 때 사용할 수 있습니다.
+        commit_by_hour = df['date'].dt.hour.value_counts().sort_index().to_dict()
+        
+        # LLM에게 전달할 요약 문자열 생성
+        summary_parts = [f"### Git 활동 통계 분석\n- 총 커밋(PushEvent) 수: {total_commits}건"]
+        if commit_by_hour:
+            summary_parts.append("- 시간대별 커밋 분포:")
+            # 0시부터 23시까지 모든 시간에 대해 출력 (없는 시간은 0건)
+            for hour in range(24):
+                count = commit_by_hour.get(hour, 0)
+                if count > 0:
+                    summary_parts.append(f"  - {hour:02d}시: {count}건")
+        
+        summary_str = "\n".join(summary_parts)
+
+        return {
+            "total_commits": total_commits,
+            "commit_by_hour": commit_by_hour,
+            "summary_str": summary_str
+        }
+
+
 
     def _prepare_git_data_for_llm(self, retrieved_git_activities: List[Dict], target_date_str: Optional[str]) -> str:
         date_info = f"({target_date_str} 기준)" if target_date_str else "(최근 활동 기준)"
@@ -87,6 +142,9 @@ class GitAnalyzerAgent:
                 "unassigned_git_activities": [],
                 "error": "No Git activities to analyze"
             }
+        # 1. Python으로 Git 활동 통계 사전 분석
+        git_stats = self._calculate_git_stats(retrieved_activities)
+        git_stats_str = git_stats["summary_str"]
 
         wbs_data_str = json.dumps(wbs_data, ensure_ascii=False, indent=2) if wbs_data else "WBS 정보 없음"
         git_data_str = self._prepare_git_data_for_llm(retrieved_activities, target_date)
@@ -99,7 +157,8 @@ class GitAnalyzerAgent:
                 "wbs_assignee_name": wbs_user_name,
                 "target_date_str": target_date,
                 "git_info_str_for_llm": git_data_str,
-                "wbs_tasks_str_for_llm": wbs_data_str
+                "wbs_tasks_str_for_llm": wbs_data_str,
+                "git_metadata_analysis_str": git_stats_str # 새로 추가된 변수
             }
             analysis_result = chain.invoke(llm_input)
             return analysis_result
