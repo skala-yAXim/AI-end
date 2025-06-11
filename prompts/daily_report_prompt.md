@@ -2,7 +2,7 @@
 
 ## 📋 CO-STAR Framework
 
-**Context**: Multi-agent system (Git, Teams, Email, Docs) analysis integration  
+**Context**: Multi-agent system (GIT, TEAMS, EMAIL, DOCS) analysis integration  
 **Objective**: Complete daily report with ALL activities as individual objects  
 **Style**: Structured JSON with evidence-based content  
 **Tone**: Professional, data-driven accuracy  
@@ -17,7 +17,7 @@
 
 ❌ **그룹화 금지**: 여러 활동을 하나의 객체로 요약  
 ❌ **생략 금지**: 비슷한 작업도 각각 별도 객체 필수  
-❌ **개수 조작 금지**: Teams 6건 = 6개 객체, Git 2건 = 2개 객체
+❌ **개수 조작 금지**: TEAMS 6건 = 6개 객체, GIT 2건 = 2개 객체
 
 ### ✅ **MUST DO (필수 준수)**
 
@@ -35,13 +35,13 @@
 
 ```python
 # Phase 1: Agent별 개별 카운팅
-Git_total = len(activity_analysis.matched_activities) + len(activity_analysis.unmatched_activities)
-Teams_total = len(teams_analysis.matched_tasks) + len(teams_analysis.unmatched_tasks)
-Email_total = len(email_analysis.matched_emails) + len(email_analysis.unmatched_emails)
-Docs_total = len(docs_analysis.matched_docs) + len(docs_analysis.unmatched_docs)
+GIT_total = len(activity_analysis.matched_activities) + len(activity_analysis.unmatched_activities)
+TEAMS_total = len(teams_analysis.matched_tasks) + len(teams_analysis.unmatched_tasks)
+EMAIL_total = len(email_analysis.matched_EMAILs) + len(email_analysis.unmatched_EMAILs)
+DOCS_total = len(docs_analysis.matched_DOCS) + len(docs_analysis.unmatched_DOCS)
 
 # Phase 2: 전체 합계 (이것이 contents 배열 길이와 정확히 일치해야 함)
-TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
+TOTAL_ACTIVITIES = GIT_total + TEAMS_total + EMAIL_total + DOCS_total
 
 # Phase 3: 필수 검증
 ✅ TOTAL_ACTIVITIES = contents 내 모든 evidence 항목의 총합
@@ -77,7 +77,7 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
   "task": "실제작업명" | null,
   "evidence": [
 	  {{
-	    "source": "git" | "teams" | "email" | "docs",
+	    "source": "GIT" | "TEAMS" | "EMAIL" | "DOCS",
 	    "title": "실제 활동 제목",
 	    "content": "실제 활동 내용",
 	    "llm_reference": "구체적 분석 근거"
@@ -88,11 +88,11 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
 
 ### **Source 매핑 규칙**
 "type" -> "source"로 매핑
-- Git 분석 결과 → `"source": "git"`
-- Teams 분석 결과 → `"source": "teams"`
-- Email 분석 결과 → `"source": "email"`
-- Docs 분석 결과 → `"source": "docs"`
-
+- GIT 분석 결과 → `"source": "GIT"`
+- TEAMS 분석 결과 → `"source": "TEAMS"`
+- EMAIL 분석 결과 → `"source": "EMAIL"`
+- DOCS 분석 결과 → `"source": "DOCS"`
+모든 source값은 **upper-case**로 진행.
 ---
 
 ## ❌ 금지 패턴 vs ✅ 올바른 패턴
@@ -101,18 +101,18 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
 
 ```json
 {{
-  "text": "Teams 관련 업무들을 종합적으로 완료했습니다.",
-  "task": "Teams 관련 업무",
+  "text": "TEAMS 관련 업무들을 종합적으로 완료했습니다.",
+  "task": "TEAMS 관련 업무",
   "evidence": {{
-    "source": "teams",
+    "source": "TEAMS",
     "title": "여러 이슈 처리",
     "content": "YAX-1, YAX-36 등 여러 이슈들",
-    "llm_reference": "여러 Teams 활동을 묶어서 처리"
+    "llm_reference": "여러 TEAMS 활동을 묶어서 처리"
   }}
 }}
 ```
 
-**문제**: Teams 6건이 1개 객체로 그룹화 → 5건 누락
+**문제**: TEAMS 6건이 1개 객체로 그룹화 → 5건 누락
 
 ### **✅ 올바른 예시 (개별 처리)**
 
@@ -122,13 +122,13 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
   "task": "VectorDB 구축",
   "evidence": [
     {{
-      "source": "teams",
+      "source": "TEAMS",
       "title": "노건표 changed the Assignee on this issue",
       "content": "YAX-1 Weekly 보고서 초안을 위한 AI 베이스코드",
       "llm_reference": "노건표가 YAX-1 작업의 Assignee로 변경함"
     }},
     {{
-      "source": "email",
+      "source": "EMAIL",
       "title": "Re: VectorDB 기능 문의",
       "content": "VectorDB 리팩토링 관련 논의 이메일",
       "llm_reference": "20번 작업 진행 맥락에서 주고받은 이메일"
@@ -143,7 +143,7 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
   "task": null,
   "evidence": [
     {{
-      "source": "teams",
+      "source": "TEAMS",
       "title": "노건표 created this issue",
       "content": "YAX-36: graph 및 state 구현",
       "llm_reference": "노건표가 YAX-36 이슈를 새로 생성함"
@@ -152,7 +152,7 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
 }}
 ```
 
-**핵심**: Teams 6건이면 위와 같은 개별 객체 6개 생성
+**핵심**: TEAMS 6건이면 위와 같은 개별 객체 6개 생성
 
 ---
 
@@ -160,13 +160,13 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
 
 ```
 ❌ 금지: "긍정적인 성과와 잘 진행된 부분" (템플릿 표현)
-✅ 필수: "Git analyzer 구현(38번) 완료, Teams 6건 중 1건만 매칭" (구체적 데이터)
+✅ 필수: "GIT analyzer 구현(38번) 완료, TEAMS 6건 중 1건만 매칭" (구체적 데이터)
 ✅ 필수: 실제 매칭/미매칭 비율과 작업명 포함
 ✅ 필수: 개인 업무 맥락에 맞는 고유한 관찰과 계획
 ```
 
 ### ✅ Summary 작성 방식:
-- **입력 데이터**만 사용하여 구성 (Git, Teams, Email, Docs 분석 결과만 활용)
+- **입력 데이터**만 사용하여 구성 (GIT, TEAMS, EMAIL, DOCS 분석 결과만 활용)
 - **총 미매칭 항목의 수와 개선 방향**을 구체적으로 언급
 - 템플릿 표현 절대 금지. 내용은 모두 실제 분석 데이터를 기반으로 구성
 - 템플릿 표현, 일반론, 추상적인 말 금지
@@ -194,7 +194,7 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
   "report_title": "{user_name}님의 {target_date} 일일 업무 보고서",
   "daily_report": {{
     "title": "📌 일일 업무 진행 내용",
-    "summary": "총 [WBS 매칭 content 객체 수]개의 WBS에 기여. 총 [계산된총활동수]개 업무 활동 중 WBS 매칭 [매칭수]건, 미매칭 [미매칭수]건 수행 (Git [Git개수]건, Teams [Teams개수]건, Email [Email개수]건, Docs [Docs개수]건)",
+    "summary": "총 [WBS 매칭 content 객체 수]개의 WBS에 기여. 총 [계산된총활동수]개 업무 활동 중 WBS 매칭 [매칭수]건, 미매칭 [미매칭수]건 수행 (GIT [GIT개수]건, TEAMS [TEAMS개수]건, EMAIL [EMAIL개수]건, DOCS [DOCS개수]건)",
     "contents": [
       "각 analysis task마다 개별 객체 생성",
       "evidence에 source 필드 필수 포함",
@@ -203,23 +203,23 @@ TOTAL_ACTIVITIES = Git_total + Teams_total + Email_total + Docs_total
   }},
     "daily_reflection": {{
     "title": "🔍 오늘의 회고 및 개선점",
-    "summary": "오늘의 업무는 주로 문서 작성과 관련된 작업이었습니다. Git을 통한 커밋은 프로젝트의 중요 기능 개발에 직접적으로 연관되어 있으며, 문서 작업은 WBS 작업 목록과 잘 일치하고 있습니다. 하지만, 보고서 설계서 작성과 같은 미매칭 작업이 발생하였습니다. 이는 프로젝트 관리의 효율성을 높이기 위해 작업별로 문서의 필요성과 목적을 명확히 할 필요가 있음을 보여줍니다. 또한, Git 활동을 좀 더 자주 기록하여 변경 사항을 세분화하고 기록하는 습관을 개선할 필요가 있습니다."
+    "summary": "오늘의 업무는 주로 문서 작성과 관련된 작업이었습니다. GIT을 통한 커밋은 프로젝트의 중요 기능 개발에 직접적으로 연관되어 있으며, 문서 작업은 WBS 작업 목록과 잘 일치하고 있습니다. 하지만, 보고서 설계서 작성과 같은 미매칭 작업이 발생하였습니다. 이는 프로젝트 관리의 효율성을 높이기 위해 작업별로 문서의 필요성과 목적을 명확히 할 필요가 있음을 보여줍니다. 또한, GIT 활동을 좀 더 자주 기록하여 변경 사항을 세분화하고 기록하는 습관을 개선할 필요가 있습니다."
     "contents": [
       {{
-        "source": "git",
-        "reflection": "Git Agent가 전달한 회고 내용입니다."
+        "source": "GIT",
+        "reflection": "GIT Agent가 전달한 회고 내용입니다."
       }},
       {{
-        "source": "teams",
-        "reflection": "Teams Agent가 전달한 회고 내용입니다."
+        "source": "TEAMS",
+        "reflection": "TEAMS Agent가 전달한 회고 내용입니다."
       }},
       {{
-        "source": "email",
-        "reflection": "email Agent가 전달한 회고 내용입니다."
+        "source": "EMAIL",
+        "reflection": "EMAIL Agent가 전달한 회고 내용입니다."
       }},
       {{
-        "source": "docs",
-        "reflection": "docs Agent가 전달한 회고 내용입니다."
+        "source": "DOCS",
+        "reflection": "DOCS Agent가 전달한 회고 내용입니다."
       }}
     ]
 }}

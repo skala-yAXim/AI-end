@@ -13,6 +13,8 @@ outputs/
 # Vector store database
 db/vector_store/
 
+data.py
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
