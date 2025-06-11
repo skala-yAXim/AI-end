@@ -6,8 +6,8 @@ load_dotenv() # .env 파일에서 환경 변수를 로드합니다.
 
 # --- OpenAI 설정 ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-4-turbo")
-FAST_MODEL = os.getenv("FAST_MODEL", "gpt-3.5-turbo") # 빠른 응답이 필요할 때 사용
+DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-4o")
+FAST_MODEL = os.getenv("FAST_MODEL", "gpt-4o") # 빠른 응답이 필요할 때 사용
 
 # --- HuggingFace 임베딩 모델 ---
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "paraphrase-multilingual-MiniLM-L12-v2")

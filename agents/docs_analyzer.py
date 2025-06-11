@@ -140,7 +140,7 @@ class DocsAnalyzer:
         user_name = state.get("user_name") # 표시용으로 사용 가능
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
-        quality_result = state.get("documents_quality_analysis_result", {})
+        quality_result = state.get("documents_quality_result", {})
 
         if not user_id:
             error_msg = "DocsAnalyzer: user_id가 State에 제공되지 않아 분석을 건너뜁니다."

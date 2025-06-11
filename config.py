@@ -20,7 +20,7 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 HUGGINGFACEHUB_API_TOKEN = os.environ.get("HUGGINGFACEHUB_API_TOKEN", "")
 # 모델 설정
 DEFAULT_MODEL = "gpt-4o"
-FAST_MODEL = "gpt-3.5-turbo"
+FAST_MODEL = "gpt-4o"
 EMBEDDING_MODEL = "snunlp/KR-SBERT-V40K-klueNLI-augSTS"
 
 # Qdrant DB Collection 설정
