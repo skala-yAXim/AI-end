@@ -43,12 +43,19 @@
 
 내용은 일일 보고서 데이터와 WBS 작업 데이터에 명시된 내용만을 기반으로 작성해주세요.
 
-중요 사항
+### **Source 매핑 규칙**
+- GIT 분석 결과 → `"source": "GIT"`
+- TEAMS 분석 결과 → `"source": "TEAMS"`
+- EMAIL 분석 결과 → `"source": "EMAIL"`
+- DOCS 분석 결과 → `"source": "DOCS"`
+모든 source값은 **upper-case**로 진행.
+
+## 중요 사항
 모든 내용은 제공된 주간 일일 보고서 데이터와 WBS 작업 데이터를 기반으로 작성하세요.
 
 weekly_report의 contents는 한 주간의 활동을 종합하여 구체적이고 상세하게 작성하세요.
 
-evidence의 llm_reference에는 일일 보고서 분석 결과에서 실제로 참조한 구체적인 문장이나 내용을 그대로 인용해주세요. (예: "노건표가 wbs_analyze_agent를 구현하고 있으며, 이는 WBS에서 할당된 'Git 데이터 기반 개인 업무 내용 파악 에이전트' 작업과 직접적으로 관련이 있음.")
+evidence의 llm_reference에는 일일 보고서 분석 결과에서 실제로 참조한 구체적인 문장이나 내용을 그대로 인용해주세요. (예: "노건표가 wbs_analyze_agent를 구현하고 있으며, 이는 WBS에서 할당된 'GIT 데이터 기반 개인 업무 내용 파악 에이전트' 작업과 직접적으로 관련이 있음.")
 
 weekly_reflection 섹션을 통해 한 주간의 업무에 대한 개인적 성찰과 다음 계획을 포함하세요. **다음 계획은 WBS 작업 데이터를 바탕으로 날짜와 함께 명시해주세요.**
 
@@ -61,25 +68,25 @@ weekly_reflection 섹션을 통해 한 주간의 업무에 대한 개인적 성�
   "report_title": "{user_name}님의 {start_date} ~ {end_date} 주간 업무 보고서",
   "weekly_report": {{
     "title": "📌 주간 업무 진행 내용",
-    "summary": "(예시: 이번 주에는 'Git 데이터 기반 에이전트 개발'을 중심으로 업무를 진행했으며, 데이터 전처리 및 적재 작업을 병행했습니다. 일부 데이터 부족으로 인한 지연이 있었으나 핵심 기능 개발은 순조롭게 진행되었습니다.)",
+    "summary": "(예시: 이번 주에는 'GIT 데이터 기반 에이전트 개발'을 중심으로 업무를 진행했으며, 데이터 전처리 및 적재 작업을 병행했습니다. 일부 데이터 부족으로 인한 지연이 있었으나 핵심 기능 개발은 순조롭게 진행되었습니다.)",
     "contents": [
       {{
-        "text": "(예시: **Git 데이터 기반 개인 업무 내용 파악 에이전트** 개발 작업을 주도적으로 진행. 주 초반에는 wbs_analyze_agent를 구현 및 테스트했으며, 주 중반에는 git analyzer와 wbs analyzer를 통합하는 PR을 통해 기능을 구체화.(06/02 ~ 06/04))",
+        "text": "(예시: **GIT 데이터 기반 개인 업무 내용 파악 에이전트** 개발 작업을 주도적으로 진행. 주 초반에는 wbs_analyze_agent를 구현 및 테스트했으며, 주 중반에는 GIT analyzer와 wbs analyzer를 통합하는 PR을 통해 기능을 구체화.(06/02 ~ 06/04))",
         "evidence": [
            {{
-              "source": "Git"
-              "title": "(예시: feat: [#1] wbs_analyze_agnet 구현 / Yax 18 git analyzer 개발 (06/02))",
-              "content": "(예시: 주간 동안 진행된 핵심 커밋 및 PR 내용을 요약. wbs_analyze agent 생성 및 벡터DB 연동, git/wbs analyzer 에이전트 개발 및 기능 추가.)",
-              "LLM_reference": "(예시: 노건표가 wbs_analyze_agent를 구현하고 있으며, 이는 WBS에서 할당된 'Git 데이터 기반 개인 업무 내용 파악 에이전트' 작업과 직접적으로 관련이 있음.)"
+              "source": "GIT"
+              "title": "(예시: feat: [#1] wbs_analyze_agnet 구현 / Yax 18 GIT analyzer 개발 (06/02))",
+              "content": "(예시: 주간 동안 진행된 핵심 커밋 및 PR 내용을 요약. wbs_analyze agent 생성 및 벡터DB 연동, GIT/wbs analyzer 에이전트 개발 및 기능 추가.)",
+              "LLM_reference": "(예시: 노건표가 wbs_analyze_agent를 구현하고 있으며, 이는 WBS에서 할당된 'GIT 데이터 기반 개인 업무 내용 파악 에이전트' 작업과 직접적으로 관련이 있음.)"
            }}
         ]
       }},
       {{
-        "text": "(예시: 프로젝트 데이터의 **전처리 및 데이터베이스 적재** 작업을 수행. 특히 git, email 데이터의 전처리 및 VectorDB 적재 코드를 추가하고 리팩토링.(06/02 ~ 06/04))",
+        "text": "(예시: 프로젝트 데이터의 **전처리 및 데이터베이스 적재** 작업을 수행. 특히 GIT, email 데이터의 전처리 및 VectorDB 적재 코드를 추가하고 리팩토링.(06/02 ~ 06/04))",
         "evidence": [
            {{
-              "source": "Teams"
-              "title": "(예시: Yax 33 git email 데이터 preprocessing 작업 (06/04))",
+              "source": "TEAMS"
+              "title": "(예시: Yax 33 GIT email 데이터 preprocessing 작업 (06/04))",
               "content": "(예시: email 데이터 전처리 및 VectorDB 코드 추가 커밋.)",
               "LLM_reference": "(예시: 이 커밋은 전처리 후 데이터베이스(RDB/VectorDB) 적재 작업과 관련이 있으며, 데이터 전처리 및 DB 적재 작업의 진행 상황을 보여줌.)"
            }}
@@ -91,7 +98,7 @@ weekly_reflection 섹션을 통해 한 주간의 업무에 대한 개인적 성�
   "weekly_reflection": {{
     "title": "🔍 주간 회고 및 개선점",
     "content": [
-      "(예시: 한 주간 Git 데이터 기반 개발 작업을 통해 코드 리팩토링 및 기능 추가를 원활하게 진행한 점은 긍정적이었음.)",
+      "(예시: 한 주간 GIT 데이터 기반 개발 작업을 통해 코드 리팩토링 및 기능 추가를 원활하게 진행한 점은 긍정적이었음.)",
       "(예시: 반면, 일부 요일에는 관련 업무 데이터를 찾지 못해 작업이 지연된 점은 아쉬움. 데이터 관리 및 공유 방식에 대한 검토가 필요함.)",
       "(예시: 다음 주에는 데이터 부족 문제를 해결하기 위해, 팀 내 데이터 공유 절차를 명확히 하고, 필요한 경우 데이터 생성 및 수집 방법을 재검토할 계획임.)",
       "(예시: 다음 주에는 WBS 작업 리스트의 'Daily 열람(task_id: 60)' 작업 진행 예정 (06/09 ~))",
