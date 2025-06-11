@@ -166,8 +166,7 @@ class DocsAnalyzer:
                 docs_quality_result=quality_result
             )
         
-        state["documents_analysis_result"] = analysis_result
-        return state
+        return {"documents_analysis_result": analysis_result}
 
     def __call__(self, state: LangGraphState) -> LangGraphState:
         return self.analyze_documents(state)

@@ -61,8 +61,7 @@ class DocsQualityAnalyzer:
         target_date = state.get("target_date")
         
         if not user_id:
-            state["documents_quality_result"] = {"error": "user_id가 제공되지 않았습니다"}
-            return state
+            return {"documents_quality_result": {"error": "user_id가 제공되지 않았습니다"}}
 
         # 문서 검색
         retrieved_docs_list = retrieve_documents(
@@ -72,15 +71,14 @@ class DocsQualityAnalyzer:
         )
         
         if not retrieved_docs_list:
-            state["documents_quality_result"] = {"error": "분석할 문서를 찾을 수 없습니다"}
-            return state
+            return {"documents_quality_result": {"error": "분석할 문서를 찾을 수 없습니다"}}
 
         print(f"✅ {len(retrieved_docs_list)}개 문서 발견")
-        
+
         # 분석 실행
         quality_results = self._analyze_quality_internal(retrieved_docs_list)
-        state["documents_quality_result"] = quality_results
-        return state
+
+        return {"documents_quality_result": quality_results}
 
     def _analyze_quality_internal(self, retrieved_docs_list: List[Dict]) -> Dict[str, Any]:
         """내부 품질 분석 로직"""

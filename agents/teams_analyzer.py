@@ -134,8 +134,7 @@ class TeamsAnalyzer:
                 user_id, user_name, target_date, wbs_data, retrieved_list
             )
         
-        state["teams_analysis_result"] = analysis_result
-        return state
+        return {"teams_analysis_result": analysis_result}
 
     def __call__(self, state: LangGraphState) -> LangGraphState:
-        return self.analyze_teams(state)
+        return {"teams_analysis_result": self.analyze_teams(state)["teams_analysis_result"]}

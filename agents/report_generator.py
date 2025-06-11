@@ -67,7 +67,6 @@ class DailyReportGenerator:
             report_result = chain.invoke(prompt_data)
             
             # 성공적인 보고서 생성 결과를 state에 직접 저장
-            state["comprehensive_report"] = report_result
             print(f"DailyReportGenerator: 보고서 생성 완료 - 제목: {report_result.get('report_title', '제목 없음')}")
             
         except Exception as e:
@@ -81,7 +80,7 @@ class DailyReportGenerator:
             current_error = state.get("error_message", "")
             state["error_message"] = (current_error + f"\n DailyReportGenerator 오류: {e}").strip()
         
-        return state
+        return {"comprehensive_report": report_result}
 
     def __call__(self, state: LangGraphState) -> LangGraphState:
         """

@@ -119,8 +119,7 @@ class EmailAnalyzerAgent:
                 user_id, user_name, wbs_data, target_date, retrieved_list
             )
         
-        state["email_analysis_result"] = analysis_result
-        return state
+        return {"email_analysis_result": analysis_result}
 
     def __call__(self, state: LangGraphState) -> LangGraphState:
         return self.analyze_emails(state)
