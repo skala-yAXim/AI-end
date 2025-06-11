@@ -3,6 +3,7 @@ import os
 import sys
 from qdrant_client import QdrantClient
 from langgraph.graph import StateGraph, END
+from typing import List
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))) # 현재 디렉토리 추가
 
@@ -100,7 +101,6 @@ def analyze_docs_quality_node(state: LangGraphState) -> LangGraphState:
     docs_quality_analyzer = DocsQualityAnalyzer(qdrant_client=qdrant_client_instance)
     return docs_quality_analyzer.analyze_document_quality(state)
 
-# 🚀 새로 추가된 report_generator 노드
 def generate_report_node(state: LangGraphState) -> LangGraphState:
     print("\n--- Daily 보고서 생성 노드 실행 ---")
     try:
@@ -117,6 +117,9 @@ def generate_report_node(state: LangGraphState) -> LangGraphState:
         }
         return state
 
+def fan_out(_: LangGraphState) -> List[str]:
+    return ["analyze_git", "analyze_emails", "analyze_teams", "analyze_docs_quality"]
+
 def create_analysis_graph():
     initialize_global_clients()
     if not qdrant_client_instance:
@@ -125,24 +128,22 @@ def create_analysis_graph():
     workflow = StateGraph(LangGraphState)
 
     workflow.add_node("load_wbs", load_wbs_node)
-    workflow.add_node("analyze_docs", analyze_docs_node)
-    workflow.add_node("analyze_emails", analyze_emails_node)
-    workflow.add_node("analyze_git", analyze_git_node)
-    workflow.add_node("analyze_teams", analyze_teams_node)
     workflow.add_node("analyze_docs_quality", analyze_docs_quality_node)
-    # 🚀 report_generator 노드 추가
+    workflow.add_node("analyze_docs", analyze_docs_node)
+    workflow.add_node("analyze_git", analyze_git_node)
+    workflow.add_node("analyze_emails", analyze_emails_node)
+    workflow.add_node("analyze_teams", analyze_teams_node)
     workflow.add_node("generate_report", generate_report_node)
 
     workflow.set_entry_point("load_wbs")
-    workflow.add_edge("load_wbs", "analyze_docs_quality")
+
+    workflow.add_conditional_edges("load_wbs", fan_out, ["analyze_git", "analyze_emails", "analyze_teams", "analyze_docs_quality"])
     workflow.add_edge("analyze_docs_quality", "analyze_docs")
-    workflow.add_edge("analyze_docs", "analyze_emails")
-    workflow.add_edge("analyze_emails", "analyze_git")
-    workflow.add_edge("analyze_git", "analyze_teams")
-    # 🚀 워크플로우 수정: Teams → Report Generator → END
-    workflow.add_edge("analyze_teams", "generate_report")
-    workflow.add_edge("generate_report", END) 
-    
+
+    # super-step 병렬 실행 구조를 만들어, 모든 노드가 실행되어야 `generate_report`로 넘어감
+    workflow.add_edge(["analyze_git", "analyze_emails", "analyze_teams", "analyze_docs"], "generate_report")
+    workflow.add_edge("generate_report", END)
+
     app = workflow.compile()
     print("LangGraph 애플리케이션 컴파일 완료.")
     return app
@@ -154,3 +155,4 @@ if __name__ == "__main__":
         print(f"테스트 그래프 생성 성공: {test_app}")
     except Exception as e:
         print(f"그래프 생성 중 오류: {e}")
+

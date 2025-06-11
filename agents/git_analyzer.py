@@ -196,8 +196,7 @@ class GitAnalyzerAgent:
                 git_identifier, user_name_for_context, wbs_data, target_date, retrieved_dict
             )
         
-        state["git_analysis_result"] = analysis_result
-        return state
+        return {"git_analysis_result": analysis_result}
 
     def __call__(self, state: LangGraphState) -> LangGraphState:
         return self.analyze_git(state)
