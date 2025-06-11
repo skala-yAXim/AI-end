@@ -71,7 +71,8 @@ class DocsQualityAnalyzer:
         )
         
         if not retrieved_docs_list:
-            return {"documents_quality_result": {"error": "분석할 문서를 찾을 수 없습니다"}}
+            print(f"DocsAnalyzerAgent: 사용자 ID '{user_id}'에 대한 분석할 문서가 없습니다 (대상일: {target_date}).")
+            return {"summary": "분석할 관련 문서를 찾지 못했습니다.", "matched_tasks": [], "unmatched_tasks": [], "error": "No docs to analyze"}
 
         print(f"✅ {len(retrieved_docs_list)}개 문서 발견")
 

@@ -140,7 +140,7 @@ def create_analysis_graph():
     workflow.add_conditional_edges("load_wbs", fan_out, ["analyze_git", "analyze_emails", "analyze_teams", "analyze_docs_quality"])
     workflow.add_edge("analyze_docs_quality", "analyze_docs")
 
-
+    # super-step 병렬 실행 구조를 만들어, 모든 노드가 실행되어야 `generate_report`로 넘어감
     workflow.add_edge(["analyze_git", "analyze_emails", "analyze_teams", "analyze_docs"], "generate_report")
     workflow.add_edge("generate_report", END)
 
