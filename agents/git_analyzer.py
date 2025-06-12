@@ -124,17 +124,18 @@ class GitAnalyzerAgent:
 
     def _analyze_git_internal(
     self, 
-    git_author_id: str,  # Git 분석에 사용된 실제 ID (github_email or user_id)
-    wbs_user_name: Optional[str],  # WBS 컨텍스트 및 LLM 프롬프트용 user_name
-    wbs_data: Optional[Dict], 
-    target_date: str, 
-    retrieved_activities: List[Dict]  # 단일 List로 처리됨
+    user_id: str, # Teams 분석 대상 user_id
+    user_name: Optional[str], # LLM 프롬프트용 user_name 
+    target_date: str, # target_date는 필수
+    wbs_data: Optional[dict],
+    retrieved_activities: List[Dict],
+    readme_info: str = ""
     ) -> Dict[str, Any]:
         total_count = len(retrieved_activities)
-        print(f"GitAnalyzerAgent: 사용자 식별자 '{git_author_id}' Git 활동 분석. 총 {total_count}건 (대상일: {target_date}).")
+        print(f"GitAnalyzerAgent: 사용자 식별자 '{user_id}' Git 활동 분석. 총 {total_count}건 (대상일: {target_date}).")
         
         if total_count == 0:
-            print(f"GitAnalyzerAgent: 사용자 식별자 '{git_author_id}'에 대한 분석할 Git 활동이 없습니다 (대상일: {target_date}).")
+            print(f"GitAnalyzerAgent: 사용자 식별자 '{user_id}'에 대한 분석할 Git 활동이 없습니다 (대상일: {target_date}).")
             return {
                 "summary": "분석할 관련 Git 활동을 찾지 못했습니다.",
                 "matched_tasks": [],
@@ -153,12 +154,13 @@ class GitAnalyzerAgent:
 
         try:
             llm_input = {
-                "author_email": git_author_id,
-                "wbs_assignee_name": wbs_user_name,
+                "author_email": user_id,
+                "wbs_assignee_name": user_name or user_id,
                 "target_date_str": target_date,
                 "git_info_str_for_llm": git_data_str,
                 "wbs_tasks_str_for_llm": wbs_data_str,
-                "git_metadata_analysis_str": git_stats_str # 새로 추가된 변수
+                "git_metadata_analysis_str": git_stats_str,
+                "readme_info_str": readme_info
             }
             analysis_result = chain.invoke(llm_input)
             return analysis_result
@@ -189,11 +191,15 @@ class GitAnalyzerAgent:
                 target_date_str=target_date
                 # scroll_limit은 retriever 내부 기본값 사용 또는 여기서 지정
             )
+            
+            # 반환값이 튜플이므로 분리
+            git_activities, readme_info = retrieved_dict
 
-            state["retrieved_git_activities"] = retrieved_dict # 필요시 저장
+            state["retrieved_git_activities"] = git_activities
+            state["retrieved_readme_info"] = readme_info  # 👈 README 정보도 저장
 
             analysis_result = self._analyze_git_internal(
-                git_identifier, user_name_for_context, wbs_data, target_date, retrieved_dict
+                git_identifier, user_name_for_context, target_date, wbs_data, git_activities, readme_info
             )
         
         state["git_analysis_result"] = analysis_result
