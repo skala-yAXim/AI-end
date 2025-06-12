@@ -33,6 +33,7 @@ class LangGraphState(Dict):
     retrieved_documents: Optional[List[Dict]] = None
     retrieved_emails: Optional[List[Dict]] = None
     retrieved_git_activities: Optional[Dict[str, List[Dict]]] = None
+    retrieved_readme_info: Optional[str] = None
     retrieved_teams_posts: Optional[List[Dict]] = None
 
 class TeamWeeklyLangGraphState(Dict):

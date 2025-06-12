@@ -207,31 +207,13 @@ def _get_readmes_by_repo_names(qdrant_client: QdrantClient, repo_names: Set[str]
     """참여한 저장소들의 README 조회"""
     if not repo_names:
         return "README 정보 없음"
-    
+
     try:
-        # config에서 정의된 README 컬렉션 이름 사용
-        readme_collection_name = config.COLLECTION_GIT_README
-        
-        # 존재하는 컬렉션 찾기
-        collections = qdrant_client.get_collections()
-        existing_collections = [c.name for c in collections.collections]
-        
-        if readme_collection_name in existing_collections:
-            readme_collection = readme_collection_name
-            print(f"VectorDBRetriever: README 컬렉션 발견: {readme_collection}")
-        else:
-            print(f"VectorDBRetriever: README 컬렉션({readme_collection_name})을 찾을 수 없음. 더미 데이터 반환.")
-            dummy_contents = []
-            for repo_name in repo_names:
-                dummy_contents.append(f"=== {repo_name} README ===\n프로젝트: {repo_name}\n설명: README 컬렉션을 찾을 수 없습니다.\n")
-            return "\n".join(dummy_contents)
-        
-        # README 컬렉션이 있으면 조회
         readme_contents = []
         for repo_name in repo_names:
             try:
                 points, _ = qdrant_client.scroll(
-                    collection_name=readme_collection,
+                    collection_name=config.COLLECTION_GIT_README,
                     scroll_filter=Filter(must=[
                         FieldCondition(
                             key="repo_name",
@@ -256,12 +238,8 @@ def _get_readmes_by_repo_names(qdrant_client: QdrantClient, repo_names: Set[str]
         return "\n".join(readme_contents) if readme_contents else "README 정보 없음"
         
     except Exception as e:
-        print(f"VectorDBRetriever: README 컬렉션 확인 중 오류: {e}")
-        # 오류 발생 시 더미 데이터 반환
-        dummy_contents = []
-        for repo_name in repo_names:
-            dummy_contents.append(f"=== {repo_name} README ===\n프로젝트: {repo_name}\n설명: README 조회 중 오류가 발생했습니다.\n")
-        return "\n".join(dummy_contents)
+        print(f"VectorDBRetriever: README 조회 중 오류: {e}")
+        return "README 정보 없음"
 
 
 # --- Teams Posts ---
