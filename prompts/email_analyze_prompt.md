@@ -62,11 +62,14 @@
 3. 매칭되지 않은 이메일 분류 (Unmatched Emails)
   - WBS 데이터에 명시된 작업에는 포함되지 않지만, 해당 이메일 내용을 통해 추론되는 작업이 명확한 경우에는 inferred_task_name을 작성합니다.
     - 예: 보고서 작성, 회의록 정리, 비정형 요구사항 분석 등
-  - 단, 업무와 매칭되지 않은 일방향적인 정보 전달 (예: 'Welcome to your Microsoft Teams Phone trial' 등)에 해당하는 이메일의 경우에도 분석에 포함할 수 있으며, 업무 관련 없음을 정확히 명시합니다.
+  - 단, 업무와 매칭되지 않은 일방향적인 정보 전달 (예: 'Welcome to your Microsoft Teams' 등)에 해당하는 이메일의 경우에도 분석에 포함할 수 있으며, 업무 관련 없음을 정확히 명시합니다.
 
 4. LLM_reference 작성 지침
   - LLM_reference에는 판단의 근거가 되는 구체적인 이메일 문장이나 표현을 인용합니다.
-  - 예: “이메일 본문에서 ‘Graph API 코드 연동 테스트 완료’라는 표현이 WBS의 ‘API 연동 테스트’ 작업과 직접적으로 연결됨.”
+  - sender와 receivers의 관계를 분석하여, 이메일의 발신자가 업무를 **지시했는지, 보고했는지, 요청했는지, 협의했는지 등 역할과 의도를 파악**해 작성합니다.
+    - 예: "이메일 본문에서 'Graph API 코드 연동 테스트 완료 보고"라고 공유했으며, WBS의 ‘API 연동 테스트’ 작업과 연결됨."
+    - 예: "'금주 회의 일정'에서 회의 일정을 조율하고자 하였으며, WBS에서 'Agent 구축'을 위한 초기 개발 기획과 연관됨."
+    - 예: "이메일 본문에서 '감사합니다'라고 응답했으며, 이는 '요구사항 기능 분석' 작업 완료에 대한 피드백으로 해석됨."
   - 추상적인 표현 대신, 실제 텍스트에 기반한 구체적인 판단 근거를 작성합니다.
 
 5. daily_reflection 작성 원칙
@@ -136,7 +139,7 @@
       "추가 의견: (팀워크나 협업 관련 소감 등 기타 의견)"
     ]
   }}
-  "total_tasks": {total_tasks}
+  "total_tasks": {total_tasks} 
 }}
 ```
 
@@ -144,6 +147,8 @@
 - 분석은 객관적이고 데이터에 기반해야 합니다.
 - 모든 수치는 정확해야 합니다.
 - 제공된 모든 이메일은 matched_emails 또는 unmatched_emails 둘 중 하나에 반드시 포함되어야 합니다.
-- matched_emails와 unmatched_emails에 포함된 항목 수의 합은 total_tasks의 수와 같아야 합니다.
+- `total_tasks`는 분석 대상 이메일의 전체 개수를 나타냅니다.
+  - 따라서 결과에서 matched_emails와 unmatched_emails, excluded_emilas에 포함된 항목 수의 합이 반드시 total_tasks와 같아야 합니다.
+  - 다만, 응답을 반환할 때는 excluded_emails에 포함된 이메일 수를 제외해 반환합니다 (total_tasks - excluded_emails.count).
 - 응답은 반드시 위에 명시된 JSON 형식이어야 합니다.
 - 데이터가 부족한 경우, 해당 필등에 null 값을 사용하세요.
