@@ -22,6 +22,7 @@
 ### ✅ **MUST DO (필수 준수)**
 
 ✅ **완전한 1:1 매핑**: analysis task → contents object (정확히 1:1)  
+✅ **같은 task명(WBS 기준 동일)**인 경우에는 하나의 contents 객체로 묶고, 해당 객체의 evidence 배열 안에 모든 출처별 분석 결과를 나열합니다. 단, task가 없거나 서로 다른 WBS와 연결된 경우에는 별도 객체로 분리합니다.
 ✅ **전수 포함**: matched_tasks + unmatched_tasks 모든 항목 개별 처리  
 ✅ **수치 일치**: TOTAL_ACTIVITIES = 전체 evidence 개수 (1개 차이도 실패)
   - contents 배열 내 모든 evidence를 펼쳤을 때 그 총합이 정확히 TOTAL_ACTIVITIES와 같아야 함
