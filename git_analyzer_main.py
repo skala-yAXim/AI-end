@@ -6,9 +6,10 @@ import sys
 import pandas as pd
 from datetime import datetime, timedelta
 
-COLLECTION_NAME = "Git-Activities" 
-TEST_USER_EMAIL = "kproh99@naver.com"  # 분석할 사용자의 Git 이메일
-TEST_USER_NAME = "노건표"              # 리포트에 표시될 사용자 이름
+COLLECTION_NAME_GIT_ACTIVITIES = "Git-Activities"
+COLLECTION_NAME_GIT_README = "Git-Readme"
+TEST_USER_EMAIL = "minsuh3203@yasim2861.onmicrosoft.com"  # 분석할 사용자의 Git 이메일
+TEST_USER_NAME = "조민서"              # 리포트에 표시될 사용자 이름
 TEST_TARGET_DATE = "2025-06-05"       # 분석할 날짜 (YYYY-MM-DD 형식)
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -67,6 +68,12 @@ def main():
     if git_analysis_result:
         print("최종 분석 결과 (git_analysis_result):")
         print(json.dumps(git_analysis_result, indent=2, ensure_ascii=False))
+        
+        json_string = json.dumps(git_analysis_result, ensure_ascii=False, indent=2)
+        output_filename = f"git_analysis_{TEST_USER_NAME}_{TEST_TARGET_DATE}.json"
+        output_path = os.path.join("./outputs", output_filename)
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(json_string)
     else:
         print("분석 결과가 없습니다.")
 

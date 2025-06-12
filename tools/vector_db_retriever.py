@@ -2,7 +2,7 @@
 import os
 import sys
 from datetime import datetime, timezone
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union, Set, Tuple
 import json 
 
 from qdrant_client import QdrantClient
@@ -149,11 +149,12 @@ def retrieve_git_activities(
     qdrant_client: QdrantClient,
     git_author_identifier: str,
     target_date_str: Optional[str],
-    scroll_limit: int = DEFAULT_SCROLL_LIMIT
-) -> List[Dict]:
+    scroll_limit: int = DEFAULT_SCROLL_LIMIT,
+    include_readmes: bool = True
+) -> Union[List[Dict], Tuple[List[Dict], str]]:
     """
     Git 활동 로그 전체를 scroll로 한 번에 조회합니다.
-    author, 날짜 기준 필터링만 수행하며, event_type별 분리는 하지 않습니다.
+    include_readmes=True시 해당 사용자가 참여한 저장소들의 README 정보도 함께 반환합니다.
     """
     print(f"VectorDBRetriever: Git 활동 전체 조회 (author: {git_author_identifier}, date: {target_date_str})")
     
@@ -180,10 +181,65 @@ def retrieve_git_activities(
         )
         formatted_event_docs = _format_qdrant_points(points)
         print(f"VectorDBRetriever: Git 활동 {len(formatted_event_docs)}개 조회 완료.")
+        
+        # README 조회가 필요한 경우
+        if include_readmes:
+            # 내가 참여한 저장소 목록 추출
+            repo_names = set()
+            for activity in formatted_event_docs:
+                repo_name = activity.get("metadata", {}).get("repo_name")
+                if repo_name:
+                    repo_names.add(repo_name)
+            
+            print(f"VectorDBRetriever: 참여 저장소 {len(repo_names)}개 발견: {repo_names}")
+            
+            # 해당 저장소들의 README 조회
+            readme_info = _get_readmes_by_repo_names(qdrant_client, repo_names)
+            return formatted_event_docs, readme_info
+        
         return formatted_event_docs
+        
     except Exception as e:
         print(f"VectorDBRetriever: Git 활동 조회 중 오류: {e}")
-        return []
+        return [] if not include_readmes else ([], "README 조회 실패")
+
+def _get_readmes_by_repo_names(qdrant_client: QdrantClient, repo_names: Set[str]) -> str:
+    """참여한 저장소들의 README 조회"""
+    if not repo_names:
+        return "README 정보 없음"
+
+    try:
+        readme_contents = []
+        for repo_name in repo_names:
+            try:
+                points, _ = qdrant_client.scroll(
+                    collection_name=config.COLLECTION_GIT_README,
+                    scroll_filter=Filter(must=[
+                        FieldCondition(
+                            key="repo_name",
+                            match=MatchValue(value=repo_name)
+                        )
+                    ]),
+                    limit=1,
+                    with_payload=True,
+                    with_vectors=False
+                )
+                
+                if points:
+                    content = points[0].payload.get("page_content", "")
+                    readme_contents.append(f"=== {repo_name} README ===\n{content}\n")
+                    print(f"VectorDBRetriever: {repo_name} README 조회 완료")
+                else:
+                    print(f"VectorDBRetriever: {repo_name} README 없음")
+                    
+            except Exception as e:
+                print(f"VectorDBRetriever: README 조회 오류 ({repo_name}): {e}")
+        
+        return "\n".join(readme_contents) if readme_contents else "README 정보 없음"
+        
+    except Exception as e:
+        print(f"VectorDBRetriever: README 조회 중 오류: {e}")
+        return "README 정보 없음"
 
 
 # --- Teams Posts ---
