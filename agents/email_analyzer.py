@@ -50,7 +50,7 @@ class EmailAnalyzerAgent:
             content = item.get("page_content", "")[:300] # 내용 일부
             subject = meta.get("subject", meta.get("title", "제목 없음"))
             from_addr = meta.get("sender", "알 수 없음") # 실제 Qdrant 필드명: sender
-            to_addrs_val = meta.get("receiver", meta.get("recipients", [])) # 실제 Qdrant 필드명: receiver 또는 recipients
+            to_addrs_val = meta.get("receivers", meta.get("recipients", [])) # 실제 Qdrant 필드명: receiver 또는 recipients
             to_addrs_str = ", ".join(to_addrs_val) if isinstance(to_addrs_val, list) else str(to_addrs_val)
             timestamp = meta.get("date", "날짜 정보 없음") # 실제 Qdrant 필드명: date
             parts.append(f"- 제목: {subject}\n  발신: {from_addr}\n  수신: {to_addrs_str}\n  날짜: {timestamp}\n  내용 일부: {content}...\n---")
