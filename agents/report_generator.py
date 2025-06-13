@@ -16,7 +16,7 @@ from core.state_definition import LangGraphState
 class DailyReportGenerator:
     """
     LangGraph 워크플로우와 통합된 일일 보고서 생성기
-    분석된 Teams, Docs, Git, Email 데이터를 종합하여 JSON 형식의 보고서 생성
+    분석된 Teams, Docs, Git, Email, Project 데이터를 종합하여 JSON 형식의 보고서 생성
     """
     
     def __init__(self):
@@ -36,7 +36,8 @@ class DailyReportGenerator:
             input_variables=[
                 "user_name", "user_id", "target_date",
                 "wbs_data", "docs_analysis", "teams_analysis", 
-                "git_analysis", "email_analysis"
+                "git_analysis", "email_analysis", "project_name", "project_description",
+                "retrieved_readme_info"
             ]
         )
         self.parser = JsonOutputParser()
@@ -57,7 +58,10 @@ class DailyReportGenerator:
                 "docs_analysis": str(state.get("documents_analysis_result", "문서 분석 결과 없음")),
                 "teams_analysis": str(state.get("teams_analysis_result", "Teams 분석 결과 없음")),
                 "git_analysis": str(state.get("git_analysis_result", "Git 분석 결과 없음")),
-                "email_analysis": str(state.get("email_analysis_result", "이메일 분석 결과 없음"))
+                "email_analysis": str(state.get("email_analysis_result", "이메일 분석 결과 없음")),
+                "project_name": str(state.get("project_name", "프로젝트 이름 없음")),
+                "project_description": str(state.get("project_description", "프로젝트 설명 없음")),
+                "retrieved_readme_info": str(state.get("retrieved_readme_info", "README 정보 없음"))
             }
             
             # 체인 구성 및 실행
