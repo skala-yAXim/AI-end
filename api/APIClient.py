@@ -1,52 +1,60 @@
+import os
 import requests
 import json
-from datetime import date
+from dataclasses import dataclass, asdict
+from dotenv import load_dotenv
 
+# --- 데이터 전송 객체 (DTO) ---
+@dataclass
+class ReportCreateRequest:
+    """
+    API 리포트 생성 요청을 위한 데이터 클래스(DTO)
+    """
+    userId: int
+    startDate: str
+    endDate: str
+    report: dict  # 실제 보고서 내용은 딕셔너리 형태로 유지
+
+    def to_payload(self) -> dict:
+        """
+        API 서버에 전송할 최종 payload 딕셔너리를 생성합니다.
+        'report' 필드는 JSON 형식의 문자열로 변환됩니다.
+        """
+        # dataclass를 딕셔너리로 변환
+        payload_dict = asdict(self)
+        # 'report' 딕셔너리를 JSON 문자열로 변환하여 덮어쓰기
+        payload_dict['report'] = json.dumps(self.report, ensure_ascii=False)
+        return payload_dict
+
+# --- API 클라이언트 ---
 class APIClient:
     """
     리포트 생성 API와의 통신을 담당하는 클라이언트 클래스
     """
-    def __init__(self, base_url="http://localhost:8088/"):
+    def __init__(self, base_url: str):
         """
         클라이언트 초기화
-
         :param base_url: API 서버의 기본 URL
         """
+        if not base_url:
+            raise ValueError("API base_url이 제공되지 않았습니다.")
         self.base_url = base_url
 
-    def submit_user_daily_report(self, user_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
+    def _send_request(self, path: str, request_dto: ReportCreateRequest) -> dict:
         """
-        리포트 데이터를 API 서버에 전송합니다.
-
-        :param user_id: 사용자 ID (e.g., 1)
-        :param start_date: 보고서 시작일 (e.g., "2025-06-02")
-        :param end_date: 보고서 종료일 (e.g., "2025-06-08")
-        :param report_content: 보고서 내용에 해당하는 딕셔너리
-        :return: 서버로부터 받은 응답 (JSON 파싱된 딕셔너리)
-        :raises: requests.exceptions.RequestException: 요청 실패 시
+        내부용 요청 전송 헬퍼 메서드.
+        :param path: API 요청 경로 (e.g., "reports/user/daily")
+        :param request_dto: 전송할 데이터 DTO 객체
+        :return: 서버 응답 (JSON 파싱된 딕셔너리)
         """
-        # API 엔드포인트 URL 구성
-        api_url = f"{self.base_url}reports/user/daily" # API 경로를 명시적으로 수정했습니다. 실제 경로에 맞게 변경하세요.
+        api_url = f"{self.base_url}{path}"
+        payload = request_dto.to_payload()
 
         try:
-            # 1. 보고서 내용(dict)을 JSON 형식의 문자열로 변환합니다.
-            report_json_string = json.dumps(report_content, ensure_ascii=False)
-
-            # 2. API DTO 형식에 맞춰 페이로드를 구성합니다.
-            payload = {
-                "userId": user_id,
-                "startDate": start_date,
-                "endDate": end_date,
-                "report": report_json_string
-            }
-
             print(f"--- 리포트 전송 요청: {api_url} ---")
             print(f"전송 데이터: \n{json.dumps(payload, indent=2, ensure_ascii=False)}")
 
-            # 3. POST 요청을 전송합니다. `json` 파라미터는 자동으로 Content-Type을 application/json으로 설정합니다.
             response = requests.post(api_url, json=payload, timeout=10)
-
-            # 4. 응답 상태 코드가 2xx가 아닐 경우 예외를 발생시킵니다.
             response.raise_for_status()
 
             print("\n--- 요청 성공 ---")
@@ -54,43 +62,72 @@ class APIClient:
             return response.json()
 
         except requests.exceptions.HTTPError as e:
-            # 서버에서 4xx, 5xx 에러 코드를 반환한 경우
             print(f"\n--- HTTP 오류 발생: {e.response.status_code} ---")
             print(f"응답 내용: {e.response.text}")
             raise
         except requests.exceptions.RequestException as e:
-            # 네트워크 연결 문제, 타임아웃 등 요청 관련 오류
             print(f"\n--- 요청 실패: {e} ---")
             raise
 
+    def submit_user_daily_report(self, user_id: int, target_date: str, report_content: dict) -> dict:
+        """사용자 일간 리포트를 제출합니다."""
+        request_dto = ReportCreateRequest(
+            userId=user_id,
+            startDate=target_date,
+            endDate=target_date,
+            report=report_content
+        )
+        return self._send_request(path="reports/user/daily", request_dto=request_dto)
+
+    def submit_user_weekly_report(self, user_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
+        """사용자 주간 리포트를 제출합니다."""
+        request_dto = ReportCreateRequest(
+            userId=user_id,
+            startDate=start_date,
+            endDate=end_date,
+            report=report_content
+        )
+        return self._send_request(path="reports/user/weekly", request_dto=request_dto)
+
+    def submit_team_weekly_report(self, team_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
+        """팀 주간 리포트를 제출합니다. (userId 필드를 team_id로 사용)"""
+        request_dto = ReportCreateRequest(
+            userId=team_id,
+            startDate=start_date,
+            endDate=end_date,
+            report=report_content
+        )
+        return self._send_request(path="reports/team/weekly", request_dto=request_dto)
+
+
 # --- 사용 예시 ---
 if __name__ == '__main__':
+
+    load_dotenv()
+
+    api_base_url = os.getenv("BASE_URL")
+
     # API 클라이언트 인스턴스 생성
-    client = APIClient(base_url="http://localhost:8088/")
+    client = APIClient(base_url=api_base_url)
 
     # 전송할 리포트 원본 데이터 (딕셔너리)
     report_dict_content = {
-        "report_title": "주간 업무 보고",
+        "report_title": "일일 업무 보고",
         "completed_tasks": [
-            {"task_id": "T-101", "desc": "API 클라이언트 개발"},
-            {"task_id": "T-102", "desc": "단위 테스트 작성"}
+            {"task_id": "T-103", "desc": "요청 DTO 클래스 분리 리팩토링"}
         ],
-        "in_progress": 1,
-        "notes": "다음 주에는 성능 테스트 예정"
+        "notes": "클린 코드를 위한 구조 개선 완료"
     }
 
     try:
-        # 메서드 호출
+        # 사용자 일간 리포트 제출 예시
         response_data = client.submit_user_daily_report(
             user_id=1,
-            start_date="2025-06-02",
-            end_date="2025-06-02",
+            target_date="2025-06-08",
             report_content=report_dict_content
         )
         print("\n--- 최종 처리 성공 ---")
-        print("서버로부터 받은 데이터:")
-        print(response_data)
+        print("서버로부터 받은 데이터:", response_data)
 
     except Exception as e:
-        print(f"\n--- 최종 처리 중 오류 발생 ---")
-        print(e)
+        print(f"\n--- 최종 처리 중 오류 발생: {e} ---")
