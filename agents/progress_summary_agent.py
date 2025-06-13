@@ -8,7 +8,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 class ProgressSummaryAgent:
 
-    def __init__(self, qdrant_client: QdrantClient):
+    def __init__(self , qdrant_client: QdrantClient):
         self.qdrant_client = qdrant_client
         
         self.llm_client = ChatOpenAI(
