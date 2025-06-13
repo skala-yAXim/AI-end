@@ -12,6 +12,8 @@ class LangGraphState(Dict):
     github_email: Optional[str] = None # Git 활동 분석 시 사용할 GitHub 이메일. 없으면 user_id를 Git author로 간주.
     target_date: Optional[str] = None # 분석 기준 날짜 (YYYY-MM-DD 형식). Documents를 제외한 모든 분석에서 사용.
     project_id: Optional[str] = None # 분석 대상 프로젝트 ID (WBS 등)
+    project_name: Optional[str] = None # 분석 대상 프로젝트 이름
+    project_description: Optional[str] = None # 분석 대상 프로젝트 설명
 
     # --- 데이터 조회 및 분석 결과 ---
     wbs_data: Optional[Dict] = None 

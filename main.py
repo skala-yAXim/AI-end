@@ -21,8 +21,21 @@ def run_analysis_workflow():
     input_user_id = "minsuh3203@yasim2861.onmicrosoft.com" 
     input_user_name = "조민서" 
     input_github_email = "minsuh3203@gmail.com" 
-    input_target_date = "2025-06-05" 
+    input_target_date = "2025-06-10" 
     input_project_id = "project_sample_001" # 테스트할 실제 프로젝트 ID
+    input_project_name = "개인 업무 관리 AI 프로젝트"
+    input_project_description = """
+    - 프로젝트 개요
+    본 프로젝트는 조직 구성원의 다양한 업무 활동 데이터를 AI 기술로 자동 수집·분석하여, 
+    객관적이고 정확한 개인 업무 성과 보고서를 자동 생성하는 혁신적인 업무 관리 시스템입니다.
+
+    - 해결하고자 하는 문제
+        - 기존 수동 보고서 작성으로 인한 업무 생산성 저하 (주당 2-3시간 소요)
+        - 주관적 자기 평가 기반 성과 측정의 객관성 부족
+        - 프로젝트 실제 진척도와 계획 간 괴리 파악의 어려움
+        - 다양한 업무 툴 간 데이터 분산으로 종합적 성과 분석 한계
+    
+    """
 
     print(f"\n분석 실행 파라미터:")
     print(f"  User ID (기본 식별자): {input_user_id}")
@@ -30,6 +43,8 @@ def run_analysis_workflow():
     print(f"  GitHub Email (Git 분석용, 없으면 User ID 사용): {input_github_email if input_github_email else '(user_id 사용)'}")
     print(f"  Target Date: {input_target_date}")
     print(f"  Project ID (WBS용): {input_project_id}")
+    print(f"  Project Name: {input_project_name}")
+    print(f"  Project Description: {input_project_description}")
     
     initial_state = LangGraphState(
         user_id=input_user_id,
@@ -44,6 +59,8 @@ def run_analysis_workflow():
         teams_analysis_result=None,
         wbs_data=None, # 초기 WBS 데이터는 None
         comprehensive_report=None, # 일일 보고서 결과
+        project_name=input_project_name,
+        project_description=input_project_description,
         error_message="" 
     )
 
