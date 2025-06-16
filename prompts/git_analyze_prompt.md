@@ -21,6 +21,8 @@
 - **Git 활동 기록**: {git_info_str_for_llm}
 - **Git 활동 통계**: {git_metadata_analysis_str}
 - **저장소 README 정보**: {readme_info_str}
+- **프로젝트 이름**: {project_name}
+- **프로젝트 설명**: {project_description}
 
 ## 🔍 [완전성 보장 분석 프로세스]
 

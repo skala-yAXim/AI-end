@@ -129,7 +129,9 @@ class GitAnalyzerAgent:
     target_date: str, # target_date는 필수
     wbs_data: Optional[dict],
     retrieved_activities: List[Dict],
-    readme_info: str = ""
+    project_name : str,
+    project_description: str,
+    readme_info: str = "",
     ) -> Dict[str, Any]:
         total_count = len(retrieved_activities)
         print(f"GitAnalyzerAgent: 사용자 식별자 '{user_id}' Git 활동 분석. 총 {total_count}건 (대상일: {target_date}).")
@@ -160,7 +162,9 @@ class GitAnalyzerAgent:
                 "git_info_str_for_llm": git_data_str,
                 "wbs_tasks_str_for_llm": wbs_data_str,
                 "git_metadata_analysis_str": git_stats_str,
-                "readme_info_str": readme_info
+                "readme_info_str": readme_info,
+                "project_name" : project_name,
+                "project_description" : project_description,
             }
             analysis_result = chain.invoke(llm_input)
             return analysis_result
@@ -175,6 +179,9 @@ class GitAnalyzerAgent:
         user_name_for_context = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
+
+        project_name = state.get("project_name")
+        project_description = state.get("project_description")
 
         analysis_result = {} # 기본값 초기화
         if not git_identifier:
@@ -199,7 +206,7 @@ class GitAnalyzerAgent:
             state["retrieved_readme_info"] = readme_info  # 👈 README 정보도 저장
 
             analysis_result = self._analyze_git_internal(
-                git_identifier, user_name_for_context, target_date, wbs_data, git_activities, readme_info
+                git_identifier, user_name_for_context, target_date, wbs_data, git_activities, project_name, project_description, readme_info
             )
         
         return {"git_analysis_result": analysis_result}
