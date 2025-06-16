@@ -22,6 +22,10 @@
 ### WBS 작업 데이터:
 {wbs_data}
 
+### 프로젝트 이름 및 description :
+- 프로젝트 이름: {project_name}
+- 프로젝트 설명: {project_description}
+
 ## 🔍 분석 지침
 
 ### 1. 기본 정보 설정
