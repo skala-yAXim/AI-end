@@ -30,6 +30,9 @@
 ```json
 {wbs_data}
 ```
+### 프로젝트 이름 및 description
+- 프로젝트 이름: {project_name}
+- 프로젝트 설명: {project_description}
 
 ## 분석 지침
 
