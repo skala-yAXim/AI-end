@@ -63,3 +63,15 @@ class WeeklyLangGraphState(Dict):
     weekly_report_result: Optional[Dict] = None
     error_message: Optional[str] = None
 
+
+class ProgressSummaryState(Dict):
+    user_name: Optional[str] = None 
+    github_email: Optional[str] = None 
+    target_date: Optional[str] = None 
+    date: str
+    project_id: str
+    daily_report_path: str
+    daily_report: Dict[str, Any]
+    wbs_data: List[Dict[str, Any]]
+    progress_summary: str
+    error_message: str
