@@ -1,22 +1,29 @@
+from datetime import datetime
 import os
+from typing import List
 import requests
 from dotenv import load_dotenv
 import json
-from dto.request.report_create_request import ReportCreateRequest
+from api.dto.response.team_info_response import FileInfo, ProjectInfo, TeamInfoResponse, UserInfo
+from core.config import API_AUTHORIZATION, API_BASE_URL, API_KEY
+from api.dto.request.report_create_request import ReportCreateRequest
 
 # --- API 클라이언트 ---
 class APIClient:
     """
     리포트 생성 API와의 통신을 담당하는 클라이언트 클래스
     """
-    def __init__(self, base_url: str):
+    def __init__(self):
         """
         클라이언트 초기화
         :param base_url: API 서버의 기본 URL
         """
-        if not base_url:
+        self.base_url = API_BASE_URL
+        
+        if not API_BASE_URL:
             raise ValueError("API base_url이 제공되지 않았습니다.")
-        self.base_url = base_url
+        
+        self.headers = {API_AUTHORIZATION: API_KEY}
 
     def _send_request(self, path: str, request_dto: ReportCreateRequest) -> dict:
         """
@@ -76,6 +83,63 @@ class APIClient:
             report=report_content
         )
         return self._send_request(path="reports/team/weekly", request_dto=request_dto)
+    
+    def get_teams_info(self) -> List[TeamInfoResponse]:
+        """팀 리스트를 가져옵니다."""
+        url = f"{self.base_url}/api-for-ai/team-info"
+        response = requests.get(url, headers=self.headers)
+        response.raise_for_status()
+
+        teams_data = response.json()
+        result = []
+
+        for team in teams_data:
+            members = [
+                UserInfo(
+                    id=member["id"],
+                    name=member["name"],
+                    email=member["email"]
+                )
+                for member in team.get("members", [])
+            ]
+
+            projects = []
+            for proj in team.get("projects", []):
+                files = [
+                    FileInfo(
+                        id=f["id"],
+                        created_at=f["createdAt"],
+                        updated_at=f["updatedAt"],
+                        original_file_name=f["originalFileName"],
+                        file_url=f["fileUrl"],
+                        file_size=f["fileSize"]
+                    )
+                    for f in proj.get("files", [])
+                ]
+
+                project_info = ProjectInfo(
+                    id=proj["id"],
+                    created_at=proj["createdAt"],
+                    updated_at=proj["updatedAt"],
+                    name=proj["name"],
+                    start_date=proj["startDate"],
+                    end_date=proj["endDate"],
+                    description=proj["description"],
+                    status=proj["status"],
+                    files=files
+                )
+                projects.append(project_info)
+
+            team_info = TeamInfoResponse(
+                id=team["id"],
+                name=team["name"],
+                description=team["description"],
+                members=members,
+                projects=projects
+            )
+            result.append(team_info)
+
+        return result
 
 
 # --- 사용 예시 ---
@@ -89,23 +153,25 @@ if __name__ == '__main__':
     client = APIClient(base_url=api_base_url)
 
     # 전송할 리포트 원본 데이터 (딕셔너리)
-    report_dict_content = {
-        "report_title": "일일 업무 보고",
-        "completed_tasks": [
-            {"task_id": "T-103", "desc": "요청 DTO 클래스 분리 리팩토링"}
-        ],
-        "notes": "클린 코드를 위한 구조 개선 완료"
-    }
+    # report_dict_content = {
+    #     "report_title": "일일 업무 보고",
+    #     "completed_tasks": [
+    #         {"task_id": "T-103", "desc": "요청 DTO 클래스 분리 리팩토링"}
+    #     ],
+    #     "notes": "클린 코드를 위한 구조 개선 완료"
+    # }
 
     try:
         # 사용자 일간 리포트 제출 예시
-        response_data = client.submit_user_daily_report(
-            user_id=1,
-            target_date="2025-06-08",
-            report_content=report_dict_content
-        )
-        print("\n--- 최종 처리 성공 ---")
-        print("서버로부터 받은 데이터:", response_data)
+        # response_data = client.submit_user_daily_report(
+        #     user_id=1,
+        #     target_date="2025-06-08",
+        #     report_content=report_dict_content
+        # )
+        # print("\n--- 최종 처리 성공 ---")
+        # print("서버로부터 받은 데이터:", response_data)
+        result = client.get_teams()
+        print(result)
 
     except Exception as e:
         print(f"\n--- 최종 처리 중 오류 발생: {e} ---")

@@ -33,3 +33,7 @@ DATA_DIR = os.path.join(PROJECT_ROOT_DIR, "data") # 원본 데이터 저장 경�
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
+API_BASE_URL = "http://localhost:8088"
+API_AUTHORIZATION = os.getenv("API_AUTHORIZATION")
+API_KEY = os.getenv("API_KEY")
+
