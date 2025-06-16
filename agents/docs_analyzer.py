@@ -58,7 +58,9 @@ class DocsAnalyzer:
         target_date: str,
         wbs_data: Optional[dict],
         retrieved_docs_list: list,
-        docs_quality_result: Optional[dict] = None
+        docs_quality_result: Optional[dict] = None,
+        project_name: Optional[str] = None,
+        project_description: Optional[str] = None,
     ) -> Dict[str, Any]:
         print(f"DocsAnalyzer: 사용자 ID '{user_id}'의 문서 {len(retrieved_docs_list)}개 분석 시작.")
         
@@ -102,7 +104,9 @@ class DocsAnalyzer:
                 "user_name": lambda x: x["in_user_name"],
                 "target_date": lambda x: x["in_target_date"],
                 "docs_quality_result": lambda x: x["docs_quality_result"],
-                "total_tasks": lambda x: x["in_total_tasks"]
+                "total_tasks": lambda x: x["in_total_tasks"],
+                "project_name": lambda x: x["project_name"],
+                "project_description": lambda x: x["project_description"],
             }
             | self.prompt
             | self.llm
@@ -117,7 +121,9 @@ class DocsAnalyzer:
                 "wbs_info": wbs_data_str,
                 "documents_text": documents_text,
                 "docs_quality_result": docs_quality_result,
-                "in_total_tasks": unique_count
+                "in_total_tasks": unique_count,
+                "project_name": project_name,
+                "project_description": project_description,
             })
             return result
         
@@ -141,7 +147,10 @@ class DocsAnalyzer:
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
         quality_result = state.get("documents_quality_result", {})
-
+        
+        project_name = state.get("project_name")
+        project_description = state.get("project_description")        
+        
         if not user_id:
             error_msg = "DocsAnalyzer: user_id가 State에 제공되지 않아 분석을 건너뜁니다."
             print(error_msg)
@@ -163,7 +172,9 @@ class DocsAnalyzer:
                 target_date=target_date, # 분석 컨텍스트용 날짜
                 wbs_data=wbs_data,
                 retrieved_docs_list=retrieved_docs_list,
-                docs_quality_result=quality_result
+                docs_quality_result=quality_result,
+                project_name = project_name,
+                project_description = project_description
             )
         
         return {"documents_analysis_result": analysis_result}
