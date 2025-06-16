@@ -63,6 +63,8 @@ class TeamsAnalyzer:
             user_name: Optional[str], # LLM 프롬프트용 user_name 
             target_date: str, # target_date는 필수
             wbs_data: Optional[dict],
+            project_name: Optional[str],
+            project_description: Optional[str],
             retrieved_posts_list: List[Dict]
         ) -> Dict[str, Any]:
         print(f"TeamsAnalyzer: 사용자 ID '{user_id}'의 Teams 게시물 {len(retrieved_posts_list)}개 분석 시작 (대상일: {target_date}).")
@@ -96,7 +98,9 @@ class TeamsAnalyzer:
                 "user_name": user_name or user_id,
                 "target_date": target_date,
                 "posts": posts_data_str, # 프롬프트의 {posts} 변수
-                "wbs_data": wbs_data_str # 프롬프트의 {wbs_data} 변수
+                "wbs_data": wbs_data_str, # 프롬프트의 {wbs_data} 변수
+                "project_name": project_name,
+                "project_description": project_description
             }
             result = chain.invoke(llm_input)
             return result # LLM 순수 결과만 반환
@@ -111,6 +115,8 @@ class TeamsAnalyzer:
         user_name = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
+        project_name = state.get("project_name")
+        project_description = state.get("project_description")
 
         analysis_result = {} # 기본값 초기화
         if not user_id:
@@ -131,7 +137,7 @@ class TeamsAnalyzer:
             state["retrieved_teams_posts"] = retrieved_list # 필요시 저장
 
             analysis_result = self._analyze_teams_data_internal(
-                user_id, user_name, target_date, wbs_data, retrieved_list
+                user_id, user_name, target_date, wbs_data, project_name, project_description, retrieved_list
             )
         
         return {"teams_analysis_result": analysis_result}
