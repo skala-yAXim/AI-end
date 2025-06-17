@@ -21,7 +21,14 @@ def run_team_weekly_workflow():
     parser.add_argument("--team_description", type=str, default="업무 관리 Agent 개발팀", help="팀 설명")
     parser.add_argument("--team_members", type=List[str], default=["고석환", "김세은", "김용준", "노건표", "여다건", "조민서"], help="소속 팀원")
     parser.add_argument("--start-date", type=str, default="2025-06-02", help="보고서 시작일 (YYYY-MM-DD)")
-    parser.add_argument("--end-date", type=str, default="2025-06-06", help="보고서 종료일 (YYYY-MM-DD)")
+    parser.add_argument("--end-date", type=str, default="2025-06-08", help="보고서 종료일 (YYYY-MM-DD)")
+    parser.add_argument("--last-week-progress", type=str, default="진행도 : 50", help="지난 주 진행 상황")
+    parser.add_argument("--project-name", type=str, default="yAXim", help="프로젝트 이름")
+    parser.add_argument("--project-start-date", type=str, default="2025-06-02", help="프로젝트 시작일")
+    parser.add_argument("--project-end-date", type=str, default="2025-06-14", help="프로젝트 종료일")
+    # 프로젝트 인풋 템플릿 삽입.
+    parser.add_argument("--weekly-input-template", type=str, default="# [Pre-sales] 지누스, 생성형AI 기반 고객 리뷰 분류 PoC (w/ CV혁신산업개발팀, Data Science1팀)\n개요: 아마존의 상품 리뷰 데이터 중, 불만 데이터의 카테고리를 Hybrid(생성형+AI) 모델로 분류\n규모: 미정\n기간: 2개월\n경쟁: EY, 메가존\n진행사항: 고객 초도미팅 (7/25): ChatGPT 기반으로 고객 내부 진행 시 40% 정확도 수준 / Feasibility (7/25 ~ 7/28): 약 70% 정확도 달성 (GPT-4 활용) → 고객 미팅 (7/31): 현업 통한 사업화 타진 후 미팅 진행 / PoC 제안 고객 미팅 (8/30): 제안 방향 및 요건 확인 → 자주 제출", help="팀위클리 인풋 템플릿")
+    # parser.add_argument("--weekly-input-template", type=str, default="[Pre-sales] 지누스, 생성형AI 기반 고객 리뷰 분류 PoC (w/ CV혁신산업개발팀, Data Science1팀) 개요: 아마존의 상품 리뷰 데이터 중, 불만 데이터의 카테고리를 Hybrid(생성형+AI) 모델로 분류 규모: 미정 기간: 2개월 경쟁: EY, 메가존 진행사항: 고객 초도미팅 (7/25): ChatGPT 기반으로 고객 내부 진행 시 40% 정확도 수준 / Feasibility (7/25 ~ 7/28): 약 70% 정확도 달성 (GPT-4 활용) → 고객 미팅 (7/31): 현업 통한 사업화 타진 후 미팅 진행 / PoC 제안 고객 미팅 (8/30): 제안 방향 및 요건 확인 → 자주 제출", help="팀위클리 인풋 템플릿")
     args = parser.parse_args()
 
     # --- 설정값 ---
@@ -31,6 +38,11 @@ def run_team_weekly_workflow():
     TEAM_MEMBERS = args.team_members
     START_DATE = args.start_date
     END_DATE = args.end_date
+    LAST_WEEK_PROGRESS = args.last_week_progress
+    PROJECT_NAME = args.project_name
+    PROJECT_START_DATE = args.project_start_date
+    PROJECT_END_DATE = args.project_end_date
+    WEEKLY_INPUT_TEMPLATE = args.weekly_input_template
     
     # 프로젝트 루트 디렉토리 설정
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
@@ -60,7 +72,12 @@ def run_team_weekly_workflow():
         wbs_data=None,
         weekly_reports_data=None,
         team_weekly_report_result=None,
-        error_message=""
+        error_message="",
+        last_week_progress=LAST_WEEK_PROGRESS,
+        project_name=PROJECT_NAME,
+        project_start_date=PROJECT_START_DATE,
+        project_end_date=PROJECT_END_DATE,
+        weekly_input_template=WEEKLY_INPUT_TEMPLATE,
     )
     
     # --- 실행 ---

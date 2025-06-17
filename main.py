@@ -18,9 +18,9 @@ def run_analysis_workflow():
     load_dotenv()
     print("환경 변수 로드 시도 완료.")
     
-    input_user_id = "minsuh3203@yasim2861.onmicrosoft.com" 
-    input_user_name = "조민서" 
-    input_github_email = "minsuh3203@gmail.com" 
+    input_user_id = "qkdrkzx@yasim2861.onmicrosoft.com" 
+    input_user_name = "김용준" 
+    input_github_email = "qkdrkzx@yasim2861.onmicrosoft.com" 
     input_target_date = "2025-06-10" 
     input_project_id = "project_sample_001" # 테스트할 실제 프로젝트 ID
     input_project_name = "개인 업무 관리 AI 프로젝트"
