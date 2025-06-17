@@ -22,7 +22,7 @@ import os
 import sys
 from typing import Optional
 
-from wbs_analyze_agent.agent import WBSAnalysisAgent
+from agents.wbs_analyze_agent.agent import WBSAnalysisAgent
 from core.utils import Settings 
 from langchain.globals import set_llm_cache
 
@@ -30,8 +30,9 @@ from langchain.globals import set_llm_cache
 set_llm_cache(None)
 
 def run_wbs_agent(project_id: str, 
-                        wbs_file_path: str, 
-                        prompt_file_path: str):
+                        wbs_file_path: str):
+    
+    prompt_file_path = "prompts/wbs_prompt.md"
 
     print("--- WBS 적재 에이전트 실행 ---")
     print(f"프로젝트 ID: {project_id}")
@@ -53,7 +54,7 @@ def run_wbs_agent(project_id: str,
         agent = WBSAnalysisAgent(
             project_id=project_id,
             wbs_file_path=wbs_file_abs,
-            prompt_file_path=prompt_file_abs,
+            prompt_file_path=prompt_file_abs
         )
         
         success = agent.run_ingestion_pipeline()
@@ -82,7 +83,6 @@ if __name__ == "__main__":
     project_id_example = "project_sample_001"
     wbs_file_example = "data/wbs/[야심]_300. WBS_v0.2.xlsx" # 실제 파일 경로로 수정 필요
     # wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
-    prompt_file_example = "prompts/wbs_prompt.md"       # 실제 파일 경로로 수정 필요
 
     print(f"예시 실행: 프로젝트 ID '{project_id_example}'")
     
@@ -98,8 +98,7 @@ if __name__ == "__main__":
     # 함수 호출
     success_status = run_wbs_agent(
         project_id=project_id_example,
-        wbs_file_path=wbs_file_example,
-        prompt_file_path=prompt_file_example,
+        wbs_file_path=wbs_file_example
     )
 
     if success_status:

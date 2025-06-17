@@ -46,7 +46,7 @@ from core.utils import Settings
 from qdrant_client import models # Qdrant 필터 사용을 위해 추가
 
 def get_project_task_items_tool(
-    project_id: str,
+    project_id: int,
     limit_results: Optional[int] = None # Qdrant의 limit은 scroll API에서 약간 다르게 동작할 수 있음
 ) -> List[Dict]:
     """
