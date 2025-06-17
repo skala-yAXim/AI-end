@@ -10,8 +10,8 @@ import schedule
 # 현재 디렉토리를 sys.path에 추가
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from graph import create_analysis_graph 
-from core.state_definition import LangGraphState
+from ai.graphs.daily_graph import create_analysis_graph 
+from ai.graphs.state_definition import LangGraphState
 
 from langchain.globals import set_llm_cache
 set_llm_cache(None)
