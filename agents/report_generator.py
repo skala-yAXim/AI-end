@@ -36,7 +36,7 @@ class DailyReportGenerator:
             input_variables=[
                 "user_name", "user_id", "target_date",
                 "wbs_data", "docs_analysis", "teams_analysis", 
-                "git_analysis", "email_analysis", "project_name", "project_description",
+                "git_analysis", "email_analysis", "project_id", "project_name", "project_description", "project_period",
                 "retrieved_readme_info"
             ]
         )
@@ -59,8 +59,10 @@ class DailyReportGenerator:
                 "teams_analysis": str(state.get("teams_analysis_result", "Teams 분석 결과 없음")),
                 "git_analysis": str(state.get("git_analysis_result", "Git 분석 결과 없음")),
                 "email_analysis": str(state.get("email_analysis_result", "이메일 분석 결과 없음")),
+                "project_id": str(state.get("project_id", "프로젝트 ID 없음")),
                 "project_name": str(state.get("project_name", "프로젝트 이름 없음")),
                 "project_description": str(state.get("project_description", "프로젝트 설명 없음")),
+                "project_period": str(state.get("project_period", "프로젝트 기간 없음")),
                 "retrieved_readme_info": str(state.get("retrieved_readme_info", "README 정보 없음"))
             }
             

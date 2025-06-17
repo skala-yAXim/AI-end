@@ -40,8 +40,10 @@ def run_analysis_workflow(user_info: UserInfo, target_date: str = date.today().i
         teams_analysis_result=None,
         wbs_data=None, # 초기 WBS 데이터는 None
         comprehensive_report=None, # 일일 보고서 결과
-        project_name=user_info.projects[0].name,
-        project_description=user_info.projects[0].description,
+        project_id=input_project_id,
+        project_name=input_project_name,
+        project_description=input_project_description,
+        project_period=input_project_period,
         error_message="" 
     )
 
