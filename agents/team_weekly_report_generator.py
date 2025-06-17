@@ -28,7 +28,7 @@ class TeamWeeklyReportGenerator:
         WeeklyReportGenerator를 초기화합니다.
         LLM, 프롬프트 템플릿, 출력 파서를 설정합니다.
         """
-        self.llm = ChatOpenAI(
+        self.llm = ChatOpenAI( 
             model=config.DEFAULT_MODEL,
             temperature=0.2,
             openai_api_key=config.OPENAI_API_KEY
@@ -101,7 +101,12 @@ class TeamWeeklyReportGenerator:
         team_members = state.get("team_members")
         wbs_data = state.get("wbs_data")
         weekly_reports = state.get("weekly_reports_data")
-        
+        last_week_progress = state.get("last_week_progress")
+        project_name = state.get("project_name")
+        project_start_date = state.get("project_start_date")
+        project_end_date = state.get("project_end_date")
+        weekly_input_template = state.get("weekly_input_template")
+
         print(f"WeeklyReportGenerator: 사용자 '{team_name}' ({team_id})의 {start_date} ~ {end_date} 주간 보고서 생성 시작...")
         
         if not weekly_reports:
@@ -123,6 +128,11 @@ class TeamWeeklyReportGenerator:
                 # 주간 보고서 목록을 JSON 문자열로 변환하여 전달
                 "weekly_reports": json.dumps(weekly_reports, ensure_ascii=False, indent=2),
                 "wbs_data": json.dumps(wbs_data, ensure_ascii=False, indent=2),
+                "last_week_progress": json.dumps(last_week_progress, ensure_ascii=False, indent=2),
+                "project_name": project_name,
+                "project_start_date": project_start_date,
+                "project_end_date": project_end_date,
+                "weekly_input_template": weekly_input_template,
             }
             
             # LangChain 체인 구성 및 실행
