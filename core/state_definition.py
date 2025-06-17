@@ -47,6 +47,7 @@ class TeamWeeklyLangGraphState(Dict):
     end_date: str
     team_members: List[str]
     project_id: str
+    project_name: str
     project_description: str
     project_period: str
     wbs_data: Optional[Dict] = None
@@ -61,6 +62,7 @@ class WeeklyLangGraphState(Dict):
     start_date: str
     end_date: str
     project_id: str
+    project_name: str
     project_description: str
     project_period: str
     wbs_data: Optional[Dict] = None

@@ -15,8 +15,15 @@ def run_weekly_workflow():
     parser = argparse.ArgumentParser(description="사용자의 주간 업무 보고서를 생성합니다.")
     parser.add_argument("--user-name", type=str, default="조민서", help="보고서를 생성할 사용자 이름")
     parser.add_argument("--user-id", type=str, default="G-12345", help="사용자의 고유 ID")
-    parser.add_argument("--start-date", type=str, default="2025-06-02", help="보고서 시작일 (YYYY-MM-DD)")
-    parser.add_argument("--end-date", type=str, default="2025-06-06", help="보고서 종료일 (YYYY-MM-DD)")
+    parser.add_argument("--start-date", type=str, default="2025-06-06", help="보고서 시작일 (YYYY-MM-DD)")
+    parser.add_argument("--end-date", type=str, default="2025-06-12", help="보고서 종료일 (YYYY-MM-DD)")
+    parser.add_argument("--project-id", type=str, default="project_sample_001", help="프로젝트 ID")
+    parser.add_argument("--project-name", type=str, default="개인 업무 관리 AI 프로젝트", help="프로젝트 이름")
+    parser.add_argument("--project-description", type=str, 
+        default="본 프로젝트는 조직 구성원의 다양한 업무 활동 데이터를 AI 기술로 자동 수집·분석하여, "
+                "객관적이고 정확한 개인 업무 성과 보고서를 자동 생성하는 혁신적인 업무 관리 시스템입니다.",
+        help="프로젝트 설명")
+    parser.add_argument("--project-period", type=str, default="2025-05-22 ~ 2025-07-08", help="프로젝트 기간")
     args = parser.parse_args()
 
     # --- 설정값 ---
@@ -24,6 +31,10 @@ def run_weekly_workflow():
     USER_ID = args.user_id
     START_DATE = args.start_date
     END_DATE = args.end_date
+    PROJECT_ID = args.project_id
+    PROJECT_NAME = args.project_name
+    PROJECT_DESCRIPTION = args.project_description
+    PROJECT_PERIOD = args.project_period
     
     # 프로젝트 루트 디렉토리 설정
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
@@ -48,7 +59,10 @@ def run_weekly_workflow():
         user_id=USER_ID,
         start_date=START_DATE,
         end_date=END_DATE,
-        project_id="project_sample_001",
+        project_id=PROJECT_ID,
+        project_name=PROJECT_NAME,
+        project_description=PROJECT_DESCRIPTION,
+        project_period=PROJECT_PERIOD,
         wbs_data=None,
         daily_reports_data=None,
         weekly_report_result=None,
