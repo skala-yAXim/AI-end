@@ -27,7 +27,8 @@ def run_team_weekly_workflow():
     parser.add_argument("--project-start-date", type=str, default="2025-06-02", help="프로젝트 시작일")
     parser.add_argument("--project-end-date", type=str, default="2025-06-14", help="프로젝트 종료일")
     # 프로젝트 인풋 템플릿 삽입.
-    parser.add_argument("--weekly-input-template", type=str, default="2025년 6월 10일부터 6월 16일까지 실시간 다국어 음성인식 서버 개발 프로젝트를 진행했다. 이번 주에는 FastAPI 기반의 서버 구조를 설계하고, /transcribe, /health 등의 기본 API 라우팅을 구현했다. 또한 WebSocket을 활용해 실시간 음성 데이터를 전송받고 텍스트로 변환하는 스트리밍 처리 흐름을 설계하였으며, FasterWhisper 모델을 활용한 비동기 음성 처리 모듈을 구현했다.", help="팀위클리 인풋 템플릿")
+    parser.add_argument("--weekly-input-template", type=str, default="# [Pre-sales] 지누스, 생성형AI 기반 고객 리뷰 분류 PoC (w/ CV혁신산업개발팀, Data Science1팀)\n개요: 아마존의 상품 리뷰 데이터 중, 불만 데이터의 카테고리를 Hybrid(생성형+AI) 모델로 분류\n규모: 미정\n기간: 2개월\n경쟁: EY, 메가존\n진행사항: 고객 초도미팅 (7/25): ChatGPT 기반으로 고객 내부 진행 시 40% 정확도 수준 / Feasibility (7/25 ~ 7/28): 약 70% 정확도 달성 (GPT-4 활용) → 고객 미팅 (7/31): 현업 통한 사업화 타진 후 미팅 진행 / PoC 제안 고객 미팅 (8/30): 제안 방향 및 요건 확인 → 자주 제출", help="팀위클리 인풋 템플릿")
+    # parser.add_argument("--weekly-input-template", type=str, default="[Pre-sales] 지누스, 생성형AI 기반 고객 리뷰 분류 PoC (w/ CV혁신산업개발팀, Data Science1팀) 개요: 아마존의 상품 리뷰 데이터 중, 불만 데이터의 카테고리를 Hybrid(생성형+AI) 모델로 분류 규모: 미정 기간: 2개월 경쟁: EY, 메가존 진행사항: 고객 초도미팅 (7/25): ChatGPT 기반으로 고객 내부 진행 시 40% 정확도 수준 / Feasibility (7/25 ~ 7/28): 약 70% 정확도 달성 (GPT-4 활용) → 고객 미팅 (7/31): 현업 통한 사업화 타진 후 미팅 진행 / PoC 제안 고객 미팅 (8/30): 제안 방향 및 요건 확인 → 자주 제출", help="팀위클리 인풋 템플릿")
     args = parser.parse_args()
 
     # --- 설정값 ---
