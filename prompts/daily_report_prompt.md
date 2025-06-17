@@ -300,18 +300,26 @@ GIT 커밋 3건(OAuth 구현 중심)과 TEAMS 이슈 관리 2건을 통해 사�
     "summary": "[개인별 실제 데이터 기반 회고]. GIT [실제개수]건, TEAMS [실제개수]건 등 총 [실제총개수]건의 활동을 수행했으며, 이 중 WBS 매칭 [실제매칭수]건([실제매칭률]%)로 [개인별업무패턴분석]. 특히 [실제완료작업명] 작업 완료를 통해 프로젝트 '{project_name}'의 [구체적기여내용]에 기여했습니다. [개인별개선점및다음계획]",
     "contents": [
       {{
+        "project_id": "{project_id}",
+        "project_name": "{project_name}",
         "source": "GIT",
         "reflection": "[구체적 GIT 활동 내용] + [프로젝트 기여도] + [개인적 인사이트와 개선점] + [다음 액션 계획]을 자연스럽게 통합하여 작성",
       }},
       {{
+        "project_id": "{project_id}",
+        "project_name": "{project_name}",
         "source": "TEAMS",
         "reflection": "[구체적 TEAMS 활동 내용] + [프로젝트 기여도] + [개인적 인사이트와 개선점] + [다음 액션 계획]을 자연스럽게 통합하여 작성",
       }},
       {{
+        "project_id": "{project_id}",
+        "project_name": "{project_name}",
         "source": "EMAIL",
         "reflection": "[구체적 EMAIL 활동 내용] + [프로젝트 기여도] + [개인적 인사이트와 개선점] + [다음 액션 계획]을 자연스럽게 통합하여 작성",
       }},
       {{
+        "project_id": "{project_id}",
+        "project_name": "{project_name}",
         "source": "DOCS",
         "reflection": "[구체적 DOCS 활동 내용] + [프로젝트 기여도] + [개인적 인사이트와 개선점] + [다음 액션 계획]을 자연스럽게 통합하여 작성",
       }}
@@ -327,7 +335,7 @@ GIT 커밋 3건(OAuth 구현 중심)과 TEAMS 이슈 관리 2건을 통해 사�
 
 **{user_name}님의 {target_date} 완전 업무 보고서를 생성하세요.**
 
-**입력 데이터**: `{wbs_data}`, `{git_analysis}`, `{teams_analysis}`, `{email_analysis}`, `{docs_analysis}` , `{project_name}`, `{project_period}`, `{project_description}`, `{retrieved_readme_info}`
+**입력 데이터**: `{wbs_data}`, `{git_analysis}`, `{teams_analysis}`, `{email_analysis}`, `{docs_analysis}` , `{project_id}`, `{project_name}`, `{project_period}`, `{project_description}`, `{retrieved_readme_info}`
 
 **실행 순서**:
 
