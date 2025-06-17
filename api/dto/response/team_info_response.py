@@ -10,12 +10,12 @@ class UserInfo:
     
 @dataclass
 class FileInfo:
-  id: int
-  created_at: datetime
-  updated_at: datetime
-  original_file_name: str
-  file_url: str
-  file_size: str
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    original_file_name: str
+    file_url: str
+    file_size: str
     
 @dataclass
 class ProjectInfo:
