@@ -102,6 +102,10 @@ class TeamWeeklyReportGenerator:
         wbs_data = state.get("wbs_data")
         weekly_reports = state.get("weekly_reports_data")
         last_week_progress = state.get("last_week_progress")
+        project_name = state.get("project_name")
+        project_start_date = state.get("project_start_date")
+        project_end_date = state.get("project_end_date")
+        weekly_input_template = state.get("weekly_input_template")
 
         print(f"WeeklyReportGenerator: 사용자 '{team_name}' ({team_id})의 {start_date} ~ {end_date} 주간 보고서 생성 시작...")
         
@@ -125,6 +129,10 @@ class TeamWeeklyReportGenerator:
                 "weekly_reports": json.dumps(weekly_reports, ensure_ascii=False, indent=2),
                 "wbs_data": json.dumps(wbs_data, ensure_ascii=False, indent=2),
                 "last_week_progress": json.dumps(last_week_progress, ensure_ascii=False, indent=2),
+                "project_name": project_name,
+                "project_start_date": project_start_date,
+                "project_end_date": project_end_date,
+                "weekly_input_template": weekly_input_template,
             }
             
             # LangChain 체인 구성 및 실행

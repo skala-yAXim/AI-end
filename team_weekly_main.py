@@ -23,6 +23,11 @@ def run_team_weekly_workflow():
     parser.add_argument("--start-date", type=str, default="2025-06-02", help="보고서 시작일 (YYYY-MM-DD)")
     parser.add_argument("--end-date", type=str, default="2025-06-08", help="보고서 종료일 (YYYY-MM-DD)")
     parser.add_argument("--last-week-progress", type=str, default="진행도 : 50", help="지난 주 진행 상황")
+    parser.add_argument("--project-name", type=str, default="yAXim", help="프로젝트 이름")
+    parser.add_argument("--project-start-date", type=str, default="2025-06-02", help="프로젝트 시작일")
+    parser.add_argument("--project-end-date", type=str, default="2025-06-14", help="프로젝트 종료일")
+    # 프로젝트 인풋 템플릿 삽입.
+    parser.add_argument("--weekly-input-template", type=str, default="2025년 6월 10일부터 6월 16일까지 실시간 다국어 음성인식 서버 개발 프로젝트를 진행했다. 이번 주에는 FastAPI 기반의 서버 구조를 설계하고, /transcribe, /health 등의 기본 API 라우팅을 구현했다. 또한 WebSocket을 활용해 실시간 음성 데이터를 전송받고 텍스트로 변환하는 스트리밍 처리 흐름을 설계하였으며, FasterWhisper 모델을 활용한 비동기 음성 처리 모듈을 구현했다.", help="팀위클리 인풋 템플릿")
     args = parser.parse_args()
 
     # --- 설정값 ---
@@ -33,6 +38,10 @@ def run_team_weekly_workflow():
     START_DATE = args.start_date
     END_DATE = args.end_date
     LAST_WEEK_PROGRESS = args.last_week_progress
+    PROJECT_NAME = args.project_name
+    PROJECT_START_DATE = args.project_start_date
+    PROJECT_END_DATE = args.project_end_date
+    WEEKLY_INPUT_TEMPLATE = args.weekly_input_template
     
     # 프로젝트 루트 디렉토리 설정
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
@@ -63,7 +72,11 @@ def run_team_weekly_workflow():
         weekly_reports_data=None,
         team_weekly_report_result=None,
         error_message="",
-        last_week_progress=LAST_WEEK_PROGRESS
+        last_week_progress=LAST_WEEK_PROGRESS,
+        project_name=PROJECT_NAME,
+        project_start_date=PROJECT_START_DATE,
+        project_end_date=PROJECT_END_DATE,
+        weekly_input_template=WEEKLY_INPUT_TEMPLATE,
     )
     
     # --- 실행 ---
