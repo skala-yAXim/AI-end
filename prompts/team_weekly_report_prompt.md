@@ -200,5 +200,5 @@
     ]
   }},
   "weekly_short_review": "금주 핵심 팀 업무를 바탕으로 객관적 평가 및 생산적인 피드백에 대한 한줄평 (80-120자)",
-  "daily_report_md": "# {project_name} ({project_start_date} ~ {project_end_date})\n\n## {team_name} 주간 보고서 ({start_date} ~ {end_date})\n\n### 📊 팀 진척도 개요\n- 전체 진행률: 68%\n- 개발 분야: 70%\n- 설계 분야: 90%\n- 테스트 분야: 45%\n\n### 📌 주요 업무 내용\n\n#### 1. Git 기반 업무 파악 시스템 개발 (75%)\n- **담당자**: 노건표, 김세은\n- **내용**: git analyzer 및 wbs analyzer 통합 작업을 진행하고, 핵심 분석 에이전트를 구현함. Git 데이터 기반 업무 추적 자동화 방향을 실험적으로 검증함.\n\n#### 2. 채팅 데이터 적재 파이프라인 구축 (60%)\n- **담당자**: 김세은, 이승현\n- **내용**: Teams 채팅 데이터를 전처리하고 VectorDB에 적재하는 과정을 설계 및 구현. 일정 기간의 데이터가 누락되는 이슈를 발견하고 처리 절차 개선 필요함.\n\n### 🔍 팀 회고 및 다음 계획\n- 여러 데이터 소스를 기반으로 각 분석 에이전트가 안정적으로 작동하게 되어, 분석 자동화 기반이 탄탄해지고 있음.\n- 일부 WBS task가 팀 내 커뮤니케이션 없이 진행되어, 작업 누락이나 중복 이슈가 발생한 점은 아쉬움.\n"
+  "daily_report_md": "# {project_name} ({project_start_date} ~ {project_end_date})\n\n## {team_name} 주간 보고서 ({start_date} ~ {end_date})\n\n### highlights 기반의 내용들 첨부 및 프로젝트 인풋 템플릿의 기반의 내용 추가."
 }}
