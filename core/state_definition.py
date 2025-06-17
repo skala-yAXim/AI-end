@@ -14,6 +14,7 @@ class LangGraphState(Dict):
     project_id: Optional[str] = None # 분석 대상 프로젝트 ID (WBS 등)
     project_name: Optional[str] = None # 분석 대상 프로젝트 이름
     project_description: Optional[str] = None # 분석 대상 프로젝트 설명
+    project_period: Optional[str] = None # 분석 대상 프로젝트 기간
 
     # --- 데이터 조회 및 분석 결과 ---
     wbs_data: Optional[Dict] = None 
@@ -46,6 +47,8 @@ class TeamWeeklyLangGraphState(Dict):
     end_date: str
     team_members: List[str]
     project_id: str
+    project_description: str
+    project_period: str
     wbs_data: Optional[Dict] = None
     weekly_reports_data: Optional[List[Dict]] = None
     team_weekly_report_result: Optional[Dict] = None
@@ -58,6 +61,8 @@ class WeeklyLangGraphState(Dict):
     start_date: str
     end_date: str
     project_id: str
+    project_description: str
+    project_period: str
     wbs_data: Optional[Dict] = None
     daily_reports_data: Optional[List[Dict]] = None
     weekly_report_result: Optional[Dict] = None

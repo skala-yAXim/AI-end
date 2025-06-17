@@ -24,6 +24,7 @@ def run_analysis_workflow():
     input_target_date = "2025-06-10" 
     input_project_id = "project_sample_001" # 테스트할 실제 프로젝트 ID
     input_project_name = "개인 업무 관리 AI 프로젝트"
+    input_project_period = "2025-05-22 ~ 2025-07-08"
     input_project_description = """
     - 프로젝트 개요
     본 프로젝트는 조직 구성원의 다양한 업무 활동 데이터를 AI 기술로 자동 수집·분석하여, 
@@ -44,6 +45,7 @@ def run_analysis_workflow():
     print(f"  Target Date: {input_target_date}")
     print(f"  Project ID (WBS용): {input_project_id}")
     print(f"  Project Name: {input_project_name}")
+    print(f"  Project Period: {input_project_period}")
     print(f"  Project Description: {input_project_description}")
     
     initial_state = LangGraphState(
@@ -51,7 +53,6 @@ def run_analysis_workflow():
         user_name=input_user_name,
         github_email=input_user_id,
         target_date=input_target_date,
-        project_id=input_project_id,
         docs_quality_analysis_result=None, # 문서 품질 분석 결과
         documents_analysis_result=None,
         email_analysis_result=None,
@@ -59,8 +60,10 @@ def run_analysis_workflow():
         teams_analysis_result=None,
         wbs_data=None, # 초기 WBS 데이터는 None
         comprehensive_report=None, # 일일 보고서 결과
+        project_id=input_project_id,
         project_name=input_project_name,
         project_description=input_project_description,
+        project_period=input_project_period,
         error_message="" 
     )
 
