@@ -173,7 +173,7 @@ class GitAnalyzerAgent:
             return {"summary": "Git 활동 분석 중 오류 발생", "error": str(e)}
 
     def analyze_git(self, state: LangGraphState) -> LangGraphState:
-        git_identifier = state.get("github_email", state.get("user_id"))
+        git_identifier = state.get("user_id")
         print(f"GitAnalyzerAgent: 사용자 식별자 '{git_identifier}' Git 활동 분석 시작 (날짜: {state.get('target_date')})...")
         
         user_name_for_context = state.get("user_name")

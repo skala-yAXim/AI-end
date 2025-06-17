@@ -54,7 +54,10 @@ class TeamWeeklyLangGraphState(Dict):
     weekly_reports_data: Optional[List[Dict]] = None
     team_weekly_report_result: Optional[Dict] = None
     error_message: Optional[str] = None
-    
+    last_week_progress: Optional[Dict] = None
+    project_name: Optional[str] = None
+    project_start_date: Optional[str] = None
+    project_end_date: Optional[str] = None
 
 class WeeklyLangGraphState(Dict):
     user_name: str

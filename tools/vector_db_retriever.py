@@ -69,7 +69,7 @@ def _create_date_filter(target_date_str: str, date_field_in_db: str = "date") ->
 # --- Documents ---
 def retrieve_documents(
     qdrant_client: QdrantClient,
-    user_id: str,
+    user_id: int,
     target_date_str: Optional[str] = None,
     scroll_limit: int = DEFAULT_SCROLL_LIMIT
 ) -> List[Dict]:
@@ -108,7 +108,7 @@ def retrieve_documents(
 def retrieve_emails(
     qdrant_client: QdrantClient,
     # embeddings_model: Embeddings,
-    user_id: str, 
+    user_id: int, 
     target_date_str: Optional[str] = None,
     scroll_limit: int = DEFAULT_SCROLL_LIMIT
 ) -> List[Dict]:
@@ -147,7 +147,7 @@ def retrieve_emails(
 # --- Git ---
 def retrieve_git_activities(
     qdrant_client: QdrantClient,
-    git_author_identifier: str,
+    git_author_identifier: int,
     target_date_str: Optional[str],
     scroll_limit: int = DEFAULT_SCROLL_LIMIT,
     include_readmes: bool = True
@@ -246,7 +246,7 @@ def _get_readmes_by_repo_names(qdrant_client: QdrantClient, repo_names: Set[str]
 def retrieve_teams_posts(
     qdrant_client: QdrantClient,
     # embeddings_model: Embeddings,
-    user_id: str, 
+    user_id: int, 
     target_date_str: Optional[str] = None,
     scroll_limit: int = DEFAULT_SCROLL_LIMIT
 ) -> List[Dict]:
@@ -256,7 +256,7 @@ def retrieve_teams_posts(
     """
     print(f"VectorDBRetriever: '{config.COLLECTION_TEAMS_POSTS}' 컬렉션 scroll 검색 중 (user_id: {user_id}, 날짜: {target_date_str or '전체'}, limit: {scroll_limit})")
     must_conditions = [
-        FieldCondition(key="user_id", match=MatchValue(value=user_id)) # 실제 Teams 사용자 ID 필드명
+        FieldCondition(key="author", match=MatchValue(value=user_id)) # 실제 Teams 사용자 ID 필드명
     ]
     
     date_filter_condition = _create_date_filter(target_date_str, "date") # 실제 Teams 게시물 날짜 필드명
