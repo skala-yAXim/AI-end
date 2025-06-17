@@ -1,6 +1,6 @@
 # agents/docs_analyzer.py
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from qdrant_client import QdrantClient
 from langchain_openai import ChatOpenAI
@@ -12,7 +12,7 @@ from ai.graphs.state_definition import LangGraphState
 from ai.tools.vector_db_retriever import retrieve_documents
 
 class DocsAnalyzer:
-    def __init__(self, qdrant_client: QdrantClient): # embeddings_model 제거
+    def __init__(self, qdrant_client: QdrantClient):
         self.qdrant_client = qdrant_client
             
         self.llm = ChatOpenAI(
@@ -22,20 +22,44 @@ class DocsAnalyzer:
             openai_api_key=config.OPENAI_API_KEY
         )
         
+        self._load_prompt()
+        self.parser = JsonOutputParser()
+
+    def _load_prompt(self):
+        """프롬프트 파일 로드"""
         prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "docs_analyze_prompt.md")
         try:
             with open(prompt_file_path, "r", encoding="utf-8") as f:
                 prompt_template_str = f.read()
             self.prompt = PromptTemplate.from_template(prompt_template_str)
         except FileNotFoundError:
-            print(f"DocsAnalyzer: 오류 - 프롬프트 파일을 찾을 수 없습니다: {prompt_file_path}")
+            # 기본 프롬프트 설정
             self.prompt = PromptTemplate.from_template(
                 "사용자 ID {user_id} (이름: {user_name})의 다음 문서들을 분석하여 WBS({wbs_data})와 관련된 주요 내용을 요약하고, 관련 작업 매칭 결과를 JSON으로 반환해주세요:\n\n{documents}\n\n분석 기준일: {target_date}"
-            ) # user_id 사용 명시
-        self.parser = JsonOutputParser()
+            )
 
-    def _count_unique_documents(self, retrieved_docs_list: list) -> int:
-        """문서 리스트에서 고유한 문서의 개수를 계산합니다."""
+    def _get_retrieved_docs_list(self, state: LangGraphState) -> List[Dict]:
+        """state에서 retrieved_docs_list를 가져오거나, 없으면 직접 검색"""
+        retrieved_docs_list = state.get("retrieved_docs_list")
+        
+        if retrieved_docs_list:
+            print(f"DocsAnalyzer: state에서 {len(retrieved_docs_list)}개 문서 재사용")
+            return retrieved_docs_list
+        
+        # state에 없으면 직접 검색
+        user_id = state.get("user_id")
+        target_date = state.get("target_date")
+        
+        retrieved_docs_list = retrieve_documents(
+            qdrant_client=self.qdrant_client,
+            user_id=user_id,
+            target_date_str=target_date,
+        )
+        
+        return retrieved_docs_list
+
+    def _count_unique_documents(self, retrieved_docs_list: List[Dict]) -> int:
+        """문서 리스트에서 고유한 문서의 개수를 계산"""
         unique_filenames = set()
         
         for doc_item in retrieved_docs_list:
@@ -44,39 +68,12 @@ class DocsAnalyzer:
             unique_filenames.add(filename)
         
         return len(unique_filenames)
-    
-    def _analyze_docs_data_internal(
-        self,
-        user_id: str,
-        user_name: Optional[str],
-        target_date: str,
-        wbs_data: Optional[dict],
-        retrieved_docs_list: list,
-        docs_quality_result: Optional[dict] = None,
-        project_name: Optional[str] = None,
-        project_description: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        print(f"DocsAnalyzer: 사용자 ID '{user_id}'의 문서 {len(retrieved_docs_list)}개 분석 시작.")
-        
-        # Unique 문서 개수 계산
-        unique_count = self._count_unique_documents(retrieved_docs_list)
 
-        # 문서가 아예 없으면 요약 없이 종료
+    def _format_documents_for_analysis(self, retrieved_docs_list: List[Dict], user_id: str) -> str:
+        """문서 목록을 분석용 텍스트로 포맷팅"""
         if not retrieved_docs_list:
-            return {
-                "user_id": user_id,
-                "user_name": user_name or user_id,
-                "date": target_date,
-                "type": ["docs"],
-                "source_collection": config.COLLECTION_DOCUMENTS,
-                "matched_tasks": [],
-                "unmatched_tasks": [],
-                "summary": "분석할 관련 문서를 찾지 못했습니다.",
-                "error": None,
-                "retrieved_count": 0
-            }
-
-        # 문서 내용을 텍스트로 정리
+            return "분석할 문서가 없습니다."
+        
         documents_text_parts = []
         for doc_item in retrieved_docs_list:
             metadata = doc_item.get("metadata", {})
@@ -84,12 +81,57 @@ class DocsAnalyzer:
             title = doc_item.get("title", "")
             author = metadata.get("author", user_id)  # 작성자 없으면 user_id 사용
             
-            documents_text_parts.append(f"파일명: {filename}\n작성자: {author}\n제목:\n{title}...\n---")
+            documents_text_parts.append(
+                f"파일명: {filename}\n작성자: {author}\n제목:\n{title}...\n---"
+            )
 
-        documents_text = "\n\n".join(documents_text_parts)
+        return "\n\n".join(documents_text_parts)
+    
+    def _analyze_docs_data_internal(
+        self,
+        user_id: str,
+        user_name: Optional[str],
+        target_date: str,
+        wbs_data: Optional[dict],
+        retrieved_docs_list: List[Dict],
+        docs_quality_result: Optional[dict] = None,
+        project_name: Optional[str] = None,
+        project_description: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """내부 문서 분석 로직"""
+        print(f"DocsAnalyzer: 사용자 ID '{user_id}'의 문서 {len(retrieved_docs_list)}개 분석 시작")
+        
+        # Unique 문서 개수 계산
+        unique_count = self._count_unique_documents(retrieved_docs_list)
+
+        # 문서가 없으면 기본 응답 반환
+        if not retrieved_docs_list:
+            return {
+                "user_id": user_id,
+                "user_name": user_name or user_id,
+                "date": target_date,
+                "type": "docs",
+                "docs_analysis": {
+                    "matched_docs": [],
+                    "unmatched_docs": []
+                },
+                "daily_reflection": {
+                    "title": "🔍 종합 분석 및 피드백",
+                    "analysis_limitations": "분석할 관련 문서를 찾지 못했습니다.",
+                    "content": [
+                        "총평: 분석 대상 문서가 없어 업무 분석을 수행할 수 없습니다.",
+                        "개선 제안: 문서 작성 및 업로드 프로세스 점검이 필요합니다.",
+                        "추가 의견: 프로젝트 진행 상황을 문서로 기록하는 습관을 권장합니다."
+                    ]
+                },
+                "total_tasks": 0
+            }
+
+        # 문서 내용을 텍스트로 정리
+        documents_text = self._format_documents_for_analysis(retrieved_docs_list, user_id)
         wbs_data_str = str(wbs_data) if wbs_data else "WBS 정보 없음"
 
-        # 프롬프트로 넘길 입력값 구성 
+        # LLM Chain 구성
         chain = (
             {
                 "documents": lambda x: x["documents_text"],
@@ -114,61 +156,56 @@ class DocsAnalyzer:
                 "in_target_date": target_date,
                 "wbs_info": wbs_data_str,
                 "documents_text": documents_text,
-                "docs_quality_result": docs_quality_result,
+                "docs_quality_result": docs_quality_result or {},
                 "in_total_tasks": unique_count,
-                "project_name": project_name,
-                "project_description": project_description,
+                "project_name": project_name or "Unknown Project",
+                "project_description": project_description or "프로젝트 설명 없음",
             })
+            
+            # 결과 검증 및 기본값 설정
+            if not isinstance(result, dict):
+                raise ValueError("LLM이 올바른 JSON을 반환하지 않았습니다.")
+            
             return result
         
         except Exception as e:
             print(f"DocsAnalyzer: LLM 분석 중 오류 발생: {e}")
-            return {
-                "user_id": user_id,
-                "user_name": user_name or user_id,
-                "date": target_date,
-                "type": ["docs"],
-                "source_collection": config.COLLECTION_DOCUMENTS,
-                "error": str(e),
-                "retrieved_count": len(retrieved_docs_list)
-            }
 
     def analyze_documents(self, state: LangGraphState) -> LangGraphState:
-        print(f"DocsAnalyzer: 사용자 ID '{state.get('user_id')}'의 문서 분석 시작...")
-        
+        """메인 문서 분석 메서드"""
         user_id = state.get("user_id")
-        user_name = state.get("user_name") # 표시용으로 사용 가능
+        user_name = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
         quality_result = state.get("documents_quality_result", {})
-        
         project_name = state.get("project_name")
-        project_description = state.get("project_description")        
-        
+        project_description = state.get("project_description")
+                
+        # 필수 파라미터 검증
         if not user_id:
             error_msg = "DocsAnalyzer: user_id가 State에 제공되지 않아 분석을 건너뜁니다."
             print(error_msg)
-            analysis_result = {"error": error_msg, "type": "docs"}
-        elif not target_date: # 날짜 필터링 필수
-            error_msg = "EmailAnalyzerAgent: target_date가 State에 제공되지 않아 분석을 건너뜁니다."
-            print(error_msg); analysis_result = {"error": error_msg, "type": "Email"}
-        else:
-            retrieved_docs_list = retrieve_documents(
-                qdrant_client=self.qdrant_client,
-                user_id=user_id,
-                target_date_str=target_date,
-            )
+            return {"documents_analysis_result": {"error": error_msg, "type": "docs"}}
+        
+        if not target_date:
+            error_msg = "DocsAnalyzer: target_date가 State에 제공되지 않아 분석을 건너뜁니다."
+            print(error_msg)
+            return {"documents_analysis_result": {"error": error_msg, "type": "docs"}}
 
-            analysis_result = self._analyze_docs_data_internal(
-                user_id=user_id,
-                user_name=user_name, # LLM 프롬프트용
-                target_date=target_date, # 분석 컨텍스트용 날짜
-                wbs_data=wbs_data,
-                retrieved_docs_list=retrieved_docs_list,
-                docs_quality_result=quality_result,
-                project_name = project_name,
-                project_description = project_description
-            )
+        # retrieved_docs_list 가져오기 (state에서 재사용 또는 직접 검색)
+        retrieved_docs_list = self._get_retrieved_docs_list(state)
+
+        # 문서 분석 실행
+        analysis_result = self._analyze_docs_data_internal(
+            user_id=user_id,
+            user_name=user_name,
+            target_date=target_date,
+            wbs_data=wbs_data,
+            retrieved_docs_list=retrieved_docs_list,
+            docs_quality_result=quality_result,
+            project_name=project_name,
+            project_description=project_description
+        )
         
         return {"documents_analysis_result": analysis_result}
 
