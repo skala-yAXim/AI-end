@@ -24,10 +24,7 @@ from core.state_definition import LangGraphState
 from langchain.globals import set_llm_cache
 set_llm_cache(None)
 
-def run_analysis_workflow(user_info: UserInfo):
-    
-    target_date = date.today().isoformat()
-    target_date = "2025-06-02"
+def run_analysis_workflow(user_info: UserInfo, target_date: str = date.today().isoformat()):
 
     # TODO github_email state 지우기
     initial_state = LangGraphState(
@@ -136,6 +133,8 @@ def run_analysis_workflow(user_info: UserInfo):
             print(final_state["error_message"])
         else:
             print("\n--- 워크플로우 실행 중 보고된 주요 오류 없음 ---")
+        
+        return comprehensive_report
 
     except ConnectionError as ce:
         print(f"DB 연결 오류 발생: {ce}")
@@ -190,6 +189,9 @@ def main():
     client = APIClient()
     result = client.get_teams_info()
     
+    target_date = date.today().isoformat()
+    target_date = "2025-06-02"
+    
     for team in result:
         print(team.name)
         for proj in team.projects:
@@ -216,7 +218,12 @@ def main():
                     team_name=team.name,
                     projects=projects
                 )
-                run_analysis_workflow(user_info)
+                daily_report = run_analysis_workflow(user_info, target_date)
+                
+                if daily_report:
+                    client.submit_user_daily_report(user_id=member.id, target_date=target_date, report_content=daily_report)
+    
+    
 
 if __name__ == "__main__":
     main()

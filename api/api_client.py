@@ -2,11 +2,10 @@ from datetime import datetime
 import os
 from typing import List
 import requests
-from dotenv import load_dotenv
 import json
 from api.dto.response.team_info_response import FileInfo, ProjectInfo, TeamInfoResponse, UserInfo
 from core.config import API_AUTHORIZATION, API_BASE_URL, API_KEY
-from api.dto.request.report_create_request import ReportCreateRequest
+from api.dto.request.report_create_request import DailyReportCreateRequest
 
 # --- API 클라이언트 ---
 class APIClient:
@@ -25,7 +24,7 @@ class APIClient:
         
         self.headers = {API_AUTHORIZATION: API_KEY}
 
-    def _send_request(self, path: str, request_dto: ReportCreateRequest) -> dict:
+    def _send_request(self, path: str, request_dto: DailyReportCreateRequest) -> dict:
         """
         내부용 요청 전송 헬퍼 메서드.
         :param path: API 요청 경로 (e.g., "reports/user/daily")
@@ -37,7 +36,7 @@ class APIClient:
 
         try:
             print(f"--- 리포트 전송 요청: {api_url} ---")
-            print(f"전송 데이터: \n{json.dumps(payload, indent=2, ensure_ascii=False)}")
+            # print(f"전송 데이터: \n{json.dumps(payload, indent=2, ensure_ascii=False)}")
 
             response = requests.post(api_url, json=payload, timeout=10, headers=self.headers)
             response.raise_for_status()
@@ -56,33 +55,31 @@ class APIClient:
 
     def submit_user_daily_report(self, user_id: int, target_date: str, report_content: dict) -> dict:
         """사용자 일간 리포트를 제출합니다."""
-        request_dto = ReportCreateRequest(
-            userId=user_id,
-            startDate=target_date,
-            endDate=target_date,
+        request_dto = DailyReportCreateRequest(
+            user_id=user_id,
+            date = target_date,
             report=report_content
         )
-        return self._send_request(path="reports/user/daily", request_dto=request_dto)
+        return self._send_request(path="/api-for-ai/report/daily", request_dto=request_dto)
 
-    def submit_user_weekly_report(self, user_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
-        """사용자 주간 리포트를 제출합니다."""
-        request_dto = ReportCreateRequest(
-            userId=user_id,
-            startDate=start_date,
-            endDate=end_date,
-            report=report_content
-        )
-        return self._send_request(path="reports/user/weekly", request_dto=request_dto)
+    # def submit_user_weekly_report(self, user_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
+    #     """사용자 주간 리포트를 제출합니다."""
+    #     request_dto = DailyReportCreateRequest(
+    #         userId=user_id,
+    #         date=start_date,
+    #         report=report_content
+    #     )
+    #     return self._send_request(path="reports/user/weekly", request_dto=request_dto)
 
-    def submit_team_weekly_report(self, team_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
-        """팀 주간 리포트를 제출합니다. (userId 필드를 team_id로 사용)"""
-        request_dto = ReportCreateRequest(
-            userId=team_id,
-            startDate=start_date,
-            endDate=end_date,
-            report=report_content
-        )
-        return self._send_request(path="reports/team/weekly", request_dto=request_dto)
+    # def submit_team_weekly_report(self, team_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
+    #     """팀 주간 리포트를 제출합니다. (userId 필드를 team_id로 사용)"""
+    #     request_dto = ReportCreateRequest(
+    #         userId=team_id,
+    #         startDate=start_date,
+    #         endDate=end_date,
+    #         report=report_content
+    #     )
+    #     return self._send_request(path="reports/team/weekly", request_dto=request_dto)
     
     def get_teams_info(self) -> List[TeamInfoResponse]:
         """팀 정보 조회"""
