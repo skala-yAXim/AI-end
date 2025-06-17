@@ -19,7 +19,7 @@ class FileInfo:
     
 @dataclass
 class ProjectInfo:
-    id: str
+    id: int
     created_at: datetime
     updated_at: datetime
     name: str
