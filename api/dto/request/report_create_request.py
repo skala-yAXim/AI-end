@@ -15,3 +15,21 @@ class DailyReportCreateRequest:
             "date": self.date,
             "report": self.report
         }
+
+@dataclass
+class WeeklyReportCreateRequest:
+    """
+    API 주간 리포트 생성 요청을 위한 데이터 클래스(DTO)
+    """
+    id: int
+    start_date: str
+    end_date: str
+    report: dict
+    
+    def to_payload(self):  
+        return {
+            "userId": self.user_id,
+            "startDate": self.start_date,
+            "endDate": self.end_date,
+            "report": self.report
+        }
