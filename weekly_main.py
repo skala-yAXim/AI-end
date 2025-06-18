@@ -1,6 +1,4 @@
-from service.weekly_main import run_weekly_workflow
-
+from service.weekly_report_service import weekly_report_service
 
 if __name__ == '__main__':
-    # 이 스크립트가 직접 실행될 때 main 함수를 호출합니다.
-    run_weekly_workflow()
+    weekly_report_service()

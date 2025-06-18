@@ -1,5 +1,6 @@
 from typing import List
 import requests
+from api.dto.request.report_fetch_request import DailyReportFetchRequest
 from api.dto.response.team_info_response import FileInfo, ProjectInfo, TeamInfoResponse, UserInfo
 from core.config import API_AUTHORIZATION, API_BASE_URL, API_KEY
 from api.dto.request.report_create_request import DailyReportCreateRequest, WeeklyReportCreateRequest
@@ -42,7 +43,7 @@ class APIClient:
     def submit_user_weekly_report(self, user_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
         """사용자 주간 리포트를 제출합니다."""
         request_dto = WeeklyReportCreateRequest(
-            userId=user_id,
+            user_id=user_id,
             start_date=start_date,
             end_date=end_date,
             report=report_content
@@ -83,6 +84,24 @@ class APIClient:
 
         teams_data = response.json()
         return [self._parse_team(team) for team in teams_data]
+
+    def get_user_daily_reports(self, user_id: int, start_date: str, end_date: str) -> List[str]:
+        """사용자 일간 리포트 조회"""
+        request_dto = DailyReportFetchRequest(
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        url = f"{self.base_url}/user-daily"
+        payload = request_dto.to_payload()
+        response = requests.post(url, json=payload, headers=self.headers, timeout=10)
+        response.raise_for_status()
+        reports_list = response.json()
+        daily_reports = [report["report"] for report in reports_list]
+        
+        return daily_reports
+
     
     def _parse_project(self, proj: dict) -> ProjectInfo:
         files = [FileInfo(

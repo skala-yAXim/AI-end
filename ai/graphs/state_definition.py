@@ -61,7 +61,7 @@ class WeeklyLangGraphState(Dict):
     project_description: str
     project_period: str
     wbs_data: Optional[Dict] = None
-    daily_reports_data: Optional[List[Dict]] = None
+    daily_reports_data: Optional[List[str]] = None
     weekly_report_result: Optional[Dict] = None
     error_message: Optional[str] = None
 

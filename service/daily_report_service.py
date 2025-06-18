@@ -175,12 +175,12 @@ def daily_report_service():
     print("환경 변수 로드 시도 완료.")
     
     client = APIClient()
-    result = client.get_teams_info()
+    response = client.get_teams_info()
     
     target_date = date.today().isoformat()
     target_date = "2025-06-02"
     
-    for team in result:
+    for team in response:
         print(team.name)
         for proj in team.projects:
             for file in proj.files:
