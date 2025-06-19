@@ -17,7 +17,7 @@ class DailyReportGenerator:
     def __init__(self):
         self.llm = ChatOpenAI(
             model=config.DEFAULT_MODEL,  # gpt-4o 사용
-            temperature=0.2,
+            temperature=0.3,
             openai_api_key=config.OPENAI_API_KEY
         )
         
@@ -32,7 +32,8 @@ class DailyReportGenerator:
                 "user_name", "user_id", "target_date",
                 "wbs_data", "docs_analysis", "teams_analysis", 
                 "git_analysis", "email_analysis", "project_id", "project_name", "project_description", "project_period",
-                "retrieved_readme_info"
+                "retrieved_readme_info", "docs_daily_reflection", "teams_daily_reflection", 
+                "git_daily_reflection", "email_daily_reflection"
             ]
         )
         self.parser = JsonOutputParser()
@@ -58,7 +59,12 @@ class DailyReportGenerator:
                 "project_name": str(state.get("project_name", "프로젝트 이름 없음")),
                 "project_description": str(state.get("project_description", "프로젝트 설명 없음")),
                 "project_period": str(state.get("project_period", "프로젝트 기간 없음")),
-                "retrieved_readme_info": str(state.get("retrieved_readme_info", "README 정보 없음"))
+                "retrieved_readme_info": str(state.get("retrieved_readme_info", "README 정보 없음")),
+                "docs_daily_reflection": str(state.get("documents_analysis_result", {}).get("daily_reflection", "")),
+                "teams_daily_reflection": str(state.get("teams_analysis_result", {}).get("daily_reflection", "")),
+                "git_daily_reflection": str(state.get("git_analysis_result", {}).get("daily_reflection", "")),
+                "email_daily_reflection": str(state.get("email_analysis_result", {}).get("daily_reflection", "")
+)
             }
             
             # 체인 구성 및 실행

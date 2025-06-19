@@ -60,6 +60,7 @@ class EmailAnalyzerAgent:
         wbs_data: Optional[Dict], 
         target_date: str, # target_date는 필수
         retrieved_emails_list: List[Dict],
+        project_id: Optional[str] = None,
         project_name: Optional[str] = None,
         project_description: Optional[str] = None,
     ) -> Dict[str, Any]:
@@ -82,6 +83,7 @@ class EmailAnalyzerAgent:
                 "email_data": email_data_str, # 프롬프트의 {email_data} 변수
                 "wbs_data": wbs_data_str,     # 프롬프트의 {wbs_data} 변수
                 "total_tasks": len(retrieved_emails_list),
+                "project_id": project_id,
                 "project_name": project_name,
                 "project_description": project_description,
             }
@@ -98,6 +100,7 @@ class EmailAnalyzerAgent:
         user_name = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
+        project_id = state.get("project_id")
         project_name = state.get("project_name")
         project_description = state.get("project_description")
         
@@ -118,7 +121,7 @@ class EmailAnalyzerAgent:
             )
 
             analysis_result = self._analyze_emails_internal(
-                user_id, user_name, wbs_data, target_date, retrieved_list, project_name, project_description
+                user_id, user_name, wbs_data, target_date, retrieved_list, project_id, project_name, project_description
             )
         
         return {"email_analysis_result": analysis_result}

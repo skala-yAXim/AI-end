@@ -126,6 +126,7 @@ class GitAnalyzerAgent:
     target_date: str, # target_date는 필수
     wbs_data: Optional[dict],
     retrieved_activities: List[Dict],
+    project_id : str,
     project_name : str,
     project_description: str,
     readme_info: str = "",
@@ -160,6 +161,7 @@ class GitAnalyzerAgent:
                 "wbs_tasks_str_for_llm": wbs_data_str,
                 "git_metadata_analysis_str": git_stats_str,
                 "readme_info_str": readme_info,
+                "project_id" : project_id,
                 "project_name" : project_name,
                 "project_description" : project_description,
             }
@@ -176,7 +178,7 @@ class GitAnalyzerAgent:
         user_name_for_context = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
-
+        project_id = state.get("project_id")
         project_name = state.get("project_name")
         project_description = state.get("project_description")
 
