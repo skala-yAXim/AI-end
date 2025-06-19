@@ -247,18 +247,6 @@ class VectorDBHandler:
                 if prepared_item: items_to_process.append(prepared_item); current_id_counter += 1
         elif task_list_data is not None:
             print(f"경고: 'task_list' 데이터가 예상한 리스트 형태가 아닙니다: {type(task_list_data)}")
-        
-        if llm_output_dict.get("critical_path"):
-            print("llm critical_path 목록 조회")
-            critical_path_data = llm_output_dict.get("critical_path")
-            print(critical_path_data)
-            if isinstance(critical_path_data, list):
-                for critical_path_item in critical_path_data:
-                    prepared_item = self._prepare_item_for_storage(critical_path_item, "critical_path", wbs_hash, current_id_counter)
-                    if prepared_item: items_to_process.append(prepared_item); current_id_counter +=1
-            else:
-                print(f"경고: 'critical_path' 데이터가 예상한 리스트 형태가 아닙니다: {type(critical_path_data)}")
-
 
         assignee_workload_data = llm_output_dict.get("assignee_workload", {})
         if isinstance(assignee_workload_data, dict):
