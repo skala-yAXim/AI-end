@@ -1,8 +1,3 @@
-"""
-작성자 : 노건표
-작성일자 : 2025-06-01
-작성내용 : 리팩토링 ( 애플리케이션 설정을 관리하는 클래스 )
-"""
 import os
 from dotenv import load_dotenv
 

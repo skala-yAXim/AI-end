@@ -1,21 +1,3 @@
-"""
-작성자 : 노건표
-작성일 : 2025-06-01
-작성내용 : 리팩토링 ( VectorDB(ChromaDB) 관련 처리를 담당하는 클래스 )
-
-사용법:
-1. 인스턴스 생성: handler = VectorDBHandler(db_base_path, collection_name_prefix, project_id) # sentence_transformer_model_name은 기본값 사용
-2. WBS 해시 조회: stored_hash = handler.get_stored_wbs_hash()
-3. 프로젝트 데이터 삭제: handler.clear_project_data()
-4. LLM 분석 결과 저장 : handler.store_llm_analysis_results(llm_analysis_results, wbs_hash)
-
-업데이트 내역:
-작성자 : 노건표
-작성일 : 2025-06-04
-작성내용 : Qdrant로 벡터DB를 사용하고, SentenceTransformer를 사용하여 텍스트 임베딩을 수행.
-          기본 임베딩 모델을 'paraphrase-multilingual-MiniLM-L12-v2'로 변경.
-          EMBEDDING_DIMENSIONS 딕셔너리를 사용하지 않고 항상 모델에서 차원을 동적으로 로드하도록 수정.
-"""
 from qdrant_client import QdrantClient, models
 from qdrant_client.http.models import PointStruct, Distance, VectorParams, Filter, FieldCondition, MatchValue
 from sentence_transformers import SentenceTransformer # 직접 SentenceTransformer 사용

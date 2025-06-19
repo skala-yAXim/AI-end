@@ -1,23 +1,3 @@
-"""
-작성자 : 노건표
-작성일 : 2025-06-01 
-작성내용 : WBS 작업 항목 조회 Tool 구현
-
-get_project_task_items_tool : VectorDB에서 특정 프로젝트 ID에 해당하는 모든 작업 항목(task_item)을 조회.
-이 함수는 'tool calling' 방식으로 사용될 수 있도록 설계됨.
-이 함수들은 VectorDB에서 데이터를 조회하고, 조회된 데이터를 원본 데이터 딕셔너리 형태로 반환.
-
-업데이트 내역:
-
-작성자 : 노건표
-작성일 : 2025-06-01
-작성내용 : WBS 작업 항목 조회 Tool 구현
-get_tasks_by_assignee_tool : VectorDB에서 특정 프로젝트 ID와 담당자 이름에 해당하는 작업 항목(task_item)을 조회.
-
-작성자 : 노건표
-작성일 : 2025-06-04
-작성내용 : Qdrant기반의 검색 알고리즘 수정.
-"""
 import json
 from typing import List, Dict, Optional
 import sys

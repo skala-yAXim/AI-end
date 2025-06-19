@@ -1,16 +1,3 @@
-"""
-작성자 : 노건표
-작성일 : 2025-06-01
-작성내용 : 리팩토링 ( WBS 파일을 분석하고 VectorDB에 적재하는 에이전트 )
-WBSAnalysisAgent 클래스 : WBS 파일을 분석하고 VectorDB에 적재하는 에이전트.
-parameters:
-    project_id (str): 프로젝트 ID
-    wbs_file_path (str): WBS 파일 경로
-    prompt_file_path (str): 프롬프트 파일 경로
-    vector_db_base_path (Optional[str]): VectorDB 기본 경로 (기본값: None)
-
-run_ingestion_pipeline : WBS 파일을 분석하고 VectorDB에 적재하는 메인 파이프라인.
-"""
 import os
 
 from core.settings import Settings
