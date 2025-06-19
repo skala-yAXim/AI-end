@@ -28,8 +28,6 @@ class WeeklyReportGenerator:
             openai_api_key=config.OPENAI_API_KEY
         )
         
-        self.reports_input_dir = os.path.join(config.PROJECT_ROOT_DIR, 'outputs')
-        
         # 주간 보고서 프롬프트 템플릿 파일 경로 설정
         prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR,"weekly_report_prompt.md")
         
@@ -45,49 +43,6 @@ class WeeklyReportGenerator:
         # 예상 프롬프트 변수: {user_name}, {user_id}, {start_date}, {end_date}, {daily_reports}
         self.prompt = PromptTemplate.from_template(prompt_template_str)
         self.parser = JsonOutputParser()
-
-    def load_daily_reports(self, state: WeeklyLangGraphState) -> WeeklyLangGraphState:
-        """
-        지정된 기간과 사용자에 해당하는 일일 보고서 파일들을 로드합니다.
-        """
-        start_date_str = state.get("start_date")
-        end_date_str = state.get("end_date")
-        user_name = state.get("user_name")
-        project_id = state.get("project_id")
-        project_name = state.get("project_name")
-        project_description = state.get("project_description")
-        project_period = state.get("project_period")
-        
-        daily_reports = []
-        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-        
-        current_date = start_date
-        while current_date <= end_date:
-            date_str = current_date.strftime('%Y-%m-%d')
-            file_name = f"daily_report_{user_name}_{date_str}.json"
-            file_path = os.path.join(self.reports_input_dir, file_name)
-            
-            print(file_path)
-            
-            if os.path.exists(file_path):
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        report_data = json.load(f)
-                        daily_reports.append(report_data)
-                        print(f"성공적으로 파일을 로드했습니다: {file_name}")
-                except json.JSONDecodeError:
-                    print(f"경고: JSON 파싱 오류가 발생했습니다: {file_name}")
-                except Exception as e:
-                    print(f"경고: 파일을 읽는 중 오류가 발생했습니다: {file_name}, 오류: {e}")
-            else:
-                print(f"정보: 해당 파일이 존재하지 않습니다: {file_name}")
-
-            current_date += timedelta(days=1)
-            
-        state["daily_reports_data"] = daily_reports
-        
-        return state
 
     def generate_weekly_report(self, state: WeeklyLangGraphState) -> WeeklyLangGraphState:
         """
@@ -124,8 +79,7 @@ class WeeklyReportGenerator:
                 "project_name": project_name,
                 "project_description": project_description,
                 "project_period": project_period,
-                # 일일 보고서 목록을 JSON 문자열로 변환하여 전달
-                "daily_reports": json.dumps(daily_reports, ensure_ascii=False, indent=2),
+                "daily_reports": json.dumps(daily_reports or [], ensure_ascii=False, indent=2),
                 "wbs_data": json.dumps(wbs_data, ensure_ascii=False, indent=2),
             }
             

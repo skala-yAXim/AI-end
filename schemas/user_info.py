@@ -1,13 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-@dataclass
-class ProjectInfo:
-    id: str
-    name: str
-    start_date: str
-    end_date: str
-    description: str
+from schemas.project_info import ProjectInfo
 
 @dataclass
 class UserInfo:

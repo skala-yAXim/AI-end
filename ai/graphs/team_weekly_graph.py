@@ -40,33 +40,6 @@ def load_wbs_node(state: TeamWeeklyLangGraphState) -> TeamWeeklyLangGraphState:
         print(f"WBS 데이터 로딩 실패 또는 작업 목록 없음.") # 오류 메시지는 agent 내부에서 state에 추가
     return updated_state
 
-def load_weekly_reports_node(state: TeamWeeklyLangGraphState) -> TeamWeeklyLangGraphState:
-    print("\n---주간 보고서 로드 노드 실행 ---")
-    try:
-        generator = TeamWeeklyReportGenerator()
-
-        user_name = state.get("user_name")
-        start_date = state.get("start_date")
-        end_date = state.get("end_date")
-        
-        print(start_date, end_date, user_name, state.get("user_name"), state.get("project_id"))
-
-        updated_state = generator.load_weekly_reports(state)
-        
-        print("주간 보고서 로드 완료")
-        
-        return updated_state
-
-    except Exception as e:
-        print(f"주간 보고서 로드 실패: {e}")
-        state["error_message"] = (state.get("error_message", "") + f"\n주간 보고서 로드 실패: {e}").strip()
-        state["comprehensive_report"] = {
-            "report_metadata": {"success": False, "error": str(e)},
-            "report_content": {"error": "주간 보고서 로드 실패"}
-        }
-
-    return state
-
 
 def generate_team_weekly_report_node(state: TeamWeeklyLangGraphState) -> TeamWeeklyLangGraphState:
     print("\n--- 주간 보고서 생성 및 저장 노드 실행 ---")
@@ -99,12 +72,10 @@ def create_team_weekly_graph():
     workflow = StateGraph(TeamWeeklyLangGraphState)
 
     workflow.add_node("load_wbs", load_wbs_node)
-    workflow.add_node("load_weekly", load_weekly_reports_node)
     workflow.add_node("generate_report", generate_team_weekly_report_node)
 
     workflow.set_entry_point("load_wbs")
-    workflow.add_edge("load_wbs", "load_weekly")
-    workflow.add_edge("load_weekly", "generate_report")
+    workflow.add_edge("load_wbs", "generate_report")
     workflow.add_edge("generate_report", END) 
     
     app = workflow.compile()

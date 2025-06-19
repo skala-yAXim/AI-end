@@ -93,6 +93,7 @@ class TeamWeeklyReportGenerator:
         wbs_data = state.get("wbs_data")
         weekly_reports = state.get("weekly_reports_data")
         last_week_progress = state.get("last_week_progress")
+        project_id = state.get("project_id")
         project_name = state.get("project_name")
         project_start_date = state.get("project_start_date")
         project_end_date = state.get("project_end_date")
@@ -120,6 +121,7 @@ class TeamWeeklyReportGenerator:
                 "weekly_reports": json.dumps(weekly_reports, ensure_ascii=False, indent=2),
                 "wbs_data": json.dumps(wbs_data, ensure_ascii=False, indent=2),
                 "last_week_progress": json.dumps(last_week_progress, ensure_ascii=False, indent=2),
+                "project_id": project_id,
                 "project_name": project_name,
                 "project_start_date": project_start_date,
                 "project_end_date": project_end_date,
