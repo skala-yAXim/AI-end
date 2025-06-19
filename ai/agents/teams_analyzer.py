@@ -61,6 +61,7 @@ class TeamsAnalyzer:
             user_name: Optional[str], # LLM 프롬프트용 user_name 
             target_date: str, # target_date는 필수
             wbs_data: Optional[dict],
+            project_id: Optional[str],
             project_name: Optional[str],
             project_description: Optional[str],
             project_period: Optional[str],
@@ -98,6 +99,7 @@ class TeamsAnalyzer:
                 "target_date": target_date,
                 "posts": posts_data_str, # 프롬프트의 {posts} 변수
                 "wbs_data": wbs_data_str, # 프롬프트의 {wbs_data} 변수
+                "project_id": project_id,
                 "project_name": project_name,
                 "project_description": project_description,
                 "project_period": project_period
@@ -115,6 +117,7 @@ class TeamsAnalyzer:
         user_name = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
+        project_id = state.get("project_id")
         project_name = state.get("project_name")
         project_description = state.get("project_description")
         project_period = state.get("project_period")
@@ -137,7 +140,7 @@ class TeamsAnalyzer:
             )
 
             analysis_result = self._analyze_teams_data_internal(
-                user_id, user_name, target_date, wbs_data, project_name, project_description, project_period, retrieved_list
+                user_id, user_name, target_date, wbs_data, project_id, project_name, project_description, project_period, retrieved_list
             )
         
         return {"teams_analysis_result": analysis_result}

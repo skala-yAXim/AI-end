@@ -95,6 +95,7 @@ class DocsAnalyzer:
         wbs_data: Optional[dict],
         retrieved_docs_list: List[Dict],
         docs_quality_result: Optional[dict] = None,
+        project_id: Optional[str] = None,
         project_name: Optional[str] = None,
         project_description: Optional[str] = None,
     ) -> Dict[str, Any]:
@@ -141,6 +142,7 @@ class DocsAnalyzer:
                 "target_date": lambda x: x["in_target_date"],
                 "docs_quality_result": lambda x: x["docs_quality_result"],
                 "total_tasks": lambda x: x["in_total_tasks"],
+                "project_id" : lambda x:x["project_id"],
                 "project_name": lambda x: x["project_name"],
                 "project_description": lambda x: x["project_description"],
             }
@@ -158,6 +160,7 @@ class DocsAnalyzer:
                 "documents_text": documents_text,
                 "docs_quality_result": docs_quality_result or {},
                 "in_total_tasks": unique_count,
+                "proejct_id" : project_id,
                 "project_name": project_name or "Unknown Project",
                 "project_description": project_description or "프로젝트 설명 없음",
             })
@@ -178,6 +181,7 @@ class DocsAnalyzer:
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
         quality_result = state.get("documents_quality_result", {})
+        project_id = state.get("project_id")
         project_name = state.get("project_name")
         project_description = state.get("project_description")
                 
@@ -203,6 +207,7 @@ class DocsAnalyzer:
             wbs_data=wbs_data,
             retrieved_docs_list=retrieved_docs_list,
             docs_quality_result=quality_result,
+            project_id=project_id,
             project_name=project_name,
             project_description=project_description
         )
