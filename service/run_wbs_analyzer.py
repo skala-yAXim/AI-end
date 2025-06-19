@@ -1,23 +1,3 @@
-"""
-작성자 : 노건표
-작성일 : 2025-06-01 
-작성내용 : 리팩토링 ( WBS 분석 에이전트 실행을 담당하는 클래스 )
-
-def run_wbs_agent(project_id: str, 
-                        wbs_file_path: str, 
-                        prompt_file_path: str, 
-                        db_base_path: Optional[str] = None):
-parameters:
-    project_id (str): 프로젝트 ID
-    wbs_file_path (str): WBS 파일 경로
-    prompt_file_path (str): 프롬프트 파일 경로
-    db_base_path (Optional[str]): VectorDB 기본 경로 (기본값: None)
-
-업데이트 내역:
-작성자 : 노건표
-작성일 : 2025-06-04
-작성내용 : Qdrant로 벡터DB를 사용하였기에 test 코드 수정.
-"""
 import os
 import sys
 from typing import Optional

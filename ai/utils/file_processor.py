@@ -1,11 +1,4 @@
-"""
-작성자 : 노건표
-작성일 : 2025-06-01 
-작성내용 : 리팩토링 ( 파일 처리를 담당하는 클래스 )
-calculate_file_hash : 기존의 파일과 동일한지를 비교하기 위하여 파일의 해시를 계산.
-read_wbs_to_json_text : WBS 엑셀 파일을 읽어 JSON 문자열로 변환.
 
-"""
 import pandas as pd
 import hashlib
 import os
