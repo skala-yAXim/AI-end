@@ -31,6 +31,7 @@
 {wbs_data}
 ```
 ### 프로젝트 이름 및 description
+- 프로젝트 ID: {project_id}
 - 프로젝트 이름: {project_name}
 - 프로젝트 설명: {project_description}
 
@@ -136,6 +137,8 @@
   "date": "이메일 날짜",
   "type": "Email",
   "email_analysis": {{
+    "project_id": "{project_id}",
+    "project_name": "{project_name}",
     "matched_emails": [
       {{
         "subject": "이메일 제목",
