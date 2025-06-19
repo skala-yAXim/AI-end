@@ -43,22 +43,22 @@ def run_weekly_workflow(user_info: UserInfo, daily_reports: List[str], start_dat
 
 
 def weekly_report_service():
-  load_dotenv()
-  print("환경 변수 로드 시도 완료.")
+    load_dotenv()
+    print("환경 변수 로드 시도 완료.")
 
-  end_date = date.today()
-  start_date = end_date - timedelta(days=6)
+    end_date = date.today()
+    start_date = end_date - timedelta(days=6)
 
-  end_date_str = end_date.isoformat()
-  start_date_str = start_date.isoformat()
-  
-  start_date_str = "2025-06-02"
-  end_date_str = "2025-06-06"
-  
-  client = APIClient()
-  team_info = client.get_teams_info()
-  
-  for team in team_info:
+    end_date_str = end_date.isoformat()
+    start_date_str = start_date.isoformat()
+    
+    start_date_str = "2025-06-02"
+    end_date_str = "2025-06-06"
+    
+    client = APIClient()
+    team_info = client.get_teams_info()
+    
+    for team in team_info:
         print(team.name)
 
         projects = [
@@ -67,7 +67,8 @@ def weekly_report_service():
                 name = proj.name,
                 start_date = proj.start_date,
                 end_date = proj.end_date,
-                description = proj.description
+                description = proj.description,
+                progress = proj.progress
             )
             for proj in team.projects
         ]
@@ -87,5 +88,3 @@ def weekly_report_service():
                 
                 if weekly_report:
                     client.submit_user_weekly_report(user_id=member.id, start_date=start_date_str, end_date=end_date_str, report_content=weekly_report)
-  
-  

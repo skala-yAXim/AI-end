@@ -152,52 +152,40 @@
 다음 JSON 구조를 따라 완전한 보고서 데이터를 작성해주세요:
 {{
   "report_title": "{team_name}의 {start_date} ~ {end_date} 팀 주간 업무 보고서",
-  "team_weekly_report": {{
-    "title": "📌 팀 주간 업무 요약",
-    "summary": "팀 프로젝트 단위의 진척도 위주로 요약 (예시: 이번 주 팀은 Git 기반 업무 파악 시스템 개발 및 데이터 적재 파이프라인 개선 작업을 중점적으로 수행함. Git, 이메일, Teams 데이터에 대한 전처리 및 통합 분석 흐름이 구축되었으며, 신규 기능의 코드 반영 및 테스트도 병행됨. 일부 작업은 데이터 부족 및 커뮤니케이션 부재로 지연되었으나 전반적인 진척은 긍정적이었음.)",
-    "highlights": [
-      {{
-        "title": "(예시: Git 기반 업무 파악 시스템 개발)",
-        "contributors": ["노건표", "김세은"],
-        "summary": "(예시: git analyzer 및 wbs analyzer 통합 작업을 진행하고, 핵심 분석 에이전트를 구현함. Git 데이터 기반 업무 추적 자동화 방향을 실험적으로 검증함.)",
-        "progress_percentage": 75
-      }},
-      {{
-        "title": "(예시: 채팅 데이터 적재 파이프라인 구축)",
-        "contributors": ["김세은", "이승현"],
-        "summary": "(예시: Teams 채팅 데이터를 전처리하고 VectorDB에 적재하는 과정을 설계 및 구현. 일정 기간의 데이터가 누락되는 이슈를 발견하고 처리 절차 개선 필요함.)",
-        "progress_percentage": 60
+  "team_weekly_report": [
+    {{
+      "project_id": "{project_id}",
+      "project_name": "{project_name}",
+      "summary": "팀 프로젝트 단위의 진척도 위주로 요약 (예시: 이번 주 팀은 Git 기반 업무 파악 시스템 개발 및 데이터 적재 파이프라인 개선 작업을 중점적으로 수행함. Git, 이메일, Teams 데이터에 대한 전처리 및 통합 분석 흐름이 구축되었으며, 신규 기능의 코드 반영 및 테스트도 병행됨. 일부 작업은 데이터 부족 및 커뮤니케이션 부재로 지연되었으나 전반적인 진척은 긍정적이었음.)",
+      "highlights": [
+        {{
+          "title": "(예시: Git 기반 업무 파악 시스템 개발)",
+          "contributors": ["노건표", "김세은"],
+          "summary": "(예시: git analyzer 및 wbs analyzer 통합 작업을 진행하고, 핵심 분석 에이전트를 구현함. Git 데이터 기반 업무 추적 자동화 방향을 실험적으로 검증함.)",
+          "progress_percentage": 75,
+          "llm_reference": "근거"
+        }},
+        {{
+          "title": "(예시: 채팅 데이터 적재 파이프라인 구축)",
+          "contributors": ["김세은", "이승현"],
+          "summary": "(예시: Teams 채팅 데이터를 전처리하고 VectorDB에 적재하는 과정을 설계 및 구현. 일정 기간의 데이터가 누락되는 이슈를 발견하고 처리 절차 개선 필요함.)",
+          "progress_percentage": 60,
+          "llm_reference": "근거"
+        }}
+      ],
+      "team_progress_overview": {{
+        "overall_progress": 68,
+        "llm_reference": "근거"
       }}
-    ]
-  }},
-  "team_progress_overview": {{
-    "title": "📊 팀 진척도 개요",
-    "overall_progress": 68,
-    "progress_by_category": [
-      {{
-        "category_name": "개발",
-        "progress_percentage": 70,
-        "description": "(예시: 핵심 모듈 개발 및 통합 작업이 계획대로 진행 중이나, 일부 기능 구현에 지연 발생)" 
-      }},
-      {{
-        "category_name": "설계",
-        "progress_percentage": 90,
-        "description": "(예시: 대부분의 설계 문서가 완료되었으며, 일부 상세 설계만 진행 중)"
-      }},
-      {{
-        "category_name": "테스트",
-        "progress_percentage": 45,
-        "description": "(예시: 단위 테스트는 진행 중이나, 통합 테스트는 아직 초기 단계)"
-      }}
-    ]
-  }},
+    }},
+  ],
   "team_weekly_reflection": {{
-    "title": "🔍 팀 회고 및 다음 계획",
     "content": [
       "(예시: 여러 데이터 소스를 기반으로 각 분석 에이전트가 안정적으로 작동하게 되어, 분석 자동화 기반이 탄탄해지고 있음.)",
       "(예시: 일부 WBS task가 팀 내 커뮤니케이션 없이 진행되어, 작업 누락이나 중복 이슈가 발생한 점은 아쉬움.)",
       "(예시: 다음 주에는 WBS 기반으로 작업 우선순위 조정 및 공유 프로세스를 명확히 할 예정)"
-    ]
+    ],
+    "next_week_schedule": []
   }},
   "weekly_short_review": "금주 핵심 팀 업무를 바탕으로 객관적 평가 및 생산적인 피드백에 대한 한줄평 (80-120자)",
   "weekly_report_md": "# {project_name} \n\n ## 개요 : 프로젝트 내용 요약 (전문 용어 최대한 사용) \n\n ## 기간 : ({project_start_date} ~ {project_end_date})\n\n## {team_name} 주간 보고서 ({start_date} ~ {end_date})\n\n### highlights 기반의 내용들 중 기여자는 제외하고 및 프로젝트 인풋 템플릿의 기반의 내용 추가."

@@ -13,3 +13,16 @@ class DailyReportFetchRequest:
             "startDate": self.start_date,
             "endDate": self.end_date
         }
+
+@dataclass
+class WeeklyReportFetchRequest:
+    team_id: int
+    start_date: str
+    end_date: str
+    
+    def to_payload(self):
+        return {
+            "teamId": self.team_id,
+            "startDate": self.start_date,
+            "endDate": self.end_date
+        }

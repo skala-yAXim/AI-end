@@ -1,9 +1,9 @@
 from typing import List
 import requests
-from api.dto.request.report_fetch_request import DailyReportFetchRequest
+from api.dto.request.report_fetch_request import DailyReportFetchRequest, WeeklyReportFetchRequest
 from api.dto.response.team_info_response import FileInfo, ProjectInfo, TeamInfoResponse, UserInfo
 from core.config import API_AUTHORIZATION, API_BASE_URL, API_KEY
-from api.dto.request.report_create_request import DailyReportCreateRequest, WeeklyReportCreateRequest
+from api.dto.request.report_create_request import DailyReportCreateRequest, TeamWeeklyReportCreateRequest, WeeklyReportCreateRequest
 
 # --- API 클라이언트 ---
 class APIClient:
@@ -60,8 +60,8 @@ class APIClient:
 
     def submit_team_weekly_report(self, team_id: int, start_date: str, end_date: str, report_content: dict) -> dict:
         """사용자 주간 리포트를 제출합니다."""
-        request_dto = WeeklyReportCreateRequest(
-            id=team_id,
+        request_dto = TeamWeeklyReportCreateRequest(
+            team_id=team_id,
             start_date=start_date,
             end_date=end_date,
             report=report_content
@@ -71,6 +71,8 @@ class APIClient:
         url = f"{self.base_url}/report/team-weekly"
 
         response = requests.post(url, json=payload, timeout=10, headers=self.headers)
+        
+        print(response.text)
 
         print("[요청 성공] 상태 코드:", response.status_code)
         
@@ -102,6 +104,22 @@ class APIClient:
         
         return daily_reports
 
+    def get_team_user_weekly_reports(self, team_id: int, start_date: str, end_date: str) -> List[str]:
+        """팀 사용자 주간 리포트 조회"""
+        request_dto = WeeklyReportFetchRequest(
+            team_id=team_id,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        url = f"{self.base_url}/user-weekly"
+        payload = request_dto.to_payload()
+        response = requests.post(url, json=payload, headers=self.headers, timeout=10)
+        response.raise_for_status()
+        reports_list = response.json()
+        weekly_reports = [report["report"] for report in reports_list]
+        
+        return weekly_reports
     
     def _parse_project(self, proj: dict) -> ProjectInfo:
         files = [FileInfo(
@@ -122,6 +140,7 @@ class APIClient:
             end_date=proj["endDate"],
             description=proj["description"],
             status=proj["status"],
+            progress=proj["progress"] or 0,
             files=files
         )
 
@@ -133,6 +152,7 @@ class APIClient:
             id=team["id"],
             name=team["name"],
             description=team["description"],
+            weekly_template=team["weeklyTemplate"],
             members=members,
             projects=projects
         )

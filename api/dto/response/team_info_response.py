@@ -27,6 +27,7 @@ class ProjectInfo:
     end_date: str
     description: str
     status: str
+    progress: int
     files: List[FileInfo]
 
 @dataclass
@@ -34,5 +35,6 @@ class TeamInfoResponse:
     id: str
     name: str
     description: str
+    weekly_template: str
     members: List[UserInfo]
     projects: List[ProjectInfo]
