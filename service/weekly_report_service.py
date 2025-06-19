@@ -52,8 +52,8 @@ def weekly_report_service():
     end_date_str = end_date.isoformat()
     start_date_str = start_date.isoformat()
     
-    start_date_str = "2025-06-02"
-    end_date_str = "2025-06-06"
+    start_date_str = "2025-06-06"
+    end_date_str = "2025-06-12"
     
     client = APIClient()
     team_info = client.get_teams_info()
@@ -68,7 +68,7 @@ def weekly_report_service():
                 start_date = proj.start_date,
                 end_date = proj.end_date,
                 description = proj.description,
-                progress = proj.progress
+                progress = proj.progress or 0
             )
             for proj in team.projects
         ]

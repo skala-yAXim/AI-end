@@ -174,7 +174,7 @@
         }}
       ],
       "team_progress_overview": {{
-        "overall_progress": 68,
+        "overall_progress": "지난 progress 값을 참고하여 전체 프로젝 업무 진행도 숫자 형태로 표시",
         "llm_reference": "근거"
       }}
     }},

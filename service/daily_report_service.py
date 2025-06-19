@@ -178,7 +178,7 @@ def daily_report_service():
     response = client.get_teams_info()
     
     target_date = date.today().isoformat()
-    target_date = "2025-06-02"
+    target_date = "2025-06-10"
     
     for team in response:
         print(team.name)
@@ -192,7 +192,8 @@ def daily_report_service():
                 name = proj.name,
                 start_date = proj.start_date,
                 end_date = proj.end_date,
-                description = proj.description
+                description = proj.description,
+                progress = proj.progress or 0
             )
             for proj in team.projects
         ]

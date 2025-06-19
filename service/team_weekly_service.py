@@ -22,7 +22,7 @@ def run_team_weekly_workflow(team_info: TeamInfo, weekly_reports: List[str], sta
         end_date=end_date,
         project_id=team_info.projects[0].id,
         wbs_data=None,
-        weekly_reports_data=None,
+        weekly_reports_data=weekly_reports,
         team_weekly_report_result=None,
         error_message="",
         last_week_progress=team_info.projects[0].progress,
@@ -35,8 +35,6 @@ def run_team_weekly_workflow(team_info: TeamInfo, weekly_reports: List[str], sta
     # --- 실행 ---
     try:
         app = create_team_weekly_graph()
-        
-        print(f"DEBUG: initial_state: {initial_state}")
 
         print("\n--- LangGraph 워크플로우 실행 시작 ---")
         final_state = app.invoke(initial_state)
@@ -60,8 +58,8 @@ def team_weekly_report_service():
     end_date_str = end_date.isoformat()
     start_date_str = start_date.isoformat()
     
-    start_date_str = "2025-06-02"
-    end_date_str = "2025-06-06"
+    start_date_str = "2025-06-06"
+    end_date_str = "2025-06-12"
     
     client = APIClient()
     response = client.get_teams_info()

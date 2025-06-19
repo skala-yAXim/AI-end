@@ -35,7 +35,7 @@ class APIClient:
 
         response = requests.post(url, json=payload, timeout=10, headers=self.headers)
 
-        print("[요청 성공] 상태 코드:", response.status_code)
+        print("[요청 결과] 상태 코드:", response.status_code)
         
         return response
 
@@ -54,7 +54,7 @@ class APIClient:
 
         response = requests.post(url, json=payload, timeout=10, headers=self.headers)
 
-        print("[요청 성공] 상태 코드:", response.status_code)
+        print("[요청 결과] 상태 코드:", response.status_code)
         
         return response
 
@@ -74,7 +74,7 @@ class APIClient:
         
         print(response.text)
 
-        print("[요청 성공] 상태 코드:", response.status_code)
+        print("[요청 결과] 상태 코드:", response.status_code)
         
         return response
     
