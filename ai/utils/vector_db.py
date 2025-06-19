@@ -31,26 +31,8 @@ class VectorDBHandler:
             raise RuntimeError(f"Qdrant 클라이언트 초기화 실패 : {e}")
 
         self.embedding_model_name = sentence_transformer_model_name
-
-        try:
-            print(f"정보: 모델 '{self.embedding_model_name}'의 기본 차원을 동적으로 확인합니다...")
-            temp_model = SentenceTransformer(self.embedding_model_name)
-            self.embedding_dim = temp_model.get_sentence_embedding_dimension()
-            print(f"모델 '{self.embedding_model_name}'의 기본 차원은 {self.embedding_dim}(으)로 확인되어 설정되었습니다.")
-            del temp_model # 임시 모델 객체 메모리에서 해제
-        except Exception as model_load_e:
-            raise ValueError(
-                f"SentenceTransformer 모델 '{self.embedding_model_name}' 로드 또는 차원 확인에 실패했습니다. "
-                f"모델 이름이 정확한지, 모델 파일이 올바르게 다운로드되었는지 확인하세요. 원본 오류: {model_load_e}"
-            )
-
-        try:
-            print(f"SentenceTransformer 모델 '{self.embedding_model_name}' 로드 중 (차원: {self.embedding_dim})...")
-            self.embedding_model = SentenceTransformer(self.embedding_model_name)
-            print("SentenceTransformer 모델 로드 완료.")
-        except Exception as se_init_e:
-            raise RuntimeError(f"SentenceTransformer 모델 ('{self.embedding_model_name}') 초기화 실패: {se_init_e}. "
-                               "sentence-transformers 라이브러리가 올바르게 설치되었는지, 모델 이름이 정확한지 확인하세요.")
+        self.embedding_model = None  # 임베딩 모델은 필요할 때 초기화
+        self.embedding_dim = None    # 임베딩 차원도 필요할 때 설정
 
         try:
             collection_exists = False
@@ -95,10 +77,33 @@ class VectorDBHandler:
 
         print(f"VectorDBHandler(Qdrant, SentenceTransformer) 초기화 완료. , 컬렉션: {self.collection_name}, 임베딩 모델: {self.embedding_model_name} (차원: {self.embedding_dim})")
 
+    def _initialize_embedding_model(self):
+        """임베딩 모델을 초기화합니다. 필요할 때만 호출됩니다."""
+        if self.embedding_model is None:
+            try:
+                print(f"SentenceTransformer 모델 '{self.embedding_model_name}' 로드 중...")
+                self.embedding_model = SentenceTransformer(self.embedding_model_name)
+                self.embedding_dim = self.embedding_model.get_sentence_embedding_dimension()
+                print(f"SentenceTransformer 모델 로드 완료. 모델 '{self.embedding_model_name}'의 임베딩 차원은 {self.embedding_dim}입니다.")
+            except Exception as model_load_e:
+                raise ValueError(
+                    f"SentenceTransformer 모델 '{self.embedding_model_name}' 로드 또는 차원 확인에 실패했습니다. "
+                    f"모델 이름이 정확한지, 모델 파일이 올바르게 다운로드되었는지 확인하세요. 원본 오류: {model_load_e}"
+                )
+                
+    def initialize_embedding_model(self):
+        """외부에서 호출 가능한 임베딩 모델 초기화 메서드"""
+        self._initialize_embedding_model()
+
     def _get_embeddings(self, texts: List[str]) -> List[List[float]]:
         """텍스트 리스트를 임베딩 벡터 리스트(List[List[float]])로 변환합니다."""
         if not texts:
             return []
+            
+        # 임베딩 모델이 초기화되지 않았다면 초기화
+        if self.embedding_model is None:
+            self._initialize_embedding_model()
+            
         try:
             raw_embeddings: numpy.ndarray = self.embedding_model.encode(texts, convert_to_numpy=True)
 
