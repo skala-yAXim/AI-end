@@ -99,6 +99,7 @@ class TeamsAnalyzer:
                 "target_date": target_date,
                 "posts": posts_data_str, # 프롬프트의 {posts} 변수
                 "wbs_data": wbs_data_str, # 프롬프트의 {wbs_data} 변수
+                "total_tasks": len(retrieved_posts_list),
                 "project_id": project_id,
                 "project_name": project_name,
                 "project_description": project_description,
