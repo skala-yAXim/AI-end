@@ -60,13 +60,17 @@ class WBSAnalysisAgent:
             # 5. 변경되었거나 첫 실행 시, 기존 데이터 삭제 (해당 프로젝트에 대해서만)
             print(f"WBS 데이터 변경 감지 또는 첫 실행. 프로젝트 '{self.project_id}'의 기존 VectorDB 데이터 삭제 중...")
             self.db_handler.clear_project_data()
+            
+            # 6. 임베딩 모델 초기화 (WBS 변경이 있을 때만)
+            print(f"WBS 데이터 변경 감지로 임베딩 모델을 초기화합니다.")
+            self.db_handler.initialize_embedding_model()
 
-            # 6. WBS 파일 읽고 JSON으로 변환
+            # 7. WBS 파일 읽고 JSON으로 변환
             print(f"WBS 파일 '{self.wbs_file_path}' 읽고 JSON으로 변환 중...")
             wbs_json_content = file_processor.read_wbs_to_json_text(self.wbs_file_path)
             # print(f"WBS JSON 내용 (일부): {wbs_json_content[:300]}...") # 디버깅 시
 
-            # 7. LLM으로 분석 요청
+            # 8. LLM으로 분석 요청
             print("LLM을 통해 WBS 데이터 분석 중...")
             llm_analysis_result = self.llm_interface.analyze_wbs_with_llm(wbs_json_content)
 
@@ -76,7 +80,7 @@ class WBSAnalysisAgent:
                 # print(f"LLM 응답 내용: {llm_analysis_result}") # 디버깅 시
                 return False # 실패
 
-            # 8. 분석 결과를 VectorDB에 저장
+            # 9. 분석 결과를 VectorDB에 저장
             print("LLM 분석 결과를 VectorDB에 저장 중...")
             self.db_handler.store_llm_analysis_results(llm_analysis_result, current_wbs_hash)
             

@@ -4,7 +4,7 @@ import sys
 if __name__ == "__main__":
     
     # 예시: 기본값 사용
-    project_id_example = "project_sample_002"
+    project_id_example = "project_sample_003"
     wbs_file_example = "./[yAXim]_300. WBS_v0.3.xlsx" # 실제 파일 경로로 수정 필요
     # wbs_file_example = "data/wbs/WBS_스마트팩토리챗봇1.xlsx" # 실제 파일 경로로 수정 필요
 
