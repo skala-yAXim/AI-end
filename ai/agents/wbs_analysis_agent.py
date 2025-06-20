@@ -7,7 +7,7 @@ from ai.utils.vector_db import VectorDBHandler
 
 class WBSAnalysisAgent:
 
-    def __init__(self, project_id: str, wbs_file_path: str, prompt_file_path: str):
+    def __init__(self, project_id: int, wbs_file_path: str, prompt_file_path: str):
 
         if not all([project_id, wbs_file_path, prompt_file_path]):
             raise ValueError("project_id, wbs_file_path, prompt_file_path는 필수 인자입니다.")
