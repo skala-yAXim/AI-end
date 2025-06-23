@@ -10,7 +10,7 @@ class LangGraphState(Dict):
     user_id: Optional[str] = None # 분석 대상 사용자 ID (이메일 형식 또는 내부 ID). Docs, Teams, Email 분석의 기본 키.
     user_name: Optional[str] = None # 분석 대상 사용자 이름 (WBS 담당자명, LLM 프롬프트 표시용 등)
     target_date: Optional[str] = None # 분석 기준 날짜 (YYYY-MM-DD 형식). Documents를 제외한 모든 분석에서 사용.
-    project_id: Optional[int] = None # 분석 대상 프로젝트 ID (WBS 등)
+    project_id: Optional[str] = None # 분석 대상 프로젝트 ID (WBS 등)
     project_name: Optional[str] = None # 분석 대상 프로젝트 이름
     project_description: Optional[str] = None # 분석 대상 프로젝트 설명
     project_period: Optional[str] = None # 분석 대상 프로젝트 기간
