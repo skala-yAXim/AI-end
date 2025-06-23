@@ -38,7 +38,8 @@ class TeamWeeklyLangGraphState(Dict):
     start_date: str
     end_date: str
     team_members: List[str]
-    project_id: str
+    # TODO project 여러개 들어오게끔 수정
+    project_id: int
     project_name: str
     project_description: str
     project_period: str
@@ -56,7 +57,8 @@ class WeeklyLangGraphState(Dict):
     user_id: str
     start_date: str
     end_date: str
-    project_id: str
+    # TODO project 여러개 들어오게끔 수정
+    project_id: int
     project_name: str
     project_description: str
     project_period: str
@@ -71,7 +73,8 @@ class ProgressSummaryState(Dict):
     github_email: Optional[str] = None 
     target_date: Optional[str] = None 
     date: str
-    project_id: str
+    # TODO project 여러개 들어오게끔 수정
+    project_id: int
     daily_report_path: str
     daily_report: Dict[str, Any]
     wbs_data: List[Dict[str, Any]]
