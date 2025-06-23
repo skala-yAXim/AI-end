@@ -10,7 +10,7 @@ from langchain.globals import set_llm_cache
 # LangChain 캐시 비활성화 (LLM 호출 시 항상 최신 응답을 받기 위함)
 set_llm_cache(None)
 
-def run_wbs_agent(project_id: int, 
+def run_wbs_agent(project_id: str, 
                         wbs_file_path: str):
     
 
