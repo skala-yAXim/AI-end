@@ -131,7 +131,7 @@ def run_analysis_workflow(user_info: UserInfo, target_date: str = date.today().i
         print(f"워크플로우 실행 중 예상치 못한 오류 발생: {e}")
         traceback.print_exc()
 
-def download_wbs(project_id: str, files: List[FileInfo]):
+def download_wbs(project_id: int, files: List[FileInfo]):
     for file in files:
         tmp_path = None
         try:
