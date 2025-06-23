@@ -95,7 +95,7 @@ class DocsAnalyzer:
         wbs_data: Optional[dict],
         retrieved_docs_list: List[Dict],
         docs_quality_result: Optional[dict] = None,
-        project_id: Optional[int] = None,
+        project_id: Optional[str] = None,
         project_name: Optional[str] = None,
         project_description: Optional[str] = None,
     ) -> Dict[str, Any]:
@@ -160,7 +160,7 @@ class DocsAnalyzer:
                 "documents_text": documents_text,
                 "docs_quality_result": docs_quality_result or {},
                 "in_total_tasks": unique_count,
-                "project_id" : project_id,
+                "proejct_id" : project_id,
                 "project_name": project_name or "Unknown Project",
                 "project_description": project_description or "프로젝트 설명 없음",
             })
