@@ -4,7 +4,7 @@ from typing import Optional
 
 @dataclass
 class ProjectInfo:
-    id: int
+    id: str
     name: str
     start_date: str
     end_date: str
