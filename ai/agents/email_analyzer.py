@@ -11,6 +11,7 @@ from langchain.prompts import PromptTemplate
 from core import config
 from ai.graphs.state_definition import LangGraphState
 from ai.tools.vector_db_retriever import retrieve_emails
+# from langgraph.prebuilt import create_react_agent
 
 class EmailAnalyzerAgent:
     def __init__(self, qdrant_client: QdrantClient):

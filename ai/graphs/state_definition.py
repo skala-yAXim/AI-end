@@ -1,4 +1,3 @@
-# core/state_definition.py
 from typing import Dict, Any, Optional, List
 
 class LangGraphState(Dict):

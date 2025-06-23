@@ -2,10 +2,17 @@ from qdrant_client import QdrantClient, models
 from qdrant_client.http.models import PointStruct, Distance, VectorParams, Filter, FieldCondition, MatchValue
 from sentence_transformers import SentenceTransformer # 직접 SentenceTransformer 사용
 import json
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional, Annotated
 import uuid
 import numpy
 import traceback # 디버깅을 위해 추가
+from langchain_community.vectorstores import Qdrant # QdrantVectorstore 임포트
+from langchain_community.retrievers import BM25Retriever # BM25Retriever 임포트
+from langchain.schema import Document # LangChain Document 임포트
+from langchain.retrievers import EnsembleRetriever
+from langgraph.prebuilt import InjectedState
+
+
 
 from core.config import COLLECTION_WBS_DATA
 # 임베딩 모델 정보
@@ -379,3 +386,81 @@ class VectorDBHandler:
                         print(f"  페이로드 샘플 로깅 중 오류 (add_texts_with_metadata): {log_e}")
         else:
             print("VectorDB(Qdrant)에 저장할 유효한 포인트가 없습니다 (임베딩 실패, 데이터 형식 오류 또는 모든 항목이 필터링됨, via add_texts_with_metadata).")
+        
+    def get_vectorstore_retriever(self, k: int = 4, filter_by_project_id: bool = True):
+        # project_id 필터링
+        qdrant_filter = None
+        if filter_by_project_id and self.project_id:
+            qdrant_filter = Filter(
+                must=[
+                    FieldCondition(key="project_id", match=MatchValue(value=self.project_id)),
+                    # output_type이 'task_item'인 경우만 검색하도록 추가 필터링
+                    FieldCondition(key="output_type", match=MatchValue(value="task_item")) 
+                ]
+            )
+            print(f"VectorStore Retriever에 project_id '{self.project_id}' 필터 적용됨.")
+        elif filter_by_project_id and not self.project_id:
+            print("경고: filter_by_project_id가 True이지만 project_id가 없습니다. 필터링 없이 검색합니다.")
+
+        # self.embeddings가 초기화되어 있는지 확인
+        if self.embedding_model is None:
+            self._initialize_embedding_model() # 필요시 임베딩 모델 초기화
+
+        return Qdrant(
+            client=self.client, 
+            collection_name=self.collection_name, 
+            embeddings=self.embedding_model # LangChain Embeddings 객체 전달
+        ).as_retriever(
+            search_kwargs={"k": k, "filter": qdrant_filter} # Qdrant 필터 적용
+        )
+
+    def get_keyword_retriever(self, documents: List[Dict], k: int = 4):
+        """
+        LangChain BM25Retriever를 반환합니다.
+        BM25는 인메모리에서 동작하므로, 검색 대상 문서 리스트가 필요합니다.
+        """
+        lc_documents = []
+        for doc_dict in documents:
+            # BM25Retriever가 검색할 텍스트를 생성
+            page_content = doc_dict.get('description', '') + " " + doc_dict.get('name', '')
+            metadata = {k: v for k, v in doc_dict.items()} 
+            metadata["output_type"] = metadata.get("output_type", "task_item") 
+            
+            lc_documents.append(Document(page_content=page_content, metadata=metadata))
+            
+        return BM25Retriever.from_documents(lc_documents, k=k)
+    
+    @tool
+    def wbs_hybrid_search(
+        self, # 인스턴스 메서드이므로 self를 받음
+        query: str,
+        k: int = 5,
+        wbs_data: Optional[Dict] = None # wbs_data는 이 함수 호출 시 인자로 받거나, __call__에서 self.wbs_data 등으로 접근
+    ) -> List[Dict[str, Any]]:
+        print(f"[WBS 하이브리드 검색] 쿼리: '{query}', 반환 개수: {k}")
+
+        # BM25Retriever (키워드 검색) 초기화
+        bm25_docs = []
+        if wbs_data and wbs_data.get("task_list"):
+            bm25_docs = [
+                Document(page_content=task.get("description", ""), metadata=task)
+                for task in wbs_data["task_list"]
+                if task.get("description")
+            ]
+        keyword_retriever = self.get_keyword_retriever(bm25_docs, k=k)
+
+        # QdrantVectorstore Retriever (의미 기반 검색) 초기화
+        vector_retriever = self.get_vectorstore_retriever(k=k, filter_by_project_id=True)
+
+        # EnsembleRetriever 구성
+        ensemble_retriever = EnsembleRetriever(
+            retrievers=[keyword_retriever, vector_retriever],
+            weights=[0.5, 0.5]
+        )
+        try:
+            retrieved_docs = ensemble_retriever.invoke(query)
+            results = [{"content": doc.page_content, "metadata": doc.metadata} for doc in retrieved_docs]
+            return results
+        except Exception as e:
+            return [{"error": f"WBS 하이브리드 검색 실패: {str(e)}", "query": query}]
+
