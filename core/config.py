@@ -8,6 +8,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-4o")
 FAST_MODEL = os.getenv("FAST_MODEL", "gpt-4o") # 빠른 응답이 필요할 때 사용
 
+# --- Claude API 설정 ---
+CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-3-7-sonnet-20250219")
+
 # --- HuggingFace 임베딩 모델 ---
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "paraphrase-multilingual-MiniLM-L12-v2")
 
