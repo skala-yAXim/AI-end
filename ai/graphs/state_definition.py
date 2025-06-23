@@ -10,7 +10,7 @@ class LangGraphState(Dict):
     user_id: Optional[str] = None # 분석 대상 사용자 ID (이메일 형식 또는 내부 ID). Docs, Teams, Email 분석의 기본 키.
     user_name: Optional[str] = None # 분석 대상 사용자 이름 (WBS 담당자명, LLM 프롬프트 표시용 등)
     target_date: Optional[str] = None # 분석 기준 날짜 (YYYY-MM-DD 형식). Documents를 제외한 모든 분석에서 사용.
-    project_id: Optional[str] = None # 분석 대상 프로젝트 ID (WBS 등)
+    project_id: Optional[int] = None # 분석 대상 프로젝트 ID (WBS 등)
     project_name: Optional[str] = None # 분석 대상 프로젝트 이름
     project_description: Optional[str] = None # 분석 대상 프로젝트 설명
     project_period: Optional[str] = None # 분석 대상 프로젝트 기간
@@ -38,7 +38,8 @@ class TeamWeeklyLangGraphState(Dict):
     start_date: str
     end_date: str
     team_members: List[str]
-    project_id: str
+    # TODO project 여러개 들어오게끔 수정
+    project_id: int
     project_name: str
     project_description: str
     project_period: str
@@ -56,7 +57,8 @@ class WeeklyLangGraphState(Dict):
     user_id: str
     start_date: str
     end_date: str
-    project_id: str
+    # TODO project 여러개 들어오게끔 수정
+    project_id: int
     project_name: str
     project_description: str
     project_period: str
@@ -71,7 +73,8 @@ class ProgressSummaryState(Dict):
     github_email: Optional[str] = None 
     target_date: Optional[str] = None 
     date: str
-    project_id: str
+    # TODO project 여러개 들어오게끔 수정
+    project_id: int
     daily_report_path: str
     daily_report: Dict[str, Any]
     wbs_data: List[Dict[str, Any]]
