@@ -14,7 +14,7 @@ DEFAULT_SENTENCE_TRANSFORMER_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 class VectorDBHandler:
     """VectorDB(Qdrant) 관련 처리를 담당하는 클래스 (SentenceTransformer 임베딩 전용, 차원 동적 로드)"""
 
-    def __init__(self, project_id: str, collection_name_prefix: str = COLLECTION_WBS_DATA,
+    def __init__(self, project_id: int, collection_name_prefix: str = COLLECTION_WBS_DATA,
                  sentence_transformer_model_name: str = DEFAULT_SENTENCE_TRANSFORMER_MODEL, **kwargs):
         if not project_id:
             raise ValueError("VectorDBHandler 초기화: project_id가 필요합니다.")
@@ -32,7 +32,7 @@ class VectorDBHandler:
 
         self.embedding_model_name = sentence_transformer_model_name
         self.embedding_model = None  # 임베딩 모델은 필요할 때 초기화
-        self.embedding_dim = None    # 임베딩 차원도 필요할 때 설정
+        self.embedding_dim = 384    # 임베딩 차원도 필요할 때 설정
 
         try:
             collection_exists = False

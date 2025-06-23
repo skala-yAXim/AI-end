@@ -12,7 +12,7 @@ outputs/
 
 # Vector store database
 db/vector_store/
-
+qdrant_data/
 data.py
 
 ### Python ###
