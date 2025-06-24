@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional, List
 
 from qdrant_client import QdrantClient
 from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import PromptTemplate
 
@@ -15,11 +16,15 @@ from ai.tools.vector_db_retriever import retrieve_teams_posts
 class TeamsAnalyzer:
     def __init__(self, qdrant_client: QdrantClient):
         self.qdrant_client = qdrant_client
-            
-        self.llm = ChatOpenAI(
-            model=config.FAST_MODEL, temperature=0.2,
-            max_tokens=2000, openai_api_key=config.OPENAI_API_KEY
+        self.llm = ChatAnthropic(
+            model = config.CLAUDE_MODEL, temperature=0.1,
+            api_key=config.CLAUDE_API_KEY, max_tokens=10000
         )
+
+        # self.llm = ChatOpenAI(
+        #     model=config.FAST_MODEL, temperature=0.2,
+        #     max_tokens=2000, openai_api_key=config.OPENAI_API_KEY
+        # )
         # self.wbs_data_handler 제거
         
         prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "teams_analyzer_prompt.md")

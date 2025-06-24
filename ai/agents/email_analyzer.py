@@ -4,6 +4,7 @@ import json
 from typing import List, Dict, Optional, Any
 
 from qdrant_client import QdrantClient
+from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import PromptTemplate
@@ -15,11 +16,15 @@ from ai.tools.vector_db_retriever import retrieve_emails
 class EmailAnalyzerAgent:
     def __init__(self, qdrant_client: QdrantClient):
         self.qdrant_client = qdrant_client
-        
-        self.llm_client = ChatOpenAI(
-            model=config.DEFAULT_MODEL, temperature=0.1,
-            openai_api_key=config.OPENAI_API_KEY, max_tokens=2000
+        self.llm_client = ChatAnthropic(
+            model = config.CLAUDE_MODEL, temperature=0.1,
+            api_key=config.CLAUDE_API_KEY, max_tokens=10000
         )
+
+        # self.llm_client = ChatOpenAI(
+        #     model=config.DEFAULT_MODEL, temperature=0.1,
+        #     openai_api_key=config.OPENAI_API_KEY, max_tokens=2000
+        # )
         # self.wbs_data_handler 제거
 
         prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "email_analyze_prompt.md")

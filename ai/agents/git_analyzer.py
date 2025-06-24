@@ -4,8 +4,11 @@ import pandas as pd
 from typing import List, Dict, Optional, Any
 
 from qdrant_client import QdrantClient
+from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
+from langchain.output_parsers import OutputFixingParser
+
 from langchain.prompts import PromptTemplate
 
 from core import config
@@ -15,11 +18,14 @@ from ai.tools.vector_db_retriever import retrieve_git_activities
 class GitAnalyzerAgent:
     def __init__(self, qdrant_client: QdrantClient):
         self.qdrant_client = qdrant_client
-        
-        self.llm_client = ChatOpenAI(
-            model=config.DEFAULT_MODEL, temperature=0.1,
-            openai_api_key=config.OPENAI_API_KEY, max_tokens=2500
+        self.llm_client = ChatAnthropic(
+            model = config.CLAUDE_MODEL, temperature=0.1,
+            api_key=config.CLAUDE_API_KEY, max_tokens=10000
         )
+        # self.llm_client = ChatOpenAI(
+        #     model=config.DEFAULT_MODEL, temperature=0.1,
+        #     openai_api_key=config.OPENAI_API_KEY, max_tokens=2500
+        # )
         # self.wbs_data_handler 제거
 
         prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "git_analyze_prompt.md")
@@ -38,6 +44,10 @@ class GitAnalyzerAgent:
             self.prompt = PromptTemplate.from_template(self.prompt_template_str)
         
         self.parser = JsonOutputParser()
+
+        # base_parser = JsonOutputParser()
+        # self.parser = OutputFixingParser.from_llm(parser=base_parser, llm=self.llm_client)
+
 
     def _calculate_git_stats(self, retrieved_activities: List[Dict]) -> Dict[str, Any]:
         """
