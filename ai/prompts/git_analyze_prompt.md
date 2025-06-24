@@ -37,38 +37,8 @@
 **🔄 중복 방지 원칙: 각 Git 활동은 단 하나의 그룹에만 속하며, 여러 그룹에 중복 포함되어서는 안 됩니다.**
 
 ### 활동 통합 및 분리 규칙
- 
-**통합 기준 (같은 그룹으로 묶기)**
-- 동일 기능/이슈: 동일한 작업에 대한 여러 commit들
-- 관련 활동: 동일한 기능의 commit과 그에 대한 pull request
-- 키워드 매칭: 핵심 키워드(함수명, 파일명, 기능명)가 동일한 활동들
-- 의존성 관계: 하나의 기능 완성을 위한 연관된 작업들
-
-**분리 기준 (별도 그룹으로 나누기)**
-- 서로 다른 WBS 작업: 매칭될 WBS 작업이 명확히 다른 경우
-- 완전히 다른 도메인: 기술적/비즈니스적으로 무관한 작업들
-- 독립적 가치: 각각 독립적인 비즈니스 가치를 제공하는 작업들
-
-**분리 우선 원칙**
-- 의심스러우면 분리 우선: 통합할지 분리할지 애매한 경우, 각각의 WBS 매칭을 명확히 하기 위해 분리하는 것을 우선으로 함
-
-### 분석 프로세스
-**STEP 1: WBS 매칭 분석**
-- 각 활동 그룹을 WBS 작업과 매칭
-- 키워드 일치 및 기능적 연관성 기준으로 분류
-- matched_activities/unmatched_activities로 분류하되, 각각 activity_title과 detailed_activities로 구성
-
-**STEP 2: 활동 확인 및 그룹화**
-- 전체 Git 활동 개수 확인 (절대 누락 금지)
-- 유사한 내용의 활동들을 그룹화
-- 각 그룹별 대표 제목(activity_title) 및 포함된 개별 활동들(detailed_activities) 파악
-
-**STEP 3: 완전성 검증**
-- 원본 개별 활동 수 = 모든 matched_activities와 unmatched_activities의 detailed_activities 개수 합계
-- 모든 Git 활동이 각 그룹의 detailed_activities 배열에 빠짐없이 포함되었는지 확인
-- 불일치 시 반드시 누락된 활동을 찾아 재분석
-
-## WBS matched vs Unmatched Activities 분류 가이드라인
+ ### 분석 프로세스
+**STEP 1: 개별 활동 WBS 매칭 분석**
 ### **1순위: 키워드 매칭**
 Git 활동과 WBS 작업명에 **공통 키워드**가 있으면 해당 WBS에 우선 매칭
 
@@ -84,6 +54,23 @@ WBS 작업 구현에 필요한 지원 기능도 매칭
 3. 부분 연관성이라도 있으면 매칭 고려
 4. 완전히 무관한 경우만 unmatched
 
+**STEP 2: 활동 확인 및 그룹화**
+- 전체 Git 활동 개수 확인 (절대 누락 금지)
+**통합 기준 (같은 그룹으로 묶기)**
+- 동일 기능/이슈: 동일한 작업에 대한 여러 commit들
+- 관련 활동: 동일한 기능의 commit과 그에 대한 pull request
+- 키워드 매칭: 핵심 키워드(함수명, 파일명, 기능명)가 동일한 활동들
+- 의존성 관계: 하나의 기능 완성을 위한 연관된 작업들
+
+**분리 기준 (별도 그룹으로 나누기)**
+- 서로 다른 WBS 작업: 매칭될 WBS 작업이 명확히 다른 경우
+- 완전히 다른 도메인: 기술적/비즈니스적으로 무관한 작업들
+- 독립적 가치: 각각 독립적인 비즈니스 가치를 제공하는 작업들
+
+**STEP 3: 완전성 검증**
+- 원본 개별 활동 수 = 모든 matched_activities와 unmatched_activities의 detailed_activities 개수 합계
+- 모든 Git 활동이 각 그룹의 detailed_activities 배열에 빠짐없이 포함되었는지 확인
+- 불일치 시 반드시 누락된 활동을 찾아 재분석
 
 ## 📊 [LLM_reference 및 Daily Reflection 작성 지침]
 
@@ -94,10 +81,11 @@ WBS 작업 구현에 필요한 지원 기능도 매칭
 - 명사형 표현: 모든 문장을 명사형으로 마무리
 
 ### **detailed_activities 작성 규칙**
-- 원본 정보 보존: 실제 Git 메시지, PR 제목, 이슈 제목을 그대로 유지
-- 활동 유형 정확 분류: commit, pull_request, merge, issue 중 정확한 유형 명시
 - 누락 없는 포함: 통합된 그룹에 속한 모든 개별 활동을 빠짐없이 나열
+**type**: 활동 유형 정확 분류 (commit, pull_request, merge, issue 중 정확한 유형 명시)
+**content**: 
 - 시간순 정렬: 가능한 경우 활동이 발생한 시간 순서대로 배치
+- 원본 정보 보존: 실제 commit 메시지, PR 제목, 이슈 제목만 그대로 유지
 
 ### **LLM_reference 작성 규칙**
 - **진행상황 명시**: 업무 상태가 명확한 경우 현재 진행 상황 명시
@@ -111,7 +99,6 @@ WBS 작업 구현에 필요한 지원 기능도 매칭
 - **가치 있는 인사이트 작성**: daily_reflection의 content에는 단순한 데이터 요약이 아니라, 분석 대상 사용자의 실제 업무 기여도와 작업 패턴, 개선 가능성, 저장소별 작업 분석, 향후 프로젝트 영향 등을 포함한 가치 있는 인사이트를 작성할 것.
 - LLM_reference 내용과는 다른 업무 패턴을 중심으로 구체적으로 서술할 것.
 - **activity_title과 detailed_activities 분석**: 통합된 작업 그룹의 전체적 성과와 세부 활동들의 패턴 평가
-- 예를 들어, **구체적인 시간대별 작업 패턴**의 서술, 작업의 프로젝트 기여도, 협업 및 지원 활동 평가, 그리고 개선 제안이나 추가 의견 등 실무에 도움이 되는 통찰을 포함할 것.
 - **명사형 표현**: 모든 content 항목을 명사형으로 종료하여 일관성 유지
 
 ---
@@ -130,10 +117,10 @@ WBS 작업 구현에 필요한 지원 기능도 매칭
     "project_name": "{project_name}",
     "matched_activities": [
       {{
-        "activity_title": "Git 활동 종합 요약 (해당되는 작업 개수: x건)",
+        "title": "Git 활동 종합 요약 (x건)",
         "detailed_activities": [
-          {{"activity_type": "commit|pull_request|issue", "activity_content": "실제 Git 메시지 상세 내용"}},
-          {{"activity_type": "commit|pull_request|issue", "activity_content": "실제 Git 메시지 상세 내용"}},
+          {{"type": "commit|pull_request|issue", "content": "Git commit|pull request|issue 메시지"}},
+          {{"type": "commit|pull_request|issue", "content": "Git commit|pull request|issue 메시지"}},
         ],
         "activity_repo": "저장소명",
         "matched_wbs_task": {{
@@ -146,10 +133,10 @@ WBS 작업 구현에 필요한 지원 기능도 매칭
     ]
     "unmatched_activities": [
       {{
-        "inferred_activity_title": "추론된 작업 task 명 (해당되는 작업 개수)",
+        "inferred_title": "추론된 작업 task 명 (x건)",
         "detailed_activities": [
-          {{"activity_type": "commit|pull_request|merge|issue", "activity_content": "실제 Git 메시지 상세 내용"}},
-          {{"activity_type": "commit|pull_request|merge|issue", "activity_content": "실제 Git 메시지 상세 내용"}},
+          {{"type": "commit|pull_request|merge|issue", "content": "Git commit|pull request|issue 메시지"}},
+          {{"type": "commit|pull_request|merge|issue", "content": "Git commit|pull request|issue 메시지"}},
         ],
         "activity_repo": "저장소명",
         "LLM_reference":"저장소 특성 + 활동 내용 + WBS 작업을 종합한 상세한 **매칭되지 않은** 근거"
