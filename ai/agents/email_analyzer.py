@@ -12,6 +12,7 @@ from langchain.prompts import PromptTemplate
 from core import config
 from ai.graphs.state_definition import LangGraphState
 from ai.tools.vector_db_retriever import retrieve_emails
+from schemas.project_info import ProjectInfo
 
 class EmailAnalyzerAgent:
     def __init__(self, qdrant_client: QdrantClient):
@@ -65,9 +66,7 @@ class EmailAnalyzerAgent:
         wbs_data: Optional[Dict], 
         target_date: str, # target_date는 필수
         retrieved_emails_list: List[Dict],
-        project_id: Optional[str] = None,
-        project_name: Optional[str] = None,
-        project_description: Optional[str] = None,
+        projects: List[ProjectInfo]
     ) -> Dict[str, Any]:
         print(f"EmailAnalyzerAgent: 사용자 ID '{user_id}'의 이메일 {len(retrieved_emails_list)}개 분석 시작 (대상일: {target_date}).")
 
@@ -88,9 +87,7 @@ class EmailAnalyzerAgent:
                 "email_data": email_data_str, # 프롬프트의 {email_data} 변수
                 "wbs_data": wbs_data_str,     # 프롬프트의 {wbs_data} 변수
                 "total_tasks": len(retrieved_emails_list),
-                "project_id": project_id,
-                "project_name": project_name,
-                "project_description": project_description,
+                "projects": projects
             }
             analysis_result = chain.invoke(llm_input)
             return analysis_result # LLM 순수 결과만 반환
@@ -105,9 +102,7 @@ class EmailAnalyzerAgent:
         user_name = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
-        project_id = state.get("project_id")
-        project_name = state.get("project_name")
-        project_description = state.get("project_description")
+        projects = state.get("projects")
         
         analysis_result = {} # 기본값 초기화
         if not user_id:
@@ -126,7 +121,7 @@ class EmailAnalyzerAgent:
             )
 
             analysis_result = self._analyze_emails_internal(
-                user_id, user_name, wbs_data, target_date, retrieved_list, project_id, project_name, project_description
+                user_id, user_name, wbs_data, target_date, retrieved_list, projects
             )
         
         return {"email_analysis_result": analysis_result}

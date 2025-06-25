@@ -1,6 +1,8 @@
 # core/state_definition.py
 from typing import Dict, Any, Optional, List
 
+from schemas.project_info import ProjectInfo
+
 class LangGraphState(Dict):
     """
     LangGraph 워크플로우 전체에서 사용될 공유 상태 객체 정의.
@@ -10,6 +12,7 @@ class LangGraphState(Dict):
     user_id: Optional[str] = None # 분석 대상 사용자 ID (이메일 형식 또는 내부 ID). Docs, Teams, Email 분석의 기본 키.
     user_name: Optional[str] = None # 분석 대상 사용자 이름 (WBS 담당자명, LLM 프롬프트 표시용 등)
     target_date: Optional[str] = None # 분석 기준 날짜 (YYYY-MM-DD 형식). Documents를 제외한 모든 분석에서 사용.
+    projects: Optional[List[ProjectInfo]]
     project_id: Optional[int] = None # 분석 대상 프로젝트 ID (WBS 등)
     project_name: Optional[str] = None # 분석 대상 프로젝트 이름
     project_description: Optional[str] = None # 분석 대상 프로젝트 설명

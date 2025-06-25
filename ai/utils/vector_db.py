@@ -32,7 +32,7 @@ class VectorDBHandler:
 
         self.embedding_model_name = sentence_transformer_model_name
         self.embedding_model = None  # 임베딩 모델은 필요할 때 초기화
-        self.embedding_dim = None    # 임베딩 차원도 필요할 때 설정
+        self.embedding_dim = 384    # 임베딩 차원도 필요할 때 설정
 
         try:
             collection_exists = False

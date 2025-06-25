@@ -14,6 +14,7 @@ from langchain.prompts import PromptTemplate
 from core import config
 from ai.graphs.state_definition import LangGraphState
 from ai.tools.vector_db_retriever import retrieve_git_activities
+from schemas.project_info import ProjectInfo
 
 class GitAnalyzerAgent:
     def __init__(self, qdrant_client: QdrantClient):
@@ -136,9 +137,7 @@ class GitAnalyzerAgent:
     target_date: str, # target_date는 필수
     wbs_data: Optional[dict],
     retrieved_activities: List[Dict],
-    project_id : str,
-    project_name : str,
-    project_description: str,
+    projects: List[ProjectInfo],
     readme_info: str = "",
     ) -> Dict[str, Any]:
         total_count = len(retrieved_activities)
@@ -171,9 +170,7 @@ class GitAnalyzerAgent:
                 "wbs_tasks_str_for_llm": wbs_data_str,
                 "git_metadata_analysis_str": git_stats_str,
                 "readme_info_str": readme_info,
-                "project_id" : project_id,
-                "project_name" : project_name,
-                "project_description" : project_description,
+                "projects": projects
             }
             analysis_result = chain.invoke(llm_input)
             return analysis_result
@@ -188,9 +185,7 @@ class GitAnalyzerAgent:
         user_name_for_context = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
-        project_id = state.get("project_id")
-        project_name = state.get("project_name")
-        project_description = state.get("project_description")
+        projects = state.get("projects")
 
         analysis_result = {} # 기본값 초기화
         if not git_identifier:
@@ -212,7 +207,7 @@ class GitAnalyzerAgent:
             git_activities, readme_info = retrieved_dict
 
             analysis_result = self._analyze_git_internal(
-                git_identifier, user_name_for_context, target_date, wbs_data, git_activities, project_name, project_description, readme_info
+                git_identifier, user_name_for_context, target_date, wbs_data, git_activities, projects, readme_info
             )
         
         return {"git_analysis_result": analysis_result}

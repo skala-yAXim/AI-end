@@ -23,9 +23,7 @@
 {wbs_data}
 
 ### 프로젝트 이름 및 description :
-- 프로젝트 ID: {project_id}
-- 프로젝트 이름: {project_name}
-- 프로젝트 설명: {project_description}
+{projects}
 
 ## 🔍 분석 지침
 
@@ -125,9 +123,9 @@
   "user_name": "{user_name}",
   "date": "{target_date}",
   "type": "docs",
-  "docs_analysis": {{
-    "project_id": "{project_id}",
-    "project_name": "{project_name}",
+  "docs_analysis": [{{
+    "project_id": "project id",
+    "project_name": "project name",
     "matched_docs": [
       {{
         "title": "관련 문서 제목 또는 파일명",
@@ -146,7 +144,7 @@
         "LLM_reference": "이 문서가 해당 WBS 작업과 직접 매칭되지 않는다고 판단한 구체적인 근거 및 내용으로 추정한 작업에 대한 LLM의 설명"
       }}
     ]
-  }},
+  }}],
   "daily_reflection": {{
     "content": [
       // 리스트 형식으로 작성

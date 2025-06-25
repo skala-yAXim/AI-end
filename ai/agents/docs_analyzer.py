@@ -10,6 +10,7 @@ from langchain.prompts import PromptTemplate
 from core import config 
 from ai.graphs.state_definition import LangGraphState 
 from ai.tools.vector_db_retriever import retrieve_documents
+from schemas.project_info import ProjectInfo
 
 class DocsAnalyzer:
     def __init__(self, qdrant_client: QdrantClient):
@@ -95,9 +96,7 @@ class DocsAnalyzer:
         wbs_data: Optional[dict],
         retrieved_docs_list: List[Dict],
         docs_quality_result: Optional[dict] = None,
-        project_id: Optional[int] = None,
-        project_name: Optional[str] = None,
-        project_description: Optional[str] = None,
+        projects: List[ProjectInfo] = None,
     ) -> Dict[str, Any]:
         """내부 문서 분석 로직"""
         print(f"DocsAnalyzer: 사용자 ID '{user_id}'의 문서 {len(retrieved_docs_list)}개 분석 시작")
@@ -142,9 +141,7 @@ class DocsAnalyzer:
                 "target_date": lambda x: x["in_target_date"],
                 "docs_quality_result": lambda x: x["docs_quality_result"],
                 "total_tasks": lambda x: x["in_total_tasks"],
-                "project_id" : lambda x:x["project_id"],
-                "project_name": lambda x: x["project_name"],
-                "project_description": lambda x: x["project_description"],
+                "projects": lambda x: x["projects"]
             }
             | self.prompt
             | self.llm
@@ -160,9 +157,7 @@ class DocsAnalyzer:
                 "documents_text": documents_text,
                 "docs_quality_result": docs_quality_result or {},
                 "in_total_tasks": unique_count,
-                "project_id" : project_id,
-                "project_name": project_name or "Unknown Project",
-                "project_description": project_description or "프로젝트 설명 없음",
+                "projects": projects
             })
             
             # 결과 검증 및 기본값 설정
@@ -181,9 +176,7 @@ class DocsAnalyzer:
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
         quality_result = state.get("documents_quality_result", {})
-        project_id = state.get("project_id")
-        project_name = state.get("project_name")
-        project_description = state.get("project_description")
+        projects = state.get("projects")
                 
         # 필수 파라미터 검증
         if not user_id:
@@ -207,9 +200,7 @@ class DocsAnalyzer:
             wbs_data=wbs_data,
             retrieved_docs_list=retrieved_docs_list,
             docs_quality_result=quality_result,
-            project_id=project_id,
-            project_name=project_name,
-            project_description=project_description
+            projects=projects
         )
         
         return {"documents_analysis_result": analysis_result}

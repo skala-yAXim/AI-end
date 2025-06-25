@@ -21,55 +21,50 @@ class WBSDataRetriever:
         print("WBSDataRetriever: 초기화 완료. WBS 조회는 tools/wbs_retriever_tools.py의 함수를 사용합니다.")
 
     def load_wbs_data(self, state: LangGraphState) -> LangGraphState:
-        project_id = state.get("project_id")
+        projects = state.get("projects")
+        project_ids = [project.id for project in projects]
         user_name_for_task_filter = state.get("user_name") # WBS 작업 필터링용 user_name
 
-        if not project_id:
-            error_msg = "WBSDataRetriever (load_wbs_data): project_id가 State에 제공되지 않았습니다."
+        if not projects:
+            error_msg = "WBSDataRetriever (load_wbs_data): project가 State에 제공되지 않았습니다."
             print(error_msg)
             state["wbs_data"] = None
             current_error = state.get("error_message", "")
             state["error_message"] = (current_error + "\n" + error_msg).strip() if current_error else error_msg
             return state
-            
-        print(f"WBSDataRetriever (load_wbs_data): 프로젝트 '{project_id}'의 WBS 데이터 로딩 시작 (tools 사용)...")
         
-        task_list: List[Dict] = []
+        tasks: Dict[str, List[Dict]] = {}
+        
+        for project_id in project_ids:
+            print(f"WBSDataRetriever (load_wbs_data): 프로젝트 '{project_id}'의 WBS 데이터 로딩 시작 (tools 사용)...")
+        
+            task_list: List[Dict] = []
 
-        # 담당자 필터링 조건 결정 (user_id 우선, 없으면 user_name)
-        assignee_filter_identifier = user_name_for_task_filter
+            # 담당자 필터링 조건 결정 (user_id 우선, 없으면 user_name)
+            assignee_filter_identifier = user_name_for_task_filter
 
-        if assignee_filter_identifier:
-            print(f"담당자 '{assignee_filter_identifier}' 기준으로 WBS 작업 필터링 시도.")
-            task_list = get_tasks_by_assignee_tool(
-                project_id=project_id,
-                assignee_name_to_filter=assignee_filter_identifier,
-            )
-        else:
-            print("담당자 필터링 없이 프로젝트의 모든 WBS 작업 조회 시도.")
-            task_list = get_project_task_items_tool(
-                project_id=project_id,
-            )
+            if assignee_filter_identifier:
+                print(f"담당자 '{assignee_filter_identifier}' 기준으로 WBS 작업 필터링 시도.")
+                task_list = get_tasks_by_assignee_tool(
+                    project_id=project_id,
+                    assignee_name_to_filter=assignee_filter_identifier,
+                )
+            else:
+                print("담당자 필터링 없이 프로젝트의 모든 WBS 작업 조회 시도.")
+                task_list = get_project_task_items_tool(
+                    project_id=project_id,
+                )
+            
+            tasks[project_id] = task_list
+            print(f"WBSDataRetriever (load_w_bs_data): WBS 데이터 로드 완료. 작업 수: {len(task_list)} (필터링 적용됨)")
         
         # State에 저장할 wbs_data 구조 구성
         # get_project_task_items_tool은 task_list만 반환하므로, project_summary 등은 없음.
-        if task_list: # 작업 목록이 비어있지 않은 경우
-            wbs_data_for_state = {
-                "project_id": project_id,
-                "project_summary": f"'{project_id}' 프로젝트의 WBS 작업 목록입니다. (요약 정보는 현재 제공되지 않음)", # 임시 요약
-                "task_list": task_list
-            }
-            state["wbs_data"] = wbs_data_for_state
-            
-            print(f"WBSDataRetriever (load_w_bs_data): WBS 데이터 로드 완료. 작업 수: {len(task_list)} (필터링 적용됨)")
-
+        if tasks: # 작업 목록이 비어있지 않은 경우
+            state["wbs_data"] = tasks
         else:
-            state["wbs_data"] = { # 데이터가 없더라도 기본 구조는 유지
-                "project_id": project_id,
-                "project_summary": "해당 조건으로 조회된 WBS 작업이 없습니다.",
-                "task_list": []
-            }
-            not_found_msg = f"프로젝트 '{project_id}'에 대한 WBS 작업을 찾을 수 없거나 조회 중 오류 발생 (필터: {assignee_filter_identifier or '없음'})."
+            state["wbs_data"] = {}
+            not_found_msg = f"프로젝트 '{project_ids}'에 대한 WBS 작업을 찾을 수 없거나 조회 중 오류 발생 (필터: {assignee_filter_identifier or '없음'})."
             current_error = state.get("error_message", "")
             state["error_message"] = (current_error + "\n" + not_found_msg).strip() if current_error else not_found_msg
             print(f"WBSDataRetriever (load_wbs_data): {not_found_msg}")

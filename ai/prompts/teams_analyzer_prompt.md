@@ -31,9 +31,7 @@
 ```
 
 ### 프로젝트 컨텍스트
-- 프로젝트 ID: {project_id}
-- 프로젝트명: {project_name}
-- 프로젝트 설명: {project_description}
+{projects}
 
 ### 분석 날짜
 {target_date}
@@ -113,9 +111,9 @@
   "date": "{target_date}",
   "type": "Teams",
   "total_tasks": "{total_tasks}",
-  "teams_analysis": {{
-    "project_id": "{project_id}",
-    "project_name": "{project_name}",
+  "teams_analysis": [{{
+    "project_id": "project id",
+    "project_name": "project name",
     "matched_tasks": [
       {{
         "title": "게시물 활동 종합 요약 (x건)",
@@ -141,7 +139,7 @@
         "LLM_reference": "이 게시물을 증거로 제시한 구체적 이유. 특히 Jira 관련 게시물은 작업의 완료/진행 상태를 게시글에서 어떻게 판단했는지를 포함해야 함",
       }}
     ]
-  }},  
+  }}],  
   "daily_reflection": {{
     "content": [
       // 리스트 형식으로 작성
