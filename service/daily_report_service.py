@@ -30,10 +30,11 @@ def run_analysis_workflow(user_info: UserInfo, target_date: str = date.today().i
         target_date=target_date,
         wbs_data=None, # 초기 WBS 데이터는 None
         comprehensive_report=None, # 일일 보고서 결과
-        project_id=user_info.projects[0].id,
-        project_name=user_info.projects[0].name,
-        project_description=user_info.projects[0].description,
-        project_period=f"{user_info.projects[0].start_date} ~ {user_info.projects[0].end_date}",
+        projects = user_info.projects,
+        project_id=[project.id for project in user_info.projects],
+        project_name=[project.name for project in user_info.projects],
+        project_description=[project.description for project in user_info.projects],
+        project_period=[f"{project.start_date} ~ {project.end_date}" for project in user_info.projects],
         error_message="" 
     )
 
@@ -178,7 +179,7 @@ def daily_report_service():
     response = client.get_teams_info()
     
     target_date = date.today().isoformat()
-    target_date = "2025-06-10"
+    target_date = "2025-06-18"
     
     for team in response:
         print(team.name)

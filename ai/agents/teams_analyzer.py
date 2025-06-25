@@ -12,6 +12,7 @@ from langchain.prompts import PromptTemplate
 from core import config
 from ai.graphs.state_definition import LangGraphState
 from ai.tools.vector_db_retriever import retrieve_teams_posts
+from schemas.project_info import ProjectInfo
 
 class TeamsAnalyzer:
     def __init__(self, qdrant_client: QdrantClient):
@@ -54,10 +55,10 @@ class TeamsAnalyzer:
             meta = item.get("metadata", {})
             content = item.get("page_content", "")[:500] # 내용 일부
             # 실제 Teams 작성자 ID 필드명 (예: user_id, author_id 등)
-            author_display = meta.get("user_id", meta.get("author_name", meta.get("author_id", "익명"))) 
+            author_display = meta.get("author", "익명")
             timestamp = meta.get("date", "시간 정보 없음") # 실제 Qdrant 필드명: date
-            channel = meta.get("channel_name", meta.get("channel", "알 수 없는 채널"))
-            parts.append(f"- 작성자: {author_display}\n  채널: {channel}\n  시간: {timestamp}\n  내용: {content}...\n---")
+            type = meta.get("type", "알 수 없는 채널")
+            parts.append(f"- 작성자: {author_display}\n  유형: {type}\n  시간: {timestamp}\n  내용: {content}...\n---")
         return "\n".join(parts)
 
     def _analyze_teams_data_internal(
@@ -66,10 +67,7 @@ class TeamsAnalyzer:
             user_name: Optional[str], # LLM 프롬프트용 user_name 
             target_date: str, # target_date는 필수
             wbs_data: Optional[dict],
-            project_id: Optional[str],
-            project_name: Optional[str],
-            project_description: Optional[str],
-            project_period: Optional[str],
+            projects: List[ProjectInfo],
             retrieved_posts_list: List[Dict]
         ) -> Dict[str, Any]:
         print(f"TeamsAnalyzer: 사용자 ID '{user_id}'의 Teams 게시물 {len(retrieved_posts_list)}개 분석 시작 (대상일: {target_date}).")
@@ -105,10 +103,7 @@ class TeamsAnalyzer:
                 "posts": posts_data_str, # 프롬프트의 {posts} 변수
                 "wbs_data": wbs_data_str, # 프롬프트의 {wbs_data} 변수
                 "total_tasks": len(retrieved_posts_list),
-                "project_id": project_id,
-                "project_name": project_name,
-                "project_description": project_description,
-                "project_period": project_period
+                "projects": projects,
             }
             result = chain.invoke(llm_input)
             return result # LLM 순수 결과만 반환
@@ -123,10 +118,7 @@ class TeamsAnalyzer:
         user_name = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
-        project_id = state.get("project_id")
-        project_name = state.get("project_name")
-        project_description = state.get("project_description")
-        project_period = state.get("project_period")
+        projects = state.get("projects")
 
         analysis_result = {} # 기본값 초기화
         if not user_id:
@@ -146,7 +138,7 @@ class TeamsAnalyzer:
             )
 
             analysis_result = self._analyze_teams_data_internal(
-                user_id, user_name, target_date, wbs_data, project_id, project_name, project_description, project_period, retrieved_list
+                user_id, user_name, target_date, wbs_data, projects, retrieved_list
             )
         
         return {"teams_analysis_result": analysis_result}

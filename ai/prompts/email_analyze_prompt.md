@@ -31,9 +31,7 @@
 {wbs_data}
 ```
 ### 프로젝트 이름 및 description
-- 프로젝트 ID: {project_id}
-- 프로젝트 이름: {project_name}
-- 프로젝트 설명: {project_description}
+{projects}
 
 ## 분석 지침
 
@@ -136,9 +134,9 @@
   "user_id": "사용자_이메일_주소",
   "date": "이메일 날짜",
   "type": "Email",
-  "email_analysis": {{
-    "project_id": "{project_id}",
-    "project_name": "{project_name}",
+  "email_analysis": [{{
+    "project_id": "project id",
+    "project_name": "project name",
     "matched_emails": [
       {{
         "subject": "이메일 제목",
@@ -170,7 +168,7 @@
           ],
           "count": "스팸처리되어 제외된 이메일 총 개수"
           }}
-  }},
+  }}],
   "daily_reflection": {{
     "content": [
       // 리스트 형식으로 작성

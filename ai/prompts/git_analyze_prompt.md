@@ -27,9 +27,7 @@
 ```
 - **Git 활동 통계**: {git_metadata_analysis_str}
 - **저장소 README 정보**: {readme_info_str}
-- **프로젝트 ID**: {project_id}
-- **프로젝트 이름**: {project_name}
-- **프로젝트 설명**: {project_description}
+- **진행 프로젝트 정보**: {projects}
 
 ## 🔍 [완전성 보장 분석 프로세스]
 
@@ -38,6 +36,15 @@
 
 ### 활동 통합 및 분리 규칙
  ### 분석 프로세스
+**STEP 0: 개별 활동 프로젝트 매칭 분석**
+- 제공된 Git 활동 기록을 검토하여 각 활동이 어떤 진행 프로젝트에 속하는지 식별합니다.
+모든 활동은 정확히 하나의 프로젝트에만 매칭되어야 하며, 중복 매칭은 허용되지 않습니다.
+- Repo README 기반 매칭 (우선순위 1): 저장소의 README 내용을 참조하여 해당 저장소가 어떤 프로젝트에 속하는지 확인 후, 활동이 README 설명과 부합하는지 비교하여 매칭합니다.
+- 프로젝트 설명 기반 추론 (우선순위 2): 제공된 프로젝트 설명 중 Git 활동 내용과 기능적으로 관련 있는 프로젝트가 있을 경우, 해당 프로젝트로 매칭합니다.
+- 활동 내용 기반 매칭 (우선순위 3): Git 커밋 메시지, 브랜치명, 파일명, 수정된 파일 경로를 분석하여 프로젝트 명칭, 관련 키워드, 기능명과 직접적으로 연관되는 활동을 우선 매칭합니다.
+- 활동 불명시 미분류 (예외 처리): 명확한 매칭이 어려운 경우에는 project_id와 project_name을 null로 분류합니다.
+
+
 **STEP 1: 개별 활동 WBS 매칭 분석**
 ### **1순위: 키워드 매칭**
 Git 활동과 WBS 작업명에 **공통 키워드**가 있으면 해당 WBS에 우선 매칭
@@ -112,9 +119,9 @@ WBS 작업 구현에 필요한 지원 기능도 매칭
   "date": "{target_date_str}",
   "type": "Git",
   "total_tasks": "검색된 모든 Git 활동 수 (숫자로만 표기)",
-  "git_analysis": {{
-    "project_id": "{project_id}",
-    "project_name": "{project_name}",
+  "git_analysis": [{{
+    "project_id": "project id",
+    "project_name": "project name",
     "matched_activities": [
       {{
         "title": "Git 활동 종합 요약 (x건)",
@@ -143,7 +150,7 @@ WBS 작업 구현에 필요한 지원 기능도 매칭
       }},
       ...
     ]
-  }},
+  }}],
   "daily_reflection": {{
     "content": [
       // 리스트 형식으로 작성 (최대 6줄)
