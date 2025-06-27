@@ -334,6 +334,8 @@ TOTAL_ACTIVITIES = GIT_COUNT + TEAMS_COUNT + EMAIL_COUNT + DOCS_COUNT
 - 각 evidence마다 별도의 contents 객체 생성
 - 절대 그룹화하지 말고 1:1 매핑
 - 비즈니스 중요도 분석하여 HIGH/MEDIUM/LOW 할당
+- 프로젝트 정보는 리스트 형태 (예: [{ "id": 1, "name": "Project Alpha", "tasks": [...] }, { "id": 2, "name": "Project Beta", "tasks": [...] }])로 제공될 수 있으니, 각 활동과 매칭되는 project_id와 project_name, task_id, task를 정확히 찾아 할당하세요.
+
 
 #### **3단계: Contents 배열 우선순위 정렬**
 

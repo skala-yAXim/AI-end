@@ -31,7 +31,7 @@
 ```
 
 ### 프로젝트 컨텍스트
-{projects}
+{projects} (리스트 형태 - 예: [{ "id": 1, "name": "Project Alpha", "description": "…" }, { "id": 2, "name": "Project Beta", "description": "…" }])
 
 ### 분석 날짜
 {target_date}
