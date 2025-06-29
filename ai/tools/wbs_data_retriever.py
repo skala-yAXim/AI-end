@@ -1,9 +1,21 @@
-from typing import Dict, List
+from typing import Dict, List, Any, Optional
+import json
 
-from qdrant_client import QdrantClient 
+from qdrant_client import QdrantClient
+from qdrant_client.http import models
+from qdrant_client.http.models import (
+    Filter, FieldCondition, MatchValue, IsNullCondition, MatchText
+)
+
+from langchain.retrievers import EnsembleRetriever
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.documents import Document
+from langchain_core.callbacks import CallbackManagerForRetrieverRun
 
 from ai.graphs.state_definition import LangGraphState
 from ai.tools.wbs_retriever_tool import get_project_task_items_tool, get_tasks_by_assignee_tool
+from core import config
+from ai.utils.embed_query import embed_query 
 
 class WBSDataRetriever:
     """
@@ -15,7 +27,9 @@ class WBSDataRetriever:
         QdrantClient를 인자로 받지만, 현재 WBS 조회 도구들은 자체적으로 DB 핸들러를 생성합니다.
         이 qdrant_client는 향후 다른 방식의 직접 조회가 필요할 경우를 위해 유지할 수 있습니다.
         """
-        self.qdrant_client_param = qdrant_client # 파라미터로 받은 클라이언트 (현재 직접 사용 X)
+        self.qdrant_client_param = qdrant_client 
+        self.collection_name = config.COLLECTION_WBS_DATA
+
         if not qdrant_client:
              print("WBSDataRetriever 경고: QdrantClient 인스턴스가 제공되지 않았습니다. WBS 도구는 자체 클라이언트를 생성합니다.")
         print("WBSDataRetriever: 초기화 완료. WBS 조회는 tools/wbs_retriever_tools.py의 함수를 사용합니다.")
@@ -73,3 +87,87 @@ class WBSDataRetriever:
 
     def __call__(self, state: LangGraphState) -> LangGraphState:
         return self.load_wbs_data(state)
+
+
+    def retrieve_relevant_wbs_data_hybrid(
+        self, 
+        query_text: str, 
+        project_ids: Optional[List[int]] = None, 
+        limit: int = 5
+    ) -> Optional[List[Dict[str, Any]]]:
+        print(f"WBSDataRetriever: 하이브리드 검색 시작 - 쿼리: '{query_text[:50]}', 프로젝트 ID(s): '{project_ids or '모든 프로젝트'}'")
+        
+        if not query_text.strip():
+            print("WBSDataRetriever: 쿼리 텍스트가 없어 검색을 수행할 수 없습니다.")
+            return None
+
+        try:
+            project_filter = Filter(
+                should=[
+                    FieldCondition(key="project_id", match=MatchValue(value=pid))
+                    for pid in project_ids
+                ]
+            )
+
+            if not self.qdrant_client_param:
+                print("WBSDataRetriever 오류: Qdrant 클라이언트가 초기화되지 않았습니다.")
+                return None
+            
+            # === Dense 검색 ===
+            dense_vector = embed_query(query_text)
+            dense_results = self.qdrant_client_param.search(
+                collection_name=self.collection_name,
+                query_vector=dense_vector,
+                query_filter=project_filter,
+                limit=20,
+                with_payload=True
+            )
+            dense_docs = [
+                {"source": "dense", "score": r.score, "payload": r.payload}
+                for r in dense_results
+            ]
+            print(f"Dense 검색 결과: {dense_docs}")
+
+
+            # === Sparse 검색 ===
+            keyword_filter = FieldCondition(
+                key="original_data",
+                match=MatchText(text=query_text)
+            )
+
+            project_filter = Filter(
+                should=[
+                    FieldCondition(key="project_id", match=MatchValue(value=pid))
+                    for pid in project_ids
+                ]
+            )
+
+            final_filter = Filter(must=[keyword_filter, project_filter])
+
+            sparse_results, _ = self.qdrant_client_param.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=final_filter,
+                limit=20,
+                with_payload=True
+            )
+
+            sparse_docs = [
+                {"source": "sparse", "score": 1.0, "payload": r.payload}
+                for r in sparse_results
+            ]
+            print(f"Sparse 검색 결과: {sparse_docs}")
+            # 병합
+            merged = {}
+            for r in dense_docs + sparse_docs:
+                task_id = r["payload"].get("task_id")
+                if task_id:
+                    merged[task_id] = r
+
+            ranked = sorted(merged.values(), key=lambda x: x["score"], reverse=True)[:limit]
+
+            print(f"WBSDataRetriever: 하이브리드 검색 최종 결과 {len(ranked)}개의 관련 WBS 데이터 발견.")
+            return [r["payload"] for r in ranked]
+
+        except Exception as e:
+            print(f"WBSDataRetriever: 하이브리드 WBS 데이터 조회 중 오류 발생: {e}")
+            return None

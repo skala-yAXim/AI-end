@@ -27,7 +27,7 @@
 ```
 - **Git 활동 통계**: {git_metadata_analysis_str}
 - **저장소 README 정보**: {readme_info_str}
-- **진행 프로젝트 정보**: {projects}
+- **진행 프로젝트 정보**: {projects} (리스트 형태 - 예: [{{ "id": 1, "name": "프로젝트 알파", "description": "…" }}, {{ "id": 2, "name": "프로젝트 베타", "description": "…" }}, ...])
 
 ## 🔍 [완전성 보장 분석 프로세스]
 

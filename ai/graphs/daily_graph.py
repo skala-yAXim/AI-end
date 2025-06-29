@@ -98,7 +98,22 @@ def analyze_docs_quality_node(state: LangGraphState) -> LangGraphState:
 def generate_report_node(state: LangGraphState) -> LangGraphState:
     print("\n--- Daily 보고서 생성 노드 실행 ---")
     try:
-        report_generator = DailyReportGenerator()
+        if not qdrant_client_instance:
+            error_msg = "보고서 생성 실패: Qdrant 클라이언트 미초기화. WBS 툴을 생성할 수 없습니다."
+            print(error_msg)
+            state["error_message"] = (state.get("error_message","") + f"\n {error_msg}").strip()
+            state["comprehensive_report"] = {
+                "report_metadata": {"success": False, "error": error_msg},
+                "report_content": {"error": "보고서 생성 실패"}
+            }
+            return state
+
+        # WBSDataRetriever 인스턴스를 DailyReportGenerator에 전달
+        # DailyReportGenerator는 이 인스턴스를 통해 Qdrant 클라이언트에 직접 접근합니다.
+        wbs_retriever_tool_instance = WBSDataRetriever(qdrant_client=qdrant_client_instance)
+
+        report_generator = DailyReportGenerator(wbs_retriever_tool_instance=wbs_retriever_tool_instance) 
+        
         updated_state = report_generator.generate_daily_report(state)
         print("Daily 보고서 생성 완료.")
         return updated_state
@@ -110,6 +125,7 @@ def generate_report_node(state: LangGraphState) -> LangGraphState:
             "report_content": {"error": "보고서 생성 실패"}
         }
         return state
+
 
 def fan_out(_: LangGraphState) -> List[str]:
     return ["analyze_git", "analyze_emails", "analyze_teams", "analyze_docs_quality"]
