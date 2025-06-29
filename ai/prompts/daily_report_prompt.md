@@ -72,6 +72,7 @@
 **완벽한 1:1 매핑**: 1개 evidence = 1개 contents 객체 (수학적 등식)
 **전수 나열**: N개 활동 = N개 contents 객체 (100% 일치)
 **Evidence 개별 처리**: 각 evidence마다 개별 contents 객체 생성
+🚫 같은 evidence 내용(예: 동일한 commit message, 동일한 email, 동일한 문서)에 대해서는 하나의 contents 객체만 생성하고, text가 다르더라도 duplication으로 간주하고 하나로 제한하세요.
 **우선순위 정렬**: 모든 객체를 HIGH → MEDIUM → LOW 순서로 배치
 
 ### **Evidence 분리 규칙**
@@ -334,7 +335,7 @@ TOTAL_ACTIVITIES = GIT_COUNT + TEAMS_COUNT + EMAIL_COUNT + DOCS_COUNT
 - 각 evidence마다 별도의 contents 객체 생성
 - 절대 그룹화하지 말고 1:1 매핑
 - 비즈니스 중요도 분석하여 HIGH/MEDIUM/LOW 할당
-- 프로젝트 정보는 리스트 형태 (예: [{ "id": 1, "name": "Project Alpha", "tasks": [...] }, { "id": 2, "name": "Project Beta", "tasks": [...] }])로 제공될 수 있으니, 각 활동과 매칭되는 project_id와 project_name, task_id, task를 정확히 찾아 할당하세요.
+- 프로젝트 정보는 리스트 형태 (예: [{{ "id": 1, "name": "Project Alpha", "tasks": [...] }}, {{ "id": 2, "name": "Project Beta", "tasks": [...] }}])로 제공될 수 있으니, 각 활동과 매칭되는 project_id와 project_name, task_id, task를 정확히 찾아 할당하세요.
 
 
 #### **3단계: Contents 배열 우선순위 정렬**
