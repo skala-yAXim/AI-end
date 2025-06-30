@@ -15,10 +15,7 @@ def run_weekly_workflow(user_info: UserInfo, daily_reports: List[str], start_dat
         user_id=user_info.id,
         start_date=start_date,
         end_date=end_date,
-        project_id=user_info.projects[0].id,
-        project_name=user_info.projects[0].name,
-        project_description=user_info.projects[0].description,
-        project_period=f"{user_info.projects[0].start_date} ~ {user_info.projects[0].end_date}",
+        projects=user_info.projects,
         wbs_data=None,
         daily_reports_data=daily_reports,
         weekly_report_result=None,
@@ -52,8 +49,8 @@ def weekly_report_service():
     end_date_str = end_date.isoformat()
     start_date_str = start_date.isoformat()
     
-    start_date_str = "2025-06-06"
-    end_date_str = "2025-06-12"
+    start_date_str = "2025-06-13"
+    end_date_str = "2025-06-18"
     
     client = APIClient()
     team_info = client.get_teams_info()
@@ -82,6 +79,7 @@ def weekly_report_service():
                     team_name=team.name,
                     projects=projects
                 )
+                
                 daily_reports = client.get_user_daily_reports(user_id=user_info.id, start_date=start_date_str, end_date=end_date_str)
                 
                 weekly_report = run_weekly_workflow(user_info, daily_reports, start_date_str, end_date_str)

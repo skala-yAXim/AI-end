@@ -59,10 +59,11 @@ class WeeklyLangGraphState(Dict):
     start_date: str
     end_date: str
     # TODO project 여러개 들어오게끔 수정
-    project_id: int
-    project_name: str
-    project_description: str
-    project_period: str
+    # project_id: int
+    # project_name: str
+    # project_description: str
+    # project_period: str
+    projects: Optional[List[ProjectInfo]]
     wbs_data: Optional[Dict] = None
     daily_reports_data: Optional[List[str]] = None
     weekly_report_result: Optional[Dict] = None
