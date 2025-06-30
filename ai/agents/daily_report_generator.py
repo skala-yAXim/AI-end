@@ -14,6 +14,8 @@ from pydantic.v1 import BaseModel
 from core import config
 from ai.graphs.state_definition import LangGraphState
 from ai.tools.wbs_data_retriever import WBSDataRetriever
+from pydantic import BaseModel
+from typing import Any
 
 class DailyReportGenerator:
     """
@@ -51,8 +53,8 @@ class DailyReportGenerator:
                         "task_id": item.get("task_id"),
                         "task_name": original.get("task_name"),
                         "assignee": original.get("assignee"),
-                        "start_date": (original.get("start_date") or "")[:10],
-                        "end_date": (original.get("end_date") or "")[:10],
+                        "start_date": (original.get("start_date") or ""),
+                        "end_date": (original.get("end_date") or ""),
                         "project_id": item.get("project_id")
                     })
                 except json.JSONDecodeError:
@@ -79,8 +81,8 @@ class DailyReportGenerator:
             agent=agent,
             tools=[wbs_retrieve_tool],
             verbose=True, # Agent의 작동 과정을 로그로 확인하려면 True로 설정
-            max_iterations=5,
-            early_stopping_method="generate"
+            max_iterations=1,
+            # early_stopping_method="generate"
             # handle_parsing_errors=True # LLM의 출력 파싱 오류 발생 시 대처
         )
 
@@ -89,7 +91,6 @@ class DailyReportGenerator:
         Agent를 호출하여 일일 보고서를 생성하고 LangGraph 상태를 업데이트합니다.
         """
         print(f"DailyReportGenerator: {state.get('user_name')} 님의 보고서 생성을 시작합니다 (Agent 방식).")
-        parser = JsonOutputParser()
 
         # Agent에게 전달할 입력 데이터를 구성합니다.
         # 이전 코드의 'first_data'와 동일한 정보를 포함합니다.
@@ -97,7 +98,7 @@ class DailyReportGenerator:
             "user_name": state.get("user_name"),
             "user_id": state.get("user_id"),
             "target_date": state.get("target_date", datetime.now().strftime("%Y-%m-%d")),
-            "projects": state.get("projects", []),
+            "projects": str(state.get("projects", [])),
             "wbs_data": state.get("wbs_data", []), # 전체 WBS 데이터도 컨텍스트로 제공
             "docs_analysis": state.get("documents_analysis_result", {}).get("analysis", ""),
             "teams_analysis": state.get("teams_analysis_result", {}).get("analysis", ""),
@@ -114,13 +115,19 @@ class DailyReportGenerator:
 
         result = self.agent_executor.invoke(agent_input_data)
 
-        print("보고서 결과 : ") 
+        print("result : ")
         print(result)
+        
 
+        print("보고서 결과 : ")
+        raw_output = result["output"]
+        parsed_result = json.loads(raw_output)
+
+        print(parsed_result)
+        
         if not result:
             raise ValueError("Agent가 유효한 보고서를 생성하지 못했습니다.")
         
-        parsed_result = parser.parse(result)
 
         state["comprehensive_report"] = parsed_result
         print("DailyReportGenerator: 보고서 생성 완료.")
