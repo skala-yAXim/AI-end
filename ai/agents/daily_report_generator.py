@@ -91,6 +91,23 @@ class DailyReportGenerator:
         Agent를 호출하여 일일 보고서를 생성하고 LangGraph 상태를 업데이트합니다.
         """
         print(f"DailyReportGenerator: {state.get('user_name')} 님의 보고서 생성을 시작합니다 (Agent 방식).")
+    
+        exclude_key = "daily_reflection"
+        target_keys = [
+            "documents_analysis_result",
+            "git_analysis_result",
+            "teams_analysis_result",
+            "email_analysis_result"
+        ]
+
+        filtered_results = {}
+
+        for key in target_keys:
+            analysis_result = state.get(key)
+            if analysis_result:
+                filtered_results[key] = {k: v for k, v in analysis_result.items() if k != exclude_key}
+            else:
+                filtered_results[key] = {}
 
         # Agent에게 전달할 입력 데이터를 구성합니다.
         # 이전 코드의 'first_data'와 동일한 정보를 포함합니다.
@@ -100,10 +117,10 @@ class DailyReportGenerator:
             "target_date": state.get("target_date", datetime.now().strftime("%Y-%m-%d")),
             "projects": str(state.get("projects", [])),
             "wbs_data": state.get("wbs_data", []), # 전체 WBS 데이터도 컨텍스트로 제공
-            "docs_analysis": state.get("documents_analysis_result", {}).get("analysis", ""),
-            "teams_analysis": state.get("teams_analysis_result", {}).get("analysis", ""),
-            "git_analysis": state.get("git_analysis_result", {}).get("analysis", ""),
-            "email_analysis": state.get("email_analysis_result", {}).get("analysis", ""),
+            "docs_analysis": str(filtered_results.get("documents_analysis_result") or "Docs 결과 없음"),
+            "teams_analysis": str(filtered_results.get("teams_analysis_result") or "Teams 결과 없음"),
+            "git_analysis": str(filtered_results.get("git_analysis_result") or "Git 결과 없음"),
+            "email_analysis": str(filtered_results.get("email_analysis_result") or "Email 결과 없음"),
             "retrieved_readme_info": state.get("retrieved_readme_info", ""),
             "docs_daily_reflection": state.get("documents_analysis_result", {}).get("daily_reflection", ""),
             "teams_daily_reflection": state.get("teams_analysis_result", {}).get("daily_reflection", ""),

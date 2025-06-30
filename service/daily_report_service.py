@@ -25,6 +25,7 @@ def run_analysis_workflow(user_info: UserInfo, target_date: str = date.today().i
     # TODO github_email state 지우기
     initial_state = LangGraphState(
         user_id=user_info.id,
+        user_email = user_info.email,
         user_name=user_info.name,
         github_email=user_info.email,
         target_date=target_date,
@@ -179,7 +180,7 @@ def daily_report_service():
     response = client.get_teams_info()
     
     target_date = date.today().isoformat()
-    target_date = "2025-06-18"
+    target_date = "2025-06-17"
     
     for team in response:
         print(team.name)

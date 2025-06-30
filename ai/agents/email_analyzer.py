@@ -62,6 +62,7 @@ class EmailAnalyzerAgent:
     def _analyze_emails_internal(
         self, 
         user_id: str, 
+        user_email: str,
         user_name: Optional[str],
         wbs_data: Optional[Dict], 
         target_date: str, # target_date는 필수
@@ -83,6 +84,7 @@ class EmailAnalyzerAgent:
             llm_input = {
                 "user_id": user_id,
                 "target_user": user_name,
+                "user_email": user_email,
                 "target_date": target_date,
                 "email_data": email_data_str, # 프롬프트의 {email_data} 변수
                 "wbs_data": wbs_data_str,     # 프롬프트의 {wbs_data} 변수
@@ -99,6 +101,7 @@ class EmailAnalyzerAgent:
         print(f"EmailAnalyzerAgent: 사용자 ID '{state.get('user_id')}'의 이메일 분석 시작 (날짜: {state.get('target_date')})...")
         
         user_id = state.get("user_id")
+        user_email = state.get("user_email")
         user_name = state.get("user_name")
         target_date = state.get("target_date")
         wbs_data = state.get("wbs_data")
@@ -121,9 +124,11 @@ class EmailAnalyzerAgent:
             )
 
             analysis_result = self._analyze_emails_internal(
-                user_id, user_name, wbs_data, target_date, retrieved_list, projects
+                user_id, user_email, user_name, wbs_data, target_date, retrieved_list, projects
             )
-        
+            
+            analysis_result = {k: v for k, v in analysis_result.items() if k != "excluded_emails"}
+            
         return {"email_analysis_result": analysis_result}
 
     def __call__(self, state: LangGraphState) -> LangGraphState:
