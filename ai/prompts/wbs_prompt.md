@@ -28,32 +28,14 @@
         * 시작일 (`start_date`) - 원본 형식 그대로
         * 종료일 또는 마감일 (`end_date` 또는 `due_date`) - 원본 형식 그대로
         * 산출물 (`deliverables`) - (정보가 없다면 `null` 또는 생략합니다. 입력 데이터의 관련 필드명을 따릅니다. 행이 묶여 있는 경우 산출물을 여러 행에 공유할 수 있습니다.)
-        * 작업 상태 (`status`)
-    * WBS 데이터에 작업별 진행도(`progress_percentage` 또는 유사 필드) 정보가 있다면, 해당 정보도 함께 포함합니다. 정보가 없다면 `null` 또는 생략합니다.
-
-3.  **담당자별 작업 부하 분석:**
-    * 각 담당자에게 할당된 총 작업 수를 파악합니다.
-    * 담당자별로 현재 상태(예: 계획, 진행 중, 완료)에 있는 작업 수를 집계하여 작업 분포 및 부하를 분석합니다.
-    * 현재 상태는 오늘 날짜를 기준으로 진행 중, 완료, 계획으로 분류하여 작업수를 집계합니다.
 
 ## 분석 결과 JSON 형식
 
-아래는 분석 결과를 담을 JSON의 예시 구조입니다. **여기 명시된 날짜 필드 값은 단순 예시이며, 실제 응답에서는 반드시 입력 WBS 데이터의 날짜를 원본 형식 그대로, 어떠한 변경도 없이 사용해야 합니다.** `deliverables` 필드가 추가되었으며, `dependencies` 및 `predecessors` 관련 필드는 포함되지 않습니다.
+아래는 분석 결과를 담을 JSON의 예시 구조입니다. **여기 명시된 날짜 필드 값은 단순 예시이며, 실제 응답에서는 반드시 입력 WBS 데이터의 날짜를 원본 형식 그대로, 어떠한 변경도 없이 사용해야 합니다.** `deliverables` 필드가 추가되었으며, `dependencies`관련 필드는 포함되지 않습니다.
 
 ```json
 {{
-  "project_summary": {{
-    "total_tasks": 120,
-    "tasks_by_status": {{
-      "Planned": 30,
-      "In Progress": 50,
-      "Completed": 30,
-      "Delayed": 10
-    }},
-    "progress_percentage": 66.67,
-    "delayed_tasks_count": 10,
-    "summary_text": "프로젝트는 현재 총 120개의 작업 중 50개가 진행 중이며, 30개가 완료되어 약 67%의 진행률을 보입니다. 다만, 10개의 작업이 지연되고 있어 주의가 필요합니다."
-  }},
+
   "task_list": [
     {{
       "task_id": "T1001",
@@ -61,8 +43,6 @@
       "assignee": "김민준",
       "start_date": "2025-01-15",
       "end_date": "2025-01-30",
-      "status": "Completed",
-      "progress_percentage": 100,
       "deliverables": ["기획안 초안", "요구사항 정의서 v1.0"]
     }},
     {{
@@ -71,8 +51,6 @@
       "assignee": "이수아",
       "start_date": "2025-02-01",
       "due_date": "2025-03-15",
-      "status": "In Progress",
-      "progress_percentage": 60,
       "deliverables": ["UI 디자인 시안", "UX 프로토타입"]
     }},
     {{
@@ -81,29 +59,9 @@
       "assignee": "박서준",
       "start_date": 1693526400,
       "end_date": 1696118400,
-      "status": "Planned",
-      "progress_percentage": 0,
       "deliverables": null
     }}
   ],
-  "assignee_workload": {{
-    "김민준": {{
-      "total_tasks": 25,
-      "tasks_by_status": {{
-        "Planned": 5,
-        "In Progress": 10,
-        "Completed": 10,
-      }}
-    }},
-    "이수아": {{
-      "total_tasks": 30,
-      "tasks_by_status": {{
-        "Planned": 10,
-        "In Progress": 15,
-        "Completed": 0
-      }}
-    }}
-  }}
 }}
 ```
 
@@ -113,5 +71,4 @@
 -   모든 수치(작업 수, 비율 등)는 정확해야 합니다.
 -   **날짜는 반드시 입력된 원본 문자열 또는 숫자(타임스탬프의 경우) 그대로, 어떠한 변경도 없이 유지해야 합니다. 이는 매우 중요한 요구사항입니다.**
 -   제시된 JSON 형식을 정확히 준수하여 응답해야 합니다.
--   입력 WBS 데이터에서 특정 정보를 추출할 수 없는 경우, 해당 필드에는 `null` 값을 사용하거나, JSON 구조상 필드 자체가 생략될 수 있다면 생략해도 됩니다 (예: `progress_percentage` 또는 `deliverables`가 없는 경우).
--   `project_summary`는 분석된 내용을 바탕으로 사람이 이해하기 쉬운 형태로 요약하여 작성합니다.
+-   입력 WBS 데이터에서 특정 정보를 추출할 수 없는 경우, 해당 필드에는 `null` 값을 사용하거나, JSON 구조상 필드 자체가 생략될 수 있다면 생략해도 됩니다 (예:`deliverables`가 없는 경우).

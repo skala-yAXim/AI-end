@@ -28,7 +28,6 @@ def get_project_task_items_tool(
         qdrant_filter = models.Filter(
             must=[
                 models.FieldCondition(key="project_id", match=models.MatchValue(value=project_id)),
-                models.FieldCondition(key="output_type", match=models.MatchValue(value="task_item"))
             ]
         )
         # Qdrant에서 가져올 데이터 수 제한 설정
