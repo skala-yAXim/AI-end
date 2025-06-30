@@ -40,8 +40,11 @@
 
 
 **STEP 1: 개별 활동 WBS 매칭 분석**
-- Git 활동과 WBS 작업명에 **공통 키워드**가 있으면 해당 WBS에 우선 매칭
-- WBS 작업 구현에 필요한 지원 기능도 매칭
+- 키워드 매칭: Git 활동과 WBS 작업명에 **공통 키워드**가 있으면 해당 WBS에 우선 매칭
+- 기능적 연관성: WBS 작업 구현에 필요한 지원 기능도 매칭
+  - 데이터 정렬, 출력 개선 → 관련 데이터 수집 WBS
+  - API 연결, 스키마 수정 → 해당 API WBS
+  - 오류 수정, 예외 처리 → 관련 기능 WBS
 - 이 결과를 활용하여 matched_wbs_task의 task_id, task_name 작성
 
 **STEP 2: 활동 확인 및 그룹화**
@@ -98,8 +101,8 @@
       {{
         "title": "Git 활동 종합 요약 (x건)",
         "detailed_activities": [
-          {{"type": "commit|pull_request|issue", "content": "Git commit|pull request|issue 메시지"}},
-          {{"type": "commit|pull_request|issue", "content": "Git commit|pull request|issue 메시지"}},
+          {{"type": "commit|pull_request|issue", "content": "Git commit|pull request|issue 제목"}},
+          {{"type": "commit|pull_request|issue", "content": "Git commit|pull request|issue 제목"}},
         ],
         "activity_repo": "저장소명",
         "matched_wbs_task": {{
@@ -114,8 +117,8 @@
       {{
         "inferred_title": "추론된 작업 task 명 (x건)",
         "detailed_activities": [
-          {{"type": "commit|pull_request|merge|issue", "content": "Git commit|pull request|issue 메시지"}},
-          {{"type": "commit|pull_request|merge|issue", "content": "Git commit|pull request|issue 메시지"}},
+          {{"type": "commit|pull_request|merge|issue", "content": "Git commit|pull request|issue 제목"}},
+          {{"type": "commit|pull_request|merge|issue", "content": "Git commit|pull request|issue 제목"}},
         ],
         "activity_repo": "저장소명",
         "LLM_reference":"저장소 특성 + 활동 내용 + WBS 작업을 종합한 상세한 **매칭되지 않은** 근거"
