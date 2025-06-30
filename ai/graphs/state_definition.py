@@ -9,7 +9,8 @@ class LangGraphState(Dict):
     각 필드는 Optional로 선언하여 특정 노드에서만 사용될 수 있음을 명시합니다.
     """
     # --- 기본 입력 정보 ---
-    user_id: Optional[str] = None # 분석 대상 사용자 ID (이메일 형식 또는 내부 ID). Docs, Teams, Email 분석의 기본 키.
+    user_id: Optional[str] = None # 분석 대상 사용자 ID
+    user_email: Optional[str] = None # 분석 대상 사용자 이메일
     user_name: Optional[str] = None # 분석 대상 사용자 이름 (WBS 담당자명, LLM 프롬프트 표시용 등)
     target_date: Optional[str] = None # 분석 기준 날짜 (YYYY-MM-DD 형식). Documents를 제외한 모든 분석에서 사용.
     projects: Optional[List[ProjectInfo]]

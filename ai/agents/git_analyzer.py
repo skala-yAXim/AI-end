@@ -122,9 +122,10 @@ class GitAnalyzerAgent:
             author = meta.get("author", "N/A")
             event_date = meta.get("date", "N/A")
             event_type = meta.get("type", "N/A")
+            title = meta.get("title", "N/A")
             message = item.get("page_content", meta.get("message", "N/A"))[:300]
 
-            parts.append(f"- [{event_type}] 레포: {repo}, ID: {sha_or_id} (작성자: {author}, 날짜: {event_date})")
+            parts.append(f"- [{event_type}] 레포: {repo}, ID: {sha_or_id} (작성자: {author}, 날짜: {event_date}), 제목: {title}")
             parts.append(f"  메시지: {message}")
 
         return "\n".join(parts)
