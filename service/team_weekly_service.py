@@ -20,15 +20,11 @@ def run_team_weekly_workflow(team_info: TeamInfo, weekly_reports: List[str], sta
         team_members=team_info.members,
         start_date=start_date,
         end_date=end_date,
-        project_id=team_info.projects[0].id,
+        projects=team_info.projects,
         wbs_data=None,
         weekly_reports_data=weekly_reports,
         team_weekly_report_result=None,
         error_message="",
-        last_week_progress=team_info.projects[0].progress,
-        project_name=team_info.projects[0].name,
-        project_start_date=team_info.projects[0].start_date,
-        project_end_date=team_info.projects[0].end_date,
         weekly_input_template=team_info.weekly_template,
     )
     
@@ -58,8 +54,8 @@ def team_weekly_report_service():
     end_date_str = end_date.isoformat()
     start_date_str = start_date.isoformat()
     
-    start_date_str = "2025-06-06"
-    end_date_str = "2025-06-12"
+    start_date_str = "2025-06-13"
+    end_date_str = "2025-06-18"
     
     client = APIClient()
     response = client.get_teams_info()

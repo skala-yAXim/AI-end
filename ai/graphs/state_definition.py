@@ -39,46 +39,19 @@ class TeamWeeklyLangGraphState(Dict):
     start_date: str
     end_date: str
     team_members: List[str]
-    # TODO project 여러개 들어오게끔 수정
-    project_id: int
-    project_name: str
-    project_description: str
-    project_period: str
+    projects: Optional[List[ProjectInfo]]
     wbs_data: Optional[Dict] = None
     weekly_reports_data: Optional[List[Dict]] = None
     team_weekly_report_result: Optional[Dict] = None
     error_message: Optional[str] = None
-    last_week_progress: Optional[Dict] = None
-    project_name: Optional[str] = None
-    project_start_date: Optional[str] = None
-    project_end_date: Optional[str] = None
 
 class WeeklyLangGraphState(Dict):
     user_name: str
     user_id: str
     start_date: str
     end_date: str
-    # TODO project 여러개 들어오게끔 수정
-    # project_id: int
-    # project_name: str
-    # project_description: str
-    # project_period: str
     projects: Optional[List[ProjectInfo]]
     wbs_data: Optional[Dict] = None
     daily_reports_data: Optional[List[str]] = None
     weekly_report_result: Optional[Dict] = None
     error_message: Optional[str] = None
-
-
-class ProgressSummaryState(Dict):
-    user_name: Optional[str] = None 
-    github_email: Optional[str] = None 
-    target_date: Optional[str] = None 
-    date: str
-    # TODO project 여러개 들어오게끔 수정
-    project_id: int
-    daily_report_path: str
-    daily_report: Dict[str, Any]
-    wbs_data: List[Dict[str, Any]]
-    progress_summary: str
-    error_message: str
