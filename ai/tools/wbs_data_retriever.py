@@ -88,13 +88,13 @@ class WBSDataRetriever:
     def __call__(self, state: LangGraphState) -> LangGraphState:
         return self.load_wbs_data(state)
 
-
     def retrieve_relevant_wbs_data_hybrid(
         self, 
         query_text: str, 
         project_ids: Optional[List[int]] = None, 
         limit: int = 5
     ) -> Optional[List[Dict[str, Any]]]:
+        
         print(f"WBSDataRetriever: 하이브리드 검색 시작 - 쿼리: '{query_text[:50]}', 프로젝트 ID(s): '{project_ids or '모든 프로젝트'}'")
         
         if not query_text.strip():
@@ -126,7 +126,7 @@ class WBSDataRetriever:
                 {"source": "dense", "score": r.score, "payload": r.payload}
                 for r in dense_results
             ]
-            print(f"Dense 검색 결과: {dense_docs}")
+            # print(f"Dense 검색 결과: {dense_docs}")
 
 
             # === Sparse 검색 ===
@@ -155,7 +155,7 @@ class WBSDataRetriever:
                 {"source": "sparse", "score": 1.0, "payload": r.payload}
                 for r in sparse_results
             ]
-            print(f"Sparse 검색 결과: {sparse_docs}")
+            # print(f"Sparse 검색 결과: {sparse_docs}")
             # 병합
             merged = {}
             for r in dense_docs + sparse_docs:
@@ -166,6 +166,9 @@ class WBSDataRetriever:
             ranked = sorted(merged.values(), key=lambda x: x["score"], reverse=True)[:limit]
 
             print(f"WBSDataRetriever: 하이브리드 검색 최종 결과 {len(ranked)}개의 관련 WBS 데이터 발견.")
+
+            print("검색 결과 값은 아래와 같습니다. : ")
+            # print([r["payload"] for r in ranked])
             return [r["payload"] for r in ranked]
 
         except Exception as e:
