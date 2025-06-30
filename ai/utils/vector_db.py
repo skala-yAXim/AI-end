@@ -131,7 +131,6 @@ class VectorDBHandler:
             scroll_filter = Filter(
                 must=[
                     FieldCondition(key="project_id", match=MatchValue(value=self.project_id)),
-                    FieldCondition(key="output_type", match=MatchValue(value="project_overview"))
                 ]
             )
             results, _next_page_offset = self.client.scroll(
@@ -180,46 +179,16 @@ class VectorDBHandler:
         payload = {
             "project_id": self.project_id,
             "wbs_hash": wbs_hash,
-            "output_type": item_type,
             "original_data": json.dumps(item_dict, ensure_ascii=False, sort_keys=True)
         }
 
-        if item_type == "project_overview":
-            if "summary_text" in item_dict:
-                doc_text_parts.append(f"요약: {item_dict['summary_text']}")
-                payload["summary_text"] = item_dict['summary_text']
-            if "total_tasks" in item_dict:
-                doc_text_parts.append(f"총 작업 수: {item_dict['total_tasks']}")
-                payload["total_tasks"] = item_dict['total_tasks']
-
-        elif item_type == "task_item":
-            task_id = item_dict.get('task_id')
-            task_name = item_dict.get('task_name')
-            assignee = item_dict.get('assignee')
-            if task_name: doc_text_parts.append(f"작업명: {task_name}")
-            if task_id: payload["task_id"] = str(task_id)
-            if assignee: payload["assignee"] = str(assignee)
-            if item_dict.get('deliverables'): payload["has_deliverables"] = True
-
-        elif item_type == "assignee_workload_detail":
-            assignee_name = assignee_name_for_workload
-            if assignee_name:
-                doc_text_parts.append(f"담당자: {assignee_name}")
-                payload["assignee_name"] = assignee_name
-            if item_dict.get('total_tasks') is not None:
-                doc_text_parts.append(f"담당 작업 수: {item_dict.get('total_tasks')}")
-                payload["total_tasks"] = item_dict.get('total_tasks')
-
-        elif item_type == "delayed_task":
-            task_id = item_dict.get('task_id')
-            task_name = item_dict.get('task_name')
-            if task_name: doc_text_parts.append(f"지연 작업명: {task_name}")
-            if task_id: payload["task_id"] = str(task_id)
-            if item_dict.get('due_date'): payload["due_date"] = item_dict.get('due_date')
-        else:
-            print(f"정보: 알 수 없는 item_type '{item_type}'입니다. 일반적인 처리를 시도합니다.")
-            preview_data = {k: v for k, v in item_dict.items() if isinstance(v, (str, int, float, bool))}
-            doc_text_parts.append(f"내용: {json.dumps(preview_data, ensure_ascii=False, indent=None)}")
+        task_id = item_dict.get('task_id')
+        task_name = item_dict.get('task_name')
+        assignee = item_dict.get('assignee')
+        if task_name: doc_text_parts.append(f"작업명: {task_name}")
+        if task_id: payload["task_id"] = str(task_id)
+        if assignee: payload["assignee"] = str(assignee)
+        if item_dict.get('deliverables'): payload["has_deliverables"] = True
 
         doc_text = ", ".join(filter(None, doc_text_parts))
         unique_id = str(uuid.uuid4())
@@ -238,13 +207,7 @@ class VectorDBHandler:
 
         print(f"LLM 분석 결과 VectorDB(Qdrant) 저장 준비 중 (컬렉션: {self.collection_name})...")
 
-        project_summary_data = llm_output_dict.get("project_summary")
-        if isinstance(project_summary_data, dict):
-            prepared_item = self._prepare_item_for_storage(project_summary_data, "project_overview", wbs_hash, current_id_counter)
-            if prepared_item: items_to_process.append(prepared_item); current_id_counter +=1
-        elif project_summary_data is not None:
-            print(f"경고: 'project_summary' 데이터가 예상한 딕셔너리 형태가 아닙니다: {type(project_summary_data)}")
-
+        
         task_list_data = llm_output_dict.get("task_list", [])
         if isinstance(task_list_data, list):
             for task_item in task_list_data:
@@ -252,26 +215,6 @@ class VectorDBHandler:
                 if prepared_item: items_to_process.append(prepared_item); current_id_counter += 1
         elif task_list_data is not None:
             print(f"경고: 'task_list' 데이터가 예상한 리스트 형태가 아닙니다: {type(task_list_data)}")
-
-        assignee_workload_data = llm_output_dict.get("assignee_workload", {})
-        if isinstance(assignee_workload_data, dict):
-            for assignee_name, workload_details in assignee_workload_data.items():
-                if isinstance(workload_details, dict):
-                    prepared_item = self._prepare_item_for_storage(workload_details, "assignee_workload_detail", wbs_hash, current_id_counter, assignee_name_for_workload=assignee_name)
-                    if prepared_item: items_to_process.append(prepared_item); current_id_counter +=1
-                else:
-                    print(f"경고: 담당자 '{assignee_name}'의 workload_details가 딕셔너리가 아닙니다. 건너뜁니다: {type(workload_details)}")
-        elif assignee_workload_data is not None:
-             print(f"경고: 'assignee_workload' 데이터가 예상한 딕셔너리 형태가 아닙니다: {type(assignee_workload_data)}")
-
-        delayed_tasks_data = llm_output_dict.get("delayed_tasks", [])
-        if isinstance(delayed_tasks_data, list):
-            for delayed_task_item in delayed_tasks_data:
-                prepared_item = self._prepare_item_for_storage(delayed_task_item, "delayed_task", wbs_hash, current_id_counter)
-                if prepared_item: items_to_process.append(prepared_item); current_id_counter += 1
-        elif delayed_tasks_data is not None:
-            print(f"경고: 'delayed_tasks' 데이터가 예상한 리스트 형태가 아닙니다: {type(delayed_tasks_data)}")
-
 
         if not items_to_process:
             print("LLM 분석 결과에서 VectorDB에 저장할 청크된 데이터가 없습니다.")
