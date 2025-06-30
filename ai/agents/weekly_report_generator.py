@@ -50,10 +50,7 @@ class WeeklyReportGenerator:
         """
         user_name = state.get("user_name")
         user_id = state.get("user_id")
-        project_id = state.get("project_id")
-        project_name = state.get("project_name")
-        project_description = state.get("project_description")
-        project_period = state.get("project_period")
+        projects = state.get("projects")
         start_date = state.get("start_date")
         end_date = state.get("end_date")
         daily_reports = state.get("daily_reports_data")
@@ -75,10 +72,7 @@ class WeeklyReportGenerator:
                 "user_id": user_id,
                 "start_date": start_date,
                 "end_date": end_date,
-                "project_id": project_id,
-                "project_name": project_name,
-                "project_description": project_description,
-                "project_period": project_period,
+                "projects": projects,
                 "daily_reports": json.dumps(daily_reports or [], ensure_ascii=False, indent=2),
                 "wbs_data": json.dumps(wbs_data, ensure_ascii=False, indent=2),
             }

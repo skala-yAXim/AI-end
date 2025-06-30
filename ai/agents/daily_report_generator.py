@@ -75,16 +75,34 @@ class DailyReportGenerator:
         try:
             # --- 1단계: 초기 보고서 생성 (state의 할당된 WBS 데이터만 바탕으로) ---
             # LLM은 project_id는 채우지만, task_id는 매칭되지 않으면 null로 채웁니다.
+            
+            exclude_key = "daily_reflection"
+            target_keys = [
+                "documents_analysis_result",
+                "git_analysis_result",
+                "teams_analysis_result",
+                "email_analysis_result"
+            ]
+
+            filtered_results = {}
+
+            for key in target_keys:
+                analysis_result = state.get(key)
+                if analysis_result:
+                    filtered_results[key] = {k: v for k, v in analysis_result.items() if k != exclude_key}
+                else:
+                    filtered_results[key] = {}
+            
             prompt_data = {
                 "projects": state.get("projects", []),
                 "user_name": state.get("user_name", "사용자"),
                 "user_id": state.get("user_id", "알 수 없음"),
                 "target_date": state.get("target_date", datetime.now().strftime('%Y-%m-%d')),
                 "wbs_data": str(state.get("wbs_data", "WBS 데이터 없음")),
-                "docs_analysis": str(state.get("documents_analysis_result", "문서 분석 결과 없음")),
-                "teams_analysis": str(state.get("teams_analysis_result", "Teams 분석 결과 없음")),
-                "git_analysis": str(state.get("git_analysis_result", "Git 분석 결과 없음")),
-                "email_analysis": str(state.get("email_analysis_result", "이메일 분석 결과 없음")),
+                "docs_analysis": str(filtered_results.get("documents_analysis_result") or "Docs 결과 없음"),
+                "teams_analysis": str(filtered_results.get("teams_analysis_result") or "Teams 결과 없음"),
+                "git_analysis": str(filtered_results.get("git_analysis_result") or "Git 결과 없음"),
+                "email_analysis": str(filtered_results.get("email_analysis_result") or "Email 결과 없음"),
                 "retrieved_readme_info": str(state.get("retrieved_readme_info", "README 정보 없음")),
                 "docs_daily_reflection": str(state.get("documents_analysis_result", {}).get("daily_reflection", "")),
                 "teams_daily_reflection": str(state.get("teams_analysis_result", {}).get("daily_reflection", "")),
