@@ -113,7 +113,7 @@
 - docs_quality_result에는 있지만 documents에 없는 평가 → 무시
 
 **WBS 데이터 활용** : 
-wbs_data는 리스트 형태 (예: [{ "id": "WBS-001", "name": "초기 시스템 설계", "project_id": "1" }, { "id": "WBS-001", "name": "초기 시스템 구현", "project_id": "2" }, ... ])로 제공될 수 있으며, 이를 documents 또는 docs_quality_result의 내용과 매칭하여 matched_wbs_task를 구성합니다. projects 정보 (예: [{ "id": "1", "name": "프로젝트 알파", "description": "…" }, { "id": "2", "name": "프로젝트 베타", "description": "…" }, ...])와 연동하여 project_id 및 project_name을 정확히 할당합니다.
+wbs_data는 리스트 형태 (예: [{{ "id": "WBS-001", "name": "초기 시스템 설계", "project_id": "1" }}, {{ "id": "WBS-001", "name": "초기 시스템 구현", "project_id": "2" }}, ... ])로 제공될 수 있으며, 이를 documents 또는 docs_quality_result의 내용과 매칭하여 matched_wbs_task를 구성합니다. projects 정보와 연동하여 project_id 및 project_name을 정확히 할당합니다.
 
 ---
 

@@ -226,7 +226,7 @@ STEP 3: 우선순위 정렬
           {{
             "source": "GIT 또는 TEAMS 또는 EMAIL 또는 DOCS",
             "title": "실제 활동 제목",
-            "content": "실제 활동 내용",
+            "content": ["실제 활동 내용"],
             "llm_reference": "구체적 분석 근거 + 프로젝트 목표와의 연관성 설명"
           }}
         ]
