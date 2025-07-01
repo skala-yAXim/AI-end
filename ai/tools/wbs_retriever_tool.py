@@ -28,7 +28,6 @@ def get_project_task_items_tool(
         qdrant_filter = models.Filter(
             must=[
                 models.FieldCondition(key="project_id", match=models.MatchValue(value=project_id)),
-                models.FieldCondition(key="output_type", match=models.MatchValue(value="task_item"))
             ]
         )
         # Qdrant에서 가져올 데이터 수 제한 설정
@@ -133,38 +132,4 @@ def get_tasks_by_assignee_tool(
 
     print(f"후처리 필터링 완료. 담당자 '{assignee_name_to_filter}'에게 할당된 작업 {len(filtered_tasks)}건을 찾았습니다.")
     return filtered_tasks
-
-
-if __name__ == "__main__":
-    try:
-        Settings() # 수정된 Settings 클래스명 사용
-        print(".env 설정 로드 확인됨 (또는 OPENAI_API_KEY가 환경 변수에 직접 설정됨).")
-    except ValueError as e:
-        print(f"주의: .env 파일 또는 OPENAI_API_KEY 환경 변수 설정 문제 가능성 - {e}")
-    except NameError: 
-        print("치명적 오류: Settings 클래스를 임포트하거나 정의할 수 없습니다. 경로를 확인하세요.")
-        sys.exit(1)
-
-
-    example_project_id = "project_sample_001" 
-    example_assignee_to_filter = "김용준" 
-
-    # --- 담당자별 작업 조회 (후처리 필터링 방식) 테스트 ---
-    print(f"\n=== '{example_project_id}' 프로젝트, 담당자 '{example_assignee_to_filter}' 작업 항목 조회 테스트 (후처리 필터링 방식) ===")
-    tasks_for_specific_assignee = get_tasks_by_assignee_tool(
-        project_id=example_project_id,
-        assignee_name_to_filter=example_assignee_to_filter,
-        initial_fetch_limit=None
-    )
-
-    if tasks_for_specific_assignee:
-        print(f"\n'{example_project_id}' 프로젝트에서 담당자 '{example_assignee_to_filter}'(으)로 필터링된 작업 항목:")
-        for i, task in enumerate(tasks_for_specific_assignee):
-            print(f"\n  [필터링된 작업 항목 #{i+1}]")
-            print(f"    ID: {task.get('task_id', 'N/A')}")
-            print(f"    이름: {task.get('task_name', 'N/A')}")
-            print(f"    담당자 (원본 데이터): {task.get('assignee', 'N/A')}")
-            print(f"    상태: {task.get('status', 'N/A')}")
-    else:
-        print(f"\n'{example_project_id}' 프로젝트에서 담당자 '{example_assignee_to_filter}'의 작업 항목을 찾을 수 없거나 조회 중 오류가 발생했습니다.")
 

@@ -16,7 +16,6 @@ class WBSDataHandler:
                 f"- 작업명: {task.get('task_name', 'N/A')}\n"
                 f"  ID: {task.get('task_id', 'N/A')}\n"
                 f"  담당자: {task.get('assignee', 'N/A')}\n"
-                f"  상태 (WBS 기준): {task.get('status', 'N/A')}\n"
                 f"  산출물: {task.get('deliverable', 'N/A')}\n"
                 f"  시작 예정: {task.get('start_date', 'N/A')}\n"
                 f"  종료 예정: {task.get('end_date', 'N/A')}"
