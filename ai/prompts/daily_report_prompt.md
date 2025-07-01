@@ -10,27 +10,28 @@
 
 ### 기본 정보
 
-- **사용자 ID**: {user_id}
-- **사용자 이름**: {user_name}
-- **분석 날짜**: {target_date}
-- **프로젝트 정보**: {projects}
+- 사용자 ID: {user_id}
+- 사용자 이름: {user_name}
+- 분석 날짜: {target_date}
+- 프로젝트 정보: {projects}
 
 ### 분석 결과 데이터
 
-- **문서 분석**: `{docs_analysis}`
-- **Teams 분석**: `{teams_analysis}`
-- **Git 분석**: `{git_analysis}`
-- **Email 분석**: `{email_analysis}`
+- 문서 분석: `{docs_analysis}`
+- Teams 분석: `{teams_analysis}`
+- Git 분석: `{git_analysis}`
+- Email 분석: `{email_analysis}`
 
 ### Agent별 Daily Reflection
 
-- **문서**: `{docs_daily_reflection}`
-- **Teams**: `{teams_daily_reflection}`
-- **Git**: `{git_daily_reflection}`
-- **Email**: `{email_daily_reflection}`
+- 문서: `{docs_daily_reflection}`
+- Teams: `{teams_daily_reflection}`
+- Git: `{git_daily_reflection}`
+- Email: `{email_daily_reflection}`
 
 ## 보고서 작성 프로세스
 **명사형 표현: 모든 문장을 명사형으로 마무리하여 간결하고 명확하게 작성**
+**템플릿 그대로 반환 금지**
 
 **STEP 1: 활동 총 개수 계산**
 - 분석 결과 데이터 내 total_tasks 정보를 바탕으로 활동 개수 계산하여 summary 작성에 활용
@@ -65,48 +66,43 @@
 
 프로젝트 맥락과 비즈니스 임팩트를 종합적으로 분석하여 우선순위를 결정하세요:
 **HIGH 우선순위**
-- **프로젝트 목표 달성에 핵심적인 업무**
-- **다른 작업들의 전제조건이 되는 기반 작업**
-- **팀장 관점에서 반드시 보고해야 할 중요 진척사항**
+- 프로젝트 목표 달성에 핵심적인 업무
+- 다른 작업들의 전제조건이 되는 기반 작업
+- 팀장 관점에서 반드시 보고해야 할 중요 진척사항
 
 **MEDIUM 우선순위**
-- **기능 확장이나 개선에 기여하는 업무**
-- **프로젝트 품질 향상에 도움이 되는 업무**
-- **중장기적으로 가치를 제공하는 업무**
+- 기능 확장이나 개선에 기여하는 업무
+- 프로젝트 품질 향상에 도움이 되는 업무
+- 중장기적으로 가치를 제공하는 업무
 
 **LOW 우선순위**
-- **유지보수나 코드 품질 개선 업무**
-- **개발 프로세스나 환경 설정 업무**
-- **부수적이거나 일반적인 개발 작업**
+- 유지보수나 코드 품질 개선 업무
+- 개발 프로세스나 환경 설정 업무
+- 부수적이거나 일반적인 개발 작업
 
 ## Daily Reflection
-
-다음 내용이 포함된 reflection은 contents 배열에서 삭제:
-
+**다음 내용이 포함된 reflection은 contents 배열에서 삭제**:
 - "분석할 관련 데이터를 찾지 못했습니다" 
-- 빈 값 ("" 또는 null) 기본 메시지나 템플릿 형태의 모든 내용
+- 빈 값 ("" 또는 null) 기본 메시지나 템플릿 형태의 모든 내용은 반환하지 않음
 
 ## Daily Short Review (비즈니스 중요도 반영)
 **목적**: 대시보드용 한줄평 (35~60자)
 **기본 규칙**
-- **35~60자 내외** (대시보드 UI 최적화)
+- 35~60자 내외 (대시보드 UI 최적화)
 - **캐주얼하고 유쾌한 톤**을 사용 (이모지 사용 가능)
 - '칭찬 + 제안' 또는 '격려 + 요약'의 구조로 작성
 - 비유, 드립, 말장난, 의인화 등을 활용해 위트 있게!
-**톤 예시**
-- **HIGH 성과 중심**: "핵심 인프라 구축으로 대박 진전! 🚀"
-- **MEDIUM 성과 중심**: "착실한 기능 개발로 한 걸음 전진! ⭐"
-- **일반적 활동**: "코드 정리로 깔끔한 하루 마무리! ✨"
-- **활동 없음**: "충전의 시간, 내일을 위한 준비 ☕"
+- 이모지 활용할 것
 
 
 ## 출력 JSON 형식
 반드시 다음 JSON 형식으로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요:
+
 ```json
 {{
   "report_title": "{user_name}님의 {target_date} 업무보고서",
   "daily_report": {{
-    "summary": "총 [WBS 매칭 content 객체 수]개의 WBS에 기여. 총 [계산된총활동수]개 업무 활동 중 WBS 매칭 [매칭수]건, 미매칭 [미매칭수]건 수행 (GIT [GIT개수]건, TEAMS [TEAMS개수]건, EMAIL [EMAIL개수]건, DOCS [DOCS개수]건). 프로젝트의 목표 달성에 기여한 주요 활동: [HIGH 우선순위 업무 중심 서술]",
+    "summary": "총 [WBS 매칭 content 객체 수]개의 WBS에 기여 (GIT [GIT개수]건, TEAMS [TEAMS개수]건, EMAIL [EMAIL개수]건, DOCS [DOCS개수]건). 프로젝트의 목표 달성에 기여한 주요 활동: [HIGH 우선순위 업무 중심 서술]",
     "contents": [
       {{
         "text": "개별 업무 내용",
@@ -126,7 +122,7 @@
     ]
   }},
   "daily_reflection": {{
-    "summary": "비즈니스 중요도를 반영한 개인 업무 회고 및 분석 (HIGH 우선순위 업무 중심)",
+    "summary": "비즈니스 중요도를 반영한 개인 업무 회고 및 분석 결과 서술 (HIGH 우선순위 업무 중심)",
     "contents": [
       {{
         "source": "GIT",
