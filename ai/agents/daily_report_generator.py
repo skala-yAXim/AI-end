@@ -6,10 +6,9 @@ from typing import Dict, List, Any, Optional
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain.agents import AgentExecutor
 from langchain.tools import tool
-
-from pydantic.v1 import BaseModel
+from langchain.agents import create_openai_functions_agent
 
 from core import config
 from ai.graphs.state_definition import LangGraphState
@@ -29,6 +28,23 @@ class DailyReportGenerator:
             temperature=0.3,
             openai_api_key=config.OPENAI_API_KEY
         )
+        
+        # 프롬프트 템플릿 로드
+        prompt_file_path = os.path.join(config.PROMPTS_BASE_DIR, "daily_report_prompt.md")
+        with open(prompt_file_path, "r", encoding="utf-8") as f:
+            prompt_content = f.read()
+        
+        self.prompt = PromptTemplate(
+            template=prompt_content,
+            input_variables=[
+                "user_name", "user_id", "target_date",
+                "wbs_data", "docs_analysis", "teams_analysis", 
+                "git_analysis", "email_analysis", "project_id", "project_name", "project_description", "project_period",
+                "retrieved_readme_info", "docs_daily_reflection", "teams_daily_reflection", 
+                "git_daily_reflection", "email_daily_reflection"
+            ]
+        )
+        self.parser = JsonOutputParser()
 
         # WBS Retriever Tool 인스턴스 및 Tool 정의
         retriever = wbs_retriever_tool_instance
@@ -65,32 +81,11 @@ class DailyReportGenerator:
                 "tasks": parsed_results
             }
 
-        
-        # --- Agent 및 Prompt 설정 ---
-        prompt_path = os.path.join(config.PROMPTS_BASE_DIR, "daily_report_prompt.md")
-        template = open(prompt_path, "r", encoding="utf-8").read()
-        agent_prompt = PromptTemplate.from_template(template)
-
-        agent = create_tool_calling_agent(
-            llm=self.llm,
-            tools=[wbs_retrieve_tool],
-            prompt=agent_prompt
-        )
-
-        self.agent_executor = AgentExecutor(
-            agent=agent,
-            tools=[wbs_retrieve_tool],
-            verbose=True, # Agent의 작동 과정을 로그로 확인하려면 True로 설정
-            max_iterations=1,
-            # early_stopping_method="generate"
-            # handle_parsing_errors=True # LLM의 출력 파싱 오류 발생 시 대처
-        )
-
     def generate_daily_report(self, state: LangGraphState) -> LangGraphState:
         """
         Agent를 호출하여 일일 보고서를 생성하고 LangGraph 상태를 업데이트합니다.
         """
-        print(f"DailyReportGenerator: {state.get('user_name')} 님의 보고서 생성을 시작합니다 (Agent 방식).")
+        print(f"DailyReportGenerator: {state.get('user_name')} 님의 보고서 생성을 시작합니다.")
     
         exclude_key = "daily_reflection"
         target_keys = [
@@ -108,47 +103,49 @@ class DailyReportGenerator:
                 filtered_results[key] = {k: v for k, v in analysis_result.items() if k != exclude_key}
             else:
                 filtered_results[key] = {}
-
-        # Agent에게 전달할 입력 데이터를 구성합니다.
-        # 이전 코드의 'first_data'와 동일한 정보를 포함합니다.
-        agent_input_data = {
-            "user_name": state.get("user_name"),
-            "user_id": state.get("user_id"),
-            "target_date": state.get("target_date", datetime.now().strftime("%Y-%m-%d")),
-            "projects": str(state.get("projects", [])),
-            "wbs_data": state.get("wbs_data", []), # 전체 WBS 데이터도 컨텍스트로 제공
-            "docs_analysis": str(filtered_results.get("documents_analysis_result") or "Docs 결과 없음"),
-            "teams_analysis": str(filtered_results.get("teams_analysis_result") or "Teams 결과 없음"),
-            "git_analysis": str(filtered_results.get("git_analysis_result") or "Git 결과 없음"),
-            "email_analysis": str(filtered_results.get("email_analysis_result") or "Email 결과 없음"),
-            "retrieved_readme_info": state.get("retrieved_readme_info", ""),
-            "docs_daily_reflection": state.get("documents_analysis_result", {}).get("daily_reflection", ""),
-            "teams_daily_reflection": state.get("teams_analysis_result", {}).get("daily_reflection", ""),
-            "git_daily_reflection": state.get("git_analysis_result", {}).get("daily_reflection", ""),
-            "email_daily_reflection": state.get("email_analysis_result", {}).get("daily_reflection", ""),
-        }
-
-        print("DailyReportGenerator: Agent 실행 중...")
-
-        result = self.agent_executor.invoke(agent_input_data)
-
-        print("result : ")
-        print(result)
         
-
-        print("보고서 결과 : ")
-        raw_output = result["output"]
-        parsed_result = json.loads(raw_output)
-
-        print(parsed_result)
+        try:
+            # state에서 직접 데이터 추출
+            input_data = {
+                "user_name": state.get("user_name"),
+                "user_id": state.get("user_id"),
+                "target_date": state.get("target_date", datetime.now().strftime("%Y-%m-%d")),
+                "projects": str(state.get("projects", [])),
+                "wbs_data": state.get("wbs_data", []), # 전체 WBS 데이터도 컨텍스트로 제공
+                "docs_analysis": str(filtered_results.get("documents_analysis_result") or "Docs 결과 없음"),
+                "teams_analysis": str(filtered_results.get("teams_analysis_result") or "Teams 결과 없음"),
+                "git_analysis": str(filtered_results.get("git_analysis_result") or "Git 결과 없음"),
+                "email_analysis": str(filtered_results.get("email_analysis_result") or "Email 결과 없음"),
+                "retrieved_readme_info": state.get("retrieved_readme_info", ""),
+                "docs_daily_reflection": state.get("documents_analysis_result", {}).get("daily_reflection", ""),
+                "teams_daily_reflection": state.get("teams_analysis_result", {}).get("daily_reflection", ""),
+                "git_daily_reflection": state.get("git_analysis_result", {}).get("daily_reflection", ""),
+                "email_daily_reflection": state.get("email_analysis_result", {}).get("daily_reflection", ""),
+                "tools": "wbs_retrieve_tool",
+                "tool_names": "wbs_retrieve_tool"
+            }
+            
+            # 체인 구성 및 실행
+            chain = self.prompt | self.llm | self.parser
+            
+            print("DailyReportGenerator: LLM을 통한 보고서 생성 중...")
+            report_result = chain.invoke(input_data)
+            
+            # 성공적인 보고서 생성 결과를 state에 직접 저장
+            print(f"DailyReportGenerator: 보고서 생성 완료 - 제목: {report_result.get('report_title', '제목 없음')}")
+            
+        except Exception as e:
+            print(f"DailyReportGenerator: 보고서 생성 중 오류 발생: {e}")
+            state["comprehensive_report"] = {
+                "error": "보고서 생성 실패",
+                "message": str(e)
+            }
+            
+            # 에러를 state의 error_message에도 추가
+            current_error = state.get("error_message", "")
+            state["error_message"] = (current_error + f"\n DailyReportGenerator 오류: {e}").strip()
         
-        if not result:
-            raise ValueError("Agent가 유효한 보고서를 생성하지 못했습니다.")
-        
-
-        state["comprehensive_report"] = parsed_result
-        print("DailyReportGenerator: 보고서 생성 완료.")
-        return state
+        return {"comprehensive_report": report_result}
 
     def __call__(self, state: LangGraphState) -> LangGraphState:
         return self.generate_daily_report(state)
