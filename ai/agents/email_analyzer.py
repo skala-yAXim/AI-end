@@ -46,9 +46,8 @@ class EmailAnalyzerAgent:
         if not retrieved_emails_list: 
             return f"### 이메일 데이터 {date_info}:\n분석할 이메일 내역이 없습니다."
         
-        # LLM 컨텍스트 길이 고려하여 최대 30건, 각 메일 내용도 일부만
         parts = [f"### 이메일 데이터 {date_info} (최대 {min(len(retrieved_emails_list), 30)}건 표시):"]
-        for item in retrieved_emails_list[:30]: 
+        for item in retrieved_emails_list: 
             meta = item.get("metadata", {})
             content = item.get("page_content", "")[:300] # 내용 일부
             subject = meta.get("subject", meta.get("title", "제목 없음"))

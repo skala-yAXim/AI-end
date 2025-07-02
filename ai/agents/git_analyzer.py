@@ -46,10 +46,6 @@ class GitAnalyzerAgent:
         
         self.parser = JsonOutputParser()
 
-        # base_parser = JsonOutputParser()
-        # self.parser = OutputFixingParser.from_llm(parser=base_parser, llm=self.llm_client)
-
-
     def _calculate_git_stats(self, retrieved_activities: List[Dict]) -> Dict[str, Any]:
         """
         검색된 Git 활동 목록을 기반으로 통계 정보를 계산합니다.
@@ -103,8 +99,6 @@ class GitAnalyzerAgent:
             "summary_str": summary_str
         }
 
-
-
     def _prepare_git_data_for_llm(self, retrieved_git_activities: List[Dict], target_date_str: Optional[str]) -> str:
         date_info = f"({target_date_str} 기준)" if target_date_str else "(최근 활동 기준)"
         display_count = min(len(retrieved_git_activities), 30)  # 최대 30건만 출력
@@ -128,7 +122,6 @@ class GitAnalyzerAgent:
             parts.append(f"  메시지: {message}")
 
         return "\n".join(parts)
-
 
     def _analyze_git_internal(
     self, 
