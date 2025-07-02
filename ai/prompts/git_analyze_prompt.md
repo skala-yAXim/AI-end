@@ -8,20 +8,20 @@
 ## 입력 데이터
 ### 분석 대상 정보
 
-**담당자 Git 이메일(user_id로 사용)**: {author_email}
-**담당자 WBS 상 이름**: {wbs_assignee_name}
-**분석 기준일**: {target_date_str}
+**담당자 Git 이메일(user_id로 사용)**: {user_id}
+**담당자 WBS 상 이름**: {user_name}
+**분석 기준일**: {target_date}
 
 - **WBS 할당 작업**: 
 ```json
-{wbs_tasks_str_for_llm}
+{wbs_data}
 ```
 - **Git 활동 기록**: 
 ```json
-{git_info_str_for_llm}
+{git_info}
 ```
-- **Git 활동 통계**: {git_metadata_analysis_str}
-- **저장소 README 정보**: {readme_info_str}
+- **Git 활동 통계**: {git_stats}
+- **저장소 README 정보**: {readme_info}
 - **진행 프로젝트 정보**: {projects}
 
 ## 분석 프로세스
@@ -91,8 +91,8 @@
 
 ```json
 {{
-  "user_id": "{author_email}",
-  "date": "{target_date_str}",
+  "user_id": "{user_id}",
+  "date": "{target_date}",
   "type": "Git",
   "total_tasks": "검색된 모든 Git 활동 수 (숫자로만 표기)",
   "git_analysis": [{{

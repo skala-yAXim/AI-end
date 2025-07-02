@@ -37,10 +37,9 @@ class DailyReportGenerator:
         self.prompt = PromptTemplate(
             template=prompt_content,
             input_variables=[
-                "user_name", "user_id", "target_date",
-                "wbs_data", "docs_analysis", "teams_analysis", 
-                "git_analysis", "email_analysis", "project_id", "project_name", "project_description", "project_period",
-                "retrieved_readme_info", "docs_daily_reflection", "teams_daily_reflection", 
+                "user_name", "user_id", "target_date", "wbs_data",
+                "docs_analysis", "teams_analysis", "git_analysis", "email_analysis", 
+                "projects", "docs_daily_reflection", "teams_daily_reflection", 
                 "git_daily_reflection", "email_daily_reflection"
             ]
         )
@@ -116,13 +115,10 @@ class DailyReportGenerator:
                 "teams_analysis": str(filtered_results.get("teams_analysis_result") or "Teams 결과 없음"),
                 "git_analysis": str(filtered_results.get("git_analysis_result") or "Git 결과 없음"),
                 "email_analysis": str(filtered_results.get("email_analysis_result") or "Email 결과 없음"),
-                "retrieved_readme_info": state.get("retrieved_readme_info", ""),
                 "docs_daily_reflection": state.get("documents_analysis_result", {}).get("daily_reflection", ""),
                 "teams_daily_reflection": state.get("teams_analysis_result", {}).get("daily_reflection", ""),
                 "git_daily_reflection": state.get("git_analysis_result", {}).get("daily_reflection", ""),
                 "email_daily_reflection": state.get("email_analysis_result", {}).get("daily_reflection", ""),
-                "tools": "wbs_retrieve_tool",
-                "tool_names": "wbs_retrieve_tool"
             }
             
             # 체인 구성 및 실행

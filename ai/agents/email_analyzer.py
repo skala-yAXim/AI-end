@@ -83,7 +83,7 @@ class EmailAnalyzerAgent:
         try:
             llm_input = {
                 "user_id": user_id,
-                "target_user": user_name,
+                "user_name": user_name,
                 "user_email": user_email,
                 "target_date": target_date,
                 "email_data": email_data_str, # 프롬프트의 {email_data} 변수

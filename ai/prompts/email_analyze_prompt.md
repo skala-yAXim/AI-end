@@ -5,7 +5,7 @@
 
 ## 입력 데이터
 ### 분석 대상 사용자
-{target_user}, {user_email}
+{user_name}, {user_email}
 
 ### 분석 날짜
 {target_date}

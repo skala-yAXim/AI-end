@@ -33,13 +33,13 @@ class GitAnalyzerAgent:
         try:
             with open(prompt_file_path, 'r', encoding='utf-8') as f: 
                 prompt_template_str = f.read()
-            # 예상 프롬프트 변수: {author_identifier}, {wbs_assignee_name}, {target_date_str}, {git_info_str_for_llm}, {wbs_tasks_str_for_llm}
+            # 예상 프롬프트 변수: {user_id}, {user_name}, {target_date}, {git_info}, {wbs_data}
             self.prompt = PromptTemplate.from_template(prompt_template_str)
         except FileNotFoundError:
             print(f"GitAnalyzerAgent: 오류 - 프롬프트 파일을 찾을 수 없습니다: {prompt_file_path}")
             self.prompt_template_str = """
-사용자 식별자 {author_identifier} (WBS 담당자명: {wbs_assignee_name})의 모든 레포지토리에 대한 Git 활동({git_info_str_for_llm})을 {target_date_str} 기준으로 분석하고, 
-관련 WBS 작업({wbs_tasks_str_for_llm})과의 연관성을 파악하여 JSON 형식으로 상세 리포트를 작성해주세요. 
+사용자 식별자 {user_id} (WBS 담당자명: {user_name})의 모든 레포지토리에 대한 Git 활동({git_info})을 {target_date} 기준으로 분석하고, 
+관련 WBS 작업({wbs_data})과의 연관성을 파악하여 JSON 형식으로 상세 리포트를 작성해주세요. 
 리포트에는 주요 활동 요약, WBS 매칭된 작업, 매칭되지 않은 작업, 할당되지 않은 Git 활동 목록을 포함해야 합니다.
 """
             self.prompt = PromptTemplate.from_template(self.prompt_template_str)
@@ -118,13 +118,13 @@ class GitAnalyzerAgent:
         for item in retrieved_git_activities[:display_count]:
             meta = item.get("metadata", {})
             repo = meta.get("repo_name", "N/A")
-            author = meta.get("author", "N/A")
+            user_id = meta.get("user_id", "N/A")
             event_date = meta.get("date", "N/A")
             event_type = meta.get("type", "N/A")
             title = meta.get("title", "N/A")
             message = item.get("page_content", meta.get("message", "N/A"))[:300]
 
-            parts.append(f"- [{event_type}] 레포: {repo}, (작성자: {author}, 날짜: {event_date}), 제목: {title}")
+            parts.append(f"- [{event_type}] 레포: {repo}, (작성자: {user_id}, 날짜: {event_date}), 제목: {title}")
             parts.append(f"  메시지: {message}")
 
         return "\n".join(parts)
@@ -163,13 +163,13 @@ class GitAnalyzerAgent:
 
         try:
             llm_input = {
-                "author_email": user_id,
-                "wbs_assignee_name": user_name or user_id,
-                "target_date_str": target_date,
-                "git_info_str_for_llm": git_data_str,
-                "wbs_tasks_str_for_llm": wbs_data_str,
-                "git_metadata_analysis_str": git_stats_str,
-                "readme_info_str": readme_info,
+                "user_id": user_id,
+                "user_name": user_name or user_id,
+                "target_date": target_date,
+                "git_info": git_data_str,
+                "wbs_data": wbs_data_str,
+                "git_stats": git_stats_str,
+                "readme_info": readme_info,
                 "projects": projects
             }
             analysis_result = chain.invoke(llm_input)
@@ -189,7 +189,7 @@ class GitAnalyzerAgent:
 
         analysis_result = {} # 기본값 초기화
         if not git_identifier:
-            error_msg = "Git 분석용 식별자(github_email/user_id) 누락"; print(f"GitAnalyzerAgent: {error_msg}")
+            error_msg = "Git 분석용 식별자(user_id) 누락"; print(f"GitAnalyzerAgent: {error_msg}")
             analysis_result = {"error": error_msg, "summary": "사용자 식별자 누락"}
         elif not target_date: # Git 활동은 날짜 필터링 필수
             error_msg = "GitAnalyzerAgent: target_date가 State에 제공되지 않아 분석을 건너뜁니다."

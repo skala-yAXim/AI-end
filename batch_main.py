@@ -43,7 +43,6 @@ def run_analysis_workflow(user_config):
     # 사용자 정보 설정
     input_user_id = user_config['user_id']
     input_user_name = user_config['user_name']
-    input_github_email = user_config.get('github_email', user_config['user_id'])
     input_target_date = datetime.now().strftime('%Y-%m-%d')
     input_project_id = user_config['project_id']
     input_project_name = user_config['project_name']
@@ -55,7 +54,6 @@ def run_analysis_workflow(user_config):
     initial_state = LangGraphState(
         user_id=input_user_id,
         user_name=input_user_name,
-        github_email=input_user_id,
         target_date=input_target_date,
         project_id=input_project_id,
         docs_quality_analysis_result=None,
