@@ -1,14 +1,12 @@
 import os
 import json
+
 from datetime import datetime
 from typing import Dict, List, Any, Optional
-
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from langchain.agents import AgentExecutor
 from langchain.tools import tool
-from langchain.agents import create_openai_functions_agent
 
 from core import config
 from ai.graphs.state_definition import LangGraphState

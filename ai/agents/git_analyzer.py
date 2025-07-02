@@ -7,8 +7,6 @@ from qdrant_client import QdrantClient
 from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
-from langchain.output_parsers import OutputFixingParser
-
 from langchain.prompts import PromptTemplate
 
 from core import config
