@@ -51,7 +51,7 @@ class TeamsAnalyzer:
         
         # LLM 컨텍스트 길이 고려하여 최대 30건, 각 게시물 내용도 일부만
         parts = [f"### Teams 게시물 데이터 {date_info} (최대 {min(len(retrieved_posts_list), 30)}건 표시):"]
-        for item in retrieved_posts_list[:30]: 
+        for item in retrieved_posts_list: 
             meta = item.get("metadata", {})
             content = item.get("page_content", "")[:500] # 내용 일부
             # 실제 Teams 작성자 ID 필드명 (예: user_id, author_id 등)
