@@ -128,33 +128,20 @@ class DocsAnalyzer:
         wbs_data_str = str(wbs_data) if wbs_data else "WBS 정보 없음"
 
         # LLM Chain 구성
-        chain = (
-            {
-                "documents": lambda x: x["documents_text"],
-                "wbs_data": lambda x: x["wbs_info"],
-                "user_id": lambda x: x["in_user_id"],
-                "user_name": lambda x: x["in_user_name"],
-                "target_date": lambda x: x["in_target_date"],
-                "docs_quality_result": lambda x: x["docs_quality_result"],
-                "total_tasks": lambda x: x["in_total_tasks"],
-                "projects": lambda x: x["projects"]
-            }
-            | self.prompt
-            | self.llm
-            | self.parser
-        )
+        chain = self.prompt | self.llm | self.parser
 
         try:
-            result = chain.invoke({
-                "in_user_id": user_id,
-                "in_user_name": user_name or user_id,
-                "in_target_date": target_date,
-                "wbs_info": wbs_data_str,
-                "documents_text": documents_text,
+            llm_input = {
+                "user_id": user_id,
+                "user_name": user_name or user_id,
+                "target_date": target_date,
+                "documents": documents_text,           # 프롬프트의 {documents} 변수
+                "wbs_data": wbs_data_str,             # 프롬프트의 {wbs_data} 변수
                 "docs_quality_result": docs_quality_result or {},
-                "in_total_tasks": unique_count,
+                "total_tasks": unique_count,
                 "projects": projects
-            })
+            }
+            result = chain.invoke(llm_input)
             
             # 결과 검증 및 기본값 설정
             if not isinstance(result, dict):

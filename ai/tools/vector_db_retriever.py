@@ -330,7 +330,7 @@ def retrieve_documents_content(
     qdrant_client: QdrantClient,
     document_list: List[Dict],   # file_id, filename 등 포함된 문서 리스트
     queries: List[str],          # LLM이 뽑은 중요 평가 항목 키워드
-    top_k: int = 5
+    top_k: int
 ) -> List[Dict]:
     """
     문서 리스트와 평가 항목(queries)을 기반으로,
