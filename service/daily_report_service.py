@@ -140,11 +140,12 @@ def daily_report_service():
     response = client.get_teams_info()
     
     target_date = date.today().isoformat()
-    target_date = "2025-06-17"
+    target_date = "2025-06-19"
     
     for team in response:
         print(team.name)
         for proj in team.projects:
+            print(proj.name)
             for file in proj.files:
                 download_wbs(proj.id, [file])
 

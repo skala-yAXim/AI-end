@@ -50,7 +50,7 @@ def weekly_report_service():
     start_date_str = start_date.isoformat()
     
     start_date_str = "2025-06-13"
-    end_date_str = "2025-06-18"
+    end_date_str = "2025-06-19"
     
     client = APIClient()
     team_info = client.get_teams_info()
