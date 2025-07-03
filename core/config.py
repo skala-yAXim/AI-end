@@ -16,8 +16,8 @@ CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-3-7-sonnet-20250219")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "paraphrase-multilingual-MiniLM-L12-v2")
 
 # --- Qdrant 설정 ---
-QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
-QDRANT_PORT = int(os.getenv("QDRANT_PORT", 6333))
+QDRANT_HOST = os.getenv("QDRANT_HOST")
+QDRANT_PORT = int(os.getenv("QDRANT_PORT"))
 
 # --- 컬렉션 이름 ---
 COLLECTION_DOCUMENTS = "Documents"
@@ -35,7 +35,7 @@ DATA_DIR = os.path.join(PROJECT_ROOT_DIR, "data") # 원본 데이터 저장 경�
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
-API_BASE_URL = "http://localhost:8088"
+API_BASE_URL = os.getenv("API_BASE_URL")
 API_AUTHORIZATION = os.getenv("API_AUTHORIZATION")
 API_KEY = os.getenv("API_KEY")
 

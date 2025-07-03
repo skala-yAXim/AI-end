@@ -7,7 +7,7 @@ import uuid
 import numpy
 import traceback # 디버깅을 위해 추가
 
-from core.config import COLLECTION_WBS_DATA
+from core.config import COLLECTION_WBS_DATA, QDRANT_HOST
 # 임베딩 모델 정보
 DEFAULT_SENTENCE_TRANSFORMER_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 
@@ -26,7 +26,7 @@ class VectorDBHandler:
         self.collection_name = f"{collection_name_prefix}"
 
         try:
-            self.client = QdrantClient(host="localhost", port=6333)
+            self.client = QdrantClient(host=QDRANT_HOST, port=6333)
         except Exception as e:
             raise RuntimeError(f"Qdrant 클라이언트 초기화 실패 : {e}")
 
