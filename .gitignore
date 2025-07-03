@@ -21,6 +21,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# k8s related files
+Dockerfile
+Dockerfile.base
+deploy.yaml
+service.yaml
+ingress.yaml
+
 # C extensions
 *.so
 
@@ -145,6 +152,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+env.properties
 
 # Spyder project settings
 .spyderproject
