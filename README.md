@@ -14,6 +14,7 @@ LangGraph 프레임워크 기반 시스템으로, 다양한 데이터 소스(WBS
   - **Git Analyze Agent**: 커밋/PR/이슈/README 분석
   - **Email Analyze Agent**: 이메일 기반 업무 소통 추적
   - **Teams Analyze Agent**: 채팅/게시물 중심 협업 기록 추적
+  - **Docs Quality Analyze Agent**: 작성된 문서 퀄리티 평가 및 분석
   - **Docs Analyze Agent**: 문서 변경 이력, 품질 분석
 
 - **자동 일일 보고서 생성**
@@ -105,11 +106,11 @@ graph TD;
     WBSRetriever -->|병렬| GitAnalyze
     WBSRetriever -->|병렬| EmailAnalyze
     WBSRetriever -->|병렬| TeamsAnalyze
-    WBSRetriever -->|병렬| DocsAnalyze
+    WBSRetriever -->|병렬| DocsQualityAnalyze
     GitAnalyze --> DailyReport
     EmailAnalyze --> DailyReport
     TeamsAnalyze --> DailyReport
-    DocsAnalyze --> DailyReport
+    DocsQualityAnalyze --> DocsAnalyze
 ```
 
 ### 개인 Weekly 보고서 Architecture
@@ -127,6 +128,7 @@ graph TD;
 ```
 
 흐름 요약:
+
 WBS 분석 → 캐싱
 
 병렬 데이터 분석 (Git, Email, Teams, Docs)
