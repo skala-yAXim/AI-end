@@ -60,6 +60,7 @@
 - 근거의 고유성: evidence 객체는 반드시 한 군데에만 포함, 중복 불가
 - 한 contents의 task_id는 다른 contents와 중복될 수 있습니다.
 - 데이터의 unmached_task에 대해서도 동일 작업 그룹화 진행. task_id, task는 null로 작성
+- detailed_activities는 문자열의 리스트로 반환해야 함.
 
 **STEP 3: 우선순위 정렬**
 **우선순위 정렬**: 모든 contents 객체를 HIGH → MEDIUM → LOW 순서로 배치
