@@ -83,7 +83,7 @@
 ### **Daily Reflection 작성 규칙**
 - **가치 있는 인사이트 작성**: daily_reflection의 content에는 단순한 데이터 요약이 아니라, 분석 대상 사용자의 실제 업무 기여도와 작업 패턴, 개선 가능성, 저장소별 작업 분석, 향후 프로젝트 영향 등을 포함한 가치 있는 인사이트를 작성할 것.
 - LLM_reference 내용과는 다른 업무 패턴을 중심으로 구체적으로 서술할 것.
-- **activity_title과 detailed_activities 분석**: 통합된 작업 그룹의 전체적 성과와 세부 활동들의 패턴 평가
+- **activity_title과 detailed_activities 분석**: 통합된 작업 그룹의 전체적 성과와 세부 활동들의 패턴 평가 (merge 활동만 존재한 task는 기여 아닌 검토 활동으로 판단)
 
 
 ## 출력 JSON 형식
